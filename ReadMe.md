@@ -1,9 +1,9 @@
-# GearInfo
+![Gi logo](https://i.imgur.com/g0iJMJk.jpg# )
 
-A multi-purpose addon that tracks your currently equipped gear and buffs to display valuable information 
-regarding haste values and more.
+This is a multi-purpose addon that tracks your currently equipped gear and buffs to display valuable information.
 
-![gearinfo](https://i.imgur.com/ovPzmb5.jpg)
+![Imgur](https://i.imgur.com/CGBAlfx.png) ![Imgur](https://i.imgur.com/ovPzmb5.jpg)
 
 The addon can be used in conjunction with Gearswap to facilitate gear swapping.
-use the command " //gi help " in game  to see a full list of commands.
+
+Please check out the [the wiki](https://github.com/sebyg666/GearInfo/wiki) for all the information you'll need to get you started.
