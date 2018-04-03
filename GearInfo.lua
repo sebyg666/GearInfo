@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.6.3.1'
+_addon.version = '1.6.4.0'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -37,6 +37,7 @@ defaults.player = {}
 defaults.player.show_total_haste = true
 defaults.player.show_tp_Stuff = true
 defaults.player.show_acc_Stuff = false
+defaults.player.show_dt_Stuff = false
 defaults.player.update_gs = true
 defaults.player.rank = 1
 defaults.Bards = {}
@@ -94,6 +95,18 @@ initialize = function(text, t)
 	properties:append('${thaste}')
 	properties:append('${T_acc}')
 	properties:append('${T_racc}')
+	properties:append('${title3}')
+	properties:append('${dt}')
+	properties:append('${pdt}')
+	properties:append('${mdt}')
+	properties:append('${bdt}')
+	properties:append('${pdtii}')
+	properties:append('${mdtii}')
+	properties:append('${title4}')
+	properties:append('${dt2}')
+	properties:append('${pdt2}')
+	properties:append('${mdt2}')
+	properties:append('${bdt2}')
 	properties:append('${ugs}')
 	
     text:clear()
@@ -155,8 +168,7 @@ function options_load()
 		manual_stp = 0
 		manual_dw = 0
 		manual_ghaste = 0
-		settings.player.show_acc_Stuff = false
-		settings:save()
+		get_player_skill_in_gear(check_equipped())
 	end
 	
 end
@@ -274,22 +286,32 @@ windower.register_event('addon command', function(command, ...)
 				end
 				log('Show Tp calculations = '..tostring(settings.player.show_tp_Stuff))
 			elseif args[1]:lower() == 'acc' then
-				-- if settings.player.show_acc_Stuff == false then
-					-- settings.player.show_acc_Stuff = true
-				-- elseif settings.player.show_acc_Stuff then
-					-- settings.player.show_acc_Stuff = false
-				-- end
-				log('Currently dissabled, in testing.')
-				--log('Show Total Acc = '..tostring(settings.player.show_acc_Stuff))
+				if settings.player.show_acc_Stuff == false then
+					settings.player.show_acc_Stuff = true
+				elseif settings.player.show_acc_Stuff then
+					settings.player.show_acc_Stuff = false
+				end
+				-- log('Currently dissabled, in testing.')
+				log('Show Total Acc = '..tostring(settings.player.show_acc_Stuff))
+			elseif args[1]:lower() == 'dt' then
+				if settings.player.show_dt_Stuff == false then
+					settings.player.show_dt_Stuff = true
+				elseif settings.player.show_dt_Stuff then
+					settings.player.show_dt_Stuff = false
+				end
+				-- log('Currently dissabled, in testing.')
+				log('Show Total Acc = '..tostring(settings.player.show_acc_Stuff))
 			end
 			settings:save()
 		elseif command:lower() == 'test' then
+			table.vprint(player.sub_job)
+			-- player_base_skills = player.skills
+			-- get_player_skill_in_gear(check_equipped())
 			--player.stats = get_packet_data_base_stats()
 			-- get_packet_data()
 			-- Total_acc = get_player_acc(check_equipped())
 			-- log(player.stats.DEX .. ' '.. Total_acc.dex .. ' '.. Total_acc.main.. ' '.. Total_acc.sub)
 			-- log(player.stats.AGI .. ' '.. Total_acc.agi .. ' '.. Total_acc.range.. ' '.. Total_acc.ammo)
-			-- table.vprint(player.skill)
 		elseif command:lower() == 'debug' then
 			if debug_mode == false then
 				debug_mode = true
@@ -335,6 +357,7 @@ windower.register_event('addon command', function(command, ...)
 			windower.add_to_chat(6, chat_l_blue..	'              \'haste\'' .. chat_white .. '  --  Toggle hide Total haste.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'tp\'' .. chat_white .. '  --  Toggle hide TP Calculator.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'acc\'' .. chat_white .. '  --  Toggle hide Acc Calculations.')
+			windower.add_to_chat(6, chat_l_blue..	'              \'dt\'' .. chat_white .. '  --  Toggle hide DT Calculations.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi help\'' .. chat_white .. '  --  This command or any mistakes will show this menu.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi updategs'.. chat_white ..' or ' .. chat_l_blue .. 'ugs\'' .. chat_white .. '  --  toggle Send info to GearSwap for use, Can add true / false')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi update\'' .. chat_white .. '  --  forces 1 update to gearswap')
@@ -500,6 +523,7 @@ options_load()
 			
 windower.register_event('job change',function()
 	player = windower.ffxi.get_player()
+	get_player_skill_in_gear(check_equipped())
 	--player.stats = get_packet_data_base_stats()
     initialize(text_box,settings)
 end)
@@ -609,6 +633,7 @@ function update()
 		inform.title2 = ' \\cs'..blue..'[\\cr\\cs'..white..'Gear Info\\cr\\cs'..blue..'] \n\\cr'
 		inform.stp = ' \\cs'..blue..'[STP:\\cr\\cs'..white..Gear_info.stp.. '\\cr\\cs'..blue..']\\cr'
 		inform.dw = ' \\cs'..blue..'[DW:\\cr\\cs'..white..Gear_info.dual_wield.. '\\cr\\cs'..blue..'] \n\\cr'
+		
 		if Buffs_inform.STP > 0 then
 			inform.bstp = ' \\cs'..blue..'[Buff STP:\\cr\\cs'..white..Buffs_inform.STP.. '\\cr\\cs'..blue..'] \n\\cr'
 		else
@@ -698,6 +723,94 @@ function update()
 			inform.T_racc = ''
 		end
 		
+		-------------------------------------------------------------- DT stuff ---------------------------------------------------------------
+		
+		if settings.player.show_dt_Stuff == true then
+			inform.title3 = ('\n \\cs'..blue..'[\\cr\\cs'..white..'Defence Info\\cr\\cs'..blue..'] \\cr' )
+			inform.dt = (	Gear_info.dt < (-51) and
+								'\n \\cs'..blue..'[DT:\\cr\\cs'..red..Gear_info.dt*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
+								or 
+								'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info.dt*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
+			inform.pdt = (	Gear_info.pdt < -51 and
+								'\\cs'..blue..'[PDT:\\cr\\cs'..red..Gear_info.pdt*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+								or 
+								'\\cs'..blue..'[PDT:\\cr\\cs'..white..Gear_info.pdt*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
+			inform.mdt = (	Gear_info.mdt < -51 and
+								'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..Gear_info.mdt*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+								or 
+								'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..Gear_info.mdt*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
+			inform.bdt = (	Gear_info.bdt < -51 and
+								'\\cs'..blue..'[BDT:\\cr\\cs'..red..Gear_info.bdt*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+								or 
+								'\\cs'..blue..'[BDT:\\cr\\cs'..white..Gear_info.bdt*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
+			if Gear_info.pdtii  < 0 then
+				inform.pdtii = (	Gear_info.pdt < -51 and
+									'\n \\cs'..blue..'[PDT2:\\cr\\cs'..red..Gear_info.pdtii*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+									or 
+									'\n \\cs'..blue..'[PDT2:\\cr\\cs'..white..Gear_info.pdtii*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
+			else 
+				inform.pdtii = ''
+			end
+			if Gear_info.mdtii  < 0 then
+				if Gear_info.pdtii  == 0 then inform.bdt = inform.bdt .. '\n ' end
+				inform.mdtii = (	Gear_info.mdtii < -51 and
+									'\\cs'..blue..'[MDT2:\\cr\\cs'..red..Gear_info.mdtii*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+									or 
+									'\\cs'..blue..'[MDT2:\\cr\\cs'..white..Gear_info.mdtii*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
+			else 
+				inform.mdtii = ''
+			end
+			
+			--  Combined values
+			if Gear_info.dt < -0 then
+				inform.title4 = ('\n \\cs'..blue..'[\\cr\\cs'..white..'Combined Defence\\cr\\cs'..blue..'] \\cr' )
+				inform.dt2 = (	Gear_info.dt < (-51) and
+									'\n \\cs'..blue..'[DT:\\cr\\cs'..red..Gear_info.dt*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
+									or 
+									'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info.dt*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
+				if Gear_info.pdtii  < 0 then					
+					inform.pdt2 = (	(Gear_info.pdt + Gear_info.pdtii + Gear_info.dt) < -87.6 and
+										'\\cs'..blue..'[PDT:\\cr\\cs'..red..(Gear_info.pdt + Gear_info.pdtii + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr'
+										or 
+										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info.pdt + Gear_info.pdtii + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr' )		
+				else						
+					inform.pdt2 = (	(Gear_info.pdt+ Gear_info.dt) < -51 and
+										'\\cs'..blue..'[PDT:\\cr\\cs'..red..(Gear_info.pdt+ Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+										or 
+										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info.pdt+ Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
+				end					
+				if Gear_info.mdtii  < 0 then
+					inform.mdt2 = (	(Gear_info.mdt + Gear_info.mdtii + Gear_info.dt) < -87.6 and
+										'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..(Gear_info.mdt + Gear_info.mdtii + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr'
+										or 
+										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info.mdt + Gear_info.mdtii + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr' )
+										
+				else
+					inform.mdt2 = ((Gear_info.mdt + Gear_info.dt) < -51 and
+										'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..(Gear_info.mdt + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+										or 
+										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info.mdt + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
+				end
+				inform.bdt2= (	(Gear_info.bdt + Gear_info.dt) < -51 and
+									'\\cs'..blue..'[BDT:\\cr\\cs'..red..(Gear_info.bdt + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+									or 
+									'\\cs'..blue..'[BDT:\\cr\\cs'..white..(Gear_info.bdt + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
+			end
+			
+		else
+			inform.title3 = ''
+			inform.dt = ''
+			inform.pdt = ''
+			inform.mdt = ''
+			inform.mdtii = ''
+			inform.bdt = ''
+			inform.title4 = ''
+			inform.dt2 = ''
+			inform.pdt2 = ''
+			inform.mdt2 = ''
+			inform.bdt2 = ''
+		end
+		
 		if old_inform ~= inform then
 			text_box:update(inform)
 			old_inform = inform
@@ -721,12 +834,11 @@ windower.register_event('prerender',function()
     if frame_count%15 == 0 then
         local temp_equip = player.equipment
         local temp_stats = player.stats
-        local temp_skill = player.skill
 		local temp_pos = player.position
         player = windower.ffxi.get_player()
         player.equipment = temp_equip
+		get_player_skill_in_gear(check_equipped())
         player.stats = temp_stats
-        player.skill = temp_skill
 		player.position = temp_pos
 		player.is_moving = check_player_movement(player)
 		calculate_total_haste()

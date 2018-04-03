@@ -27,8 +27,13 @@ function find_all_values(item)
 		for k, v in pairs(item.slots) do
 			item.defined_slots[k] = res.slots:with('id', k ).en	
 		end
-		
+	
 		local edited_item = T{en=item.en, id=item.id, category=item.category , discription = item.discription, jobs = item.defined_job, slots = item.defined_slots}
+		
+			--item_level
+		if item.item_level then
+			edited_item.item_level = item.item_level
+		end
 		
 		if augs then edited_item.augments = augs end
 		
@@ -138,6 +143,15 @@ function desypher_description(discription_string, item_t)
 	
 	discription_string = string.gsub(discription_string, 'Magic Evasion', 'Magic_evasion' )
 	
+	discription_string = string.gsub(discription_string, 'Physical damage taken II', 'PDT_2' )
+	discription_string = string.gsub(discription_string, 'Physical damage taken', 'PDT' )
+	discription_string = string.gsub(discription_string, 'Breath damage taken', 'BDT' )
+	discription_string = string.gsub(discription_string, 'Magic damage taken II', 'MDT_2' )
+	discription_string = string.gsub(discription_string, 'Magic damage taken', 'MDT' )
+	discription_string = string.gsub(discription_string, 'Phys. dmg. taken', 'PDT' )
+	discription_string = string.gsub(discription_string, 'Magic dmg. taken', 'MDT' )
+	discription_string = string.gsub(discription_string, 'Damage taken', 'DT_' )
+	
 	discription_string = string.gsub(discription_string,  "Great Axe skill",  "Great axe skill")
 	discription_string = string.gsub(discription_string,  "Great Katana skill",  "Great katana skill")
 	discription_string = string.gsub(discription_string,  "Great Sword skill",  "Great sword skill")
@@ -163,9 +177,11 @@ function desypher_description(discription_string, item_t)
 								'Ranged_accuracy', 'Ranged_attack',
 								'Magic_accuracy', 'Magic Atk. Bonus',
 								'Haste','\"Slow\"','\"Store TP\"','\"Dual Wield\"','\"Fast Cast\"',
-								'DMG',
+								'DMG','PDT','MDT','BDT','DT_','MDT_2','PDT_2',
 								"Hand-to-Hand skill", "Dagger skill", "Sword skill", "Great sword skill", "Axe skill", "Great axe skill",  "Scythe skill", "Polearm skill", 
-								"Katana skill", "Great katana skill", "Club skill",  "Staff skill", "Archery skill", "Marksmanship skill" , "Throwing skill"
+								"Katana skill", "Great katana skill", "Club skill",  "Staff skill", "Archery skill", "Marksmanship skill" , "Throwing skill","Guard skill","Evasion skill","Shield skill","Parrying skill",
+								"Divine Magic skill","Healing Magic skill","Enhancing Magic skill","Enfeebling Magic skill","Elemental Magic skill","Dark Magic skill","Summoning Magic skill","Ninjutsu skill","Singing skill",
+								"Stringed Instrument skill","Wind Instrument skill","Blue Magic skill","Geomancy skill","Handbell skill",
 								}
 	
 	local temp_table = T{}
@@ -183,7 +199,10 @@ function desypher_description(discription_string, item_t)
 		["Great axe skill"] = "Great Axe skill" ,
 		["Great katana skill"] = "Great Katana skill",
 		["Great sword skill"] = "Great Sword skill",
-		['DMG'] = 'damage'
+		['DMG'] = 'damage',
+		['DT_'] = 'DT',
+		['MDT_2'] = 'MDT2',
+		['PDT_2'] = 'PDT2',
 	}
 	
 	for k, v in pairs(valid_strings) do
@@ -211,7 +230,7 @@ function get_equip_stats(equipment_table)
 	local item_dw = 0
 	local item_stp = 0
 	local haste_info_perc = 0
-	local item_info = {haste = 0, dual_wield = 0, stp = 0 }
+	local item_info = {haste = 0, dual_wield = 0, stp = 0, dt = 0, pdt = 0, mdt = 0, bdt = 0, mdtii = 0, pdtii = 0 }
 	
 	if type(equipment_table) ~= 'table' or equipment_table == nil then
 		windower.add_to_chat(200,'get_equip_stats() function went wrong')
@@ -220,13 +239,25 @@ function get_equip_stats(equipment_table)
 		for k,v in pairs(equipment_table) do
 			for i,j in pairs(v) do
 				if i == 'Haste' then
-					item_haste = item_haste + j
+					item_haste = item_haste + math.floor(j / 100 * 1024)
 				elseif i == 'Slow' then
-					item_haste = item_haste - j
+					item_haste = item_haste - math.floor(j / 100 * 1024)
 				elseif i == 'Dual Wield' then 
 					item_dw = item_dw + j
 				elseif i == 'Store TP' then
 					item_stp = item_stp + j
+				elseif i == 'DT' then
+					item_info.dt = item_info.dt + j
+				elseif i == 'PDT' then
+					item_info.pdt = item_info.pdt + j
+				elseif i == 'PDT2' then
+					item_info.pdtii = item_info.pdtii + j
+				elseif i == 'MDT' then
+					item_info.mdt = item_info.mdt + j
+				elseif i == 'MDT2' then
+					item_info.mdtii = item_info.mdtii + j
+				elseif i == 'BDT' then
+					item_info.bdt = item_info.bdt + j
 				end
 			end
 		end
@@ -237,17 +268,58 @@ function get_equip_stats(equipment_table)
 		item_dw = item_dw + 7
 	end
 	
-	haste_info_perc = math.floor(item_haste / 100 * 1024)
+	-- haste_info_perc = math.floor(item_haste / 100 * 1024)
 	
 	--log(haste_info_perc)
 	
 	-- local temp_info = item_info
-	item_info.haste = haste_info_perc + manual_ghaste
+	item_info.haste = item_haste + manual_ghaste
 	item_info.dual_wield = item_dw + manual_dw
 	item_info.stp = item_stp + manual_stp
 	--table.vprint(item_info)
 	return item_info
 	
+end
+
+function get_player_skill_in_gear(equip)
+	
+	-- string.gsub(sub_hand.skill, ' ', '_')
+	local skills = L{"Hand-to-Hand skill", "Dagger skill", "Sword skill", "Great sword skill", "Axe skill", "Great axe skill",  "Scythe skill", "Polearm skill", 
+							"Katana skill", "Great katana skill", "Club skill",  "Staff skill", "Archery skill", "Marksmanship skill" , "Throwing skill","Guard skill","Evasion skill","Shield skill","Parrying skill",
+							"Divine Magic skill","Healing Magic skill","Enhancing Magic skill","Enfeebling Magic skill","Elemental Magic skill","Dark Magic skill","Summoning Magic skill","Ninjutsu skill","Singing skill",
+							"Stringed Instrument skill","Wind Instrument skill","Blue Magic skill","Geomancy skill","Handbell skill",
+							}
+	
+	if equip then
+		for slot ,item in pairs(equip) do
+			if slot == 'main' or slot == 'sub' or slot == 'ranged' or slot == 'ammo' then
+				if item.category == 'Weapon' then
+					if not item.damage then
+						if not item.item_level then
+							for stat_key, value in pairs(item) do
+								if skills:contains(stat_key) then
+									str = string.gsub(stat_key, ' skill', '')
+									if player_base_skills[string.gsub(str, ' ', '_'):lower()] then
+										player_base_skills[string.gsub(str, ' ', '_'):lower()] = player_base_skills[string.gsub(str, ' ', '_'):lower()] - value
+									end
+								end
+							end
+						end
+					end
+				end
+			else
+				for stat_key, value in pairs(item) do
+					if skills:contains(stat_key) then
+						str = string.gsub(stat_key, ' skill', '')
+						if player_base_skills[string.gsub(str, ' ', '_'):lower()] then
+							player_base_skills[string.gsub(str, ' ', '_'):lower()] = player_base_skills[string.gsub(str, ' ', '_'):lower()] - value
+						end
+					end
+				end
+			end
+		end
+	end
+	-- notice(player_base_skills.sword)
 end
 
 function get_player_acc(equip)
@@ -277,53 +349,28 @@ function get_player_acc(equip)
 			--if v.id == 20677 then table.vprint(v) end
 			if k == 'main' and v.id ~= 0 and v.category == 'Weapon' and melee_skills:contains(v.skill) then
 				main_hand.skill = v.skill
+				main_hand.value = v[main_hand.skill..' skill']
 				--table.vprint(main_hand)
 			elseif k == 'sub' and v.id ~= 0 and v.category == 'Weapon' and melee_skills:contains(v.skill) then
-				--if v.en == 'Ochu' then table.vprint(v) end
-				if v.damage > 0 then
+				if v.damage then
 					sub_hand.skill = v.skill
+					sub_hand.value = v[sub_hand.skill..' skill']
 				end
 			end
 			if k == 'range' and v.id ~= 0 and v.category == 'Weapon' and ranged_skills:contains(v.skill) then
 				ranged.skill = v.skill
+				ranged.value = v[ranged.skill..' skill']
 				--table.vprint(main_hand)
 			elseif k == 'ammo' and v.id ~= 0 and v.category == 'Weapon' and ranged_skills:contains(v.skill) then
 				--if v.en == 'Ochu' then table.vprint(v) end
-				if v.damage > 0 then
+				if v.damage then
 					ammo.skill = v.skill
+					ammo.value = v[ammo.skill..' skill']
 				end
 			end
 		end
 		for k,v in pairs(equip) do
 			for i,j in pairs(v) do
-				if k == 'main' and v.id ~= 0 and v.category == 'Weapon' then
-					local key = string.gsub(main_hand.skill, ' ', '_')
-					if i == key..'_skill' then
-						main_hand.value = main_hand.value + v[key..'_skill']
-					end
-				end
-				if k == 'sub' and v.id ~= 0 and v.category == 'Weapon' then
-					if v.damage > 0 then
-						local key = string.gsub(sub_hand.skill, ' ', '_')
-						if i == key..'_skill' then
-							sub_hand.value = sub_hand.value + v[key..'_skill']
-						end
-					end
-				end
-				if k == 'range' and v.id ~= 0 and v.category == 'Weapon' then
-					local key = string.gsub(ranged.skill, ' ', '_')
-					if i == key..'_skill' then
-						ranged.value = ranged.value + v[key..'_skill']
-					end
-				end
-				if k == 'ammo' and v.id ~= 0 and v.category == 'Weapon' then
-					if v.damage > 0 then
-						local key = string.gsub(ammo.skill, ' ', '_')
-						if i == key..'_skill' then
-							ammo.value = ammo.value + v[key..'_skill']
-						end
-					end
-				end
 				if i == 'DEX' then
 					item_dex = item_dex + j
 				elseif i == 'Accuracy' then 
@@ -335,16 +382,16 @@ function get_player_acc(equip)
 					item_racc = item_racc + j
 				elseif v.category == "Armor" then
 					--log(i .. ' ' .. string.gsub(main_hand.skill, ' ', '_')..'_skill')
-					if i == string.gsub(main_hand.skill, ' ', '_')..'_skill' then
+					if i == main_hand.skill..' skill' then
 						skill_from_gear_main = skill_from_gear_main + j
 					end
-					if i == string.gsub(sub_hand.skill, ' ', '_')..'_skill' then 
+					if i == sub_hand.skill..' skill' then 
 						skill_from_gear_sub = skill_from_gear_sub + j
 					end
-					if i == string.gsub(ranged.skill, ' ', '_')..'_skill' then
+					if i ==ranged.skill..' skill' then
 						skill_from_gear_ranged = skill_from_gear_ranged + j
 					end
-					if i == string.gsub(ammo.skill, ' ', '_')..'_skill' then
+					if i == ammo.skill..' skill' then
 						skill_from_gear_ammo = skill_from_gear_ammo + j
 					end
 				end
@@ -352,25 +399,22 @@ function get_player_acc(equip)
 		end
 	end
 	--log(string.gsub(main_hand.skill, ' ', '_')..'_skill'..' '..skill_from_gear_main ..' '..string.gsub(sub_hand.skill, ' ', '_')..'_skill'..' '..skill_from_gear_sub)
+	for k,v in pairs(player_base_skills) do
+		if k == string.gsub(main_hand.skill:lower(), ' ', '_') then
+			main_hand.value = main_hand.value + v
+		end
+		if k == string.gsub(sub_hand.skill:lower(), ' ', '_') then
+			sub_hand.value = sub_hand.value + v
+		end
+		if k == string.gsub(ranged.skill:lower(), ' ', '_') then
+			ranged.value = ranged.value + v
+		end
+		if k == string.gsub(ammo.skill:lower(), ' ', '_') then
+			ammo.value = ammo.value + v
+		end
+	end
+	
 	for k,v in pairs(player) do
-		if k == 'skill' then 
-			--table.vprint(v)
-			for i,j in pairs(v) do
-				--log(i:lower() .. ' '.. string.gsub(main_hand.skill:lower(), ' ', '_') )
-				if i:lower() == string.gsub(main_hand.skill:lower(), ' ', '_') then
-					main_hand.value = main_hand.value + j
-				end
-				if i:lower() == string.gsub(sub_hand.skill:lower(), ' ', '_') then
-					sub_hand.value = sub_hand.value + j
-				end
-				if i:lower() == string.gsub(ranged.skill:lower(), ' ', '_') then
-					ranged.value = ranged.value + j
-				end
-				if i:lower() == string.gsub(ammo.skill:lower(), ' ', '_') then
-					ammo.value = ammo.value + j
-				end
-			end
-		end	
 		if k == 'stats' then 
 			for i,j in pairs(v) do
 				if i == 'DEX' then 
@@ -390,7 +434,7 @@ function get_player_acc(equip)
 	
 	Total_acc.main = main_acc_skill + (math.floor((item_dex + player_dex + get_blu_spells_dex()) * 0.75)) + item_acc + get_player_acc_from_job()
 
-	if player.equipment.sub.id ~= 0 and player.equipment.sub.category == 'Weapon' and player.equipment.sub.damage > 0 then
+	if player.equipment.sub.id ~= 0 and player.equipment.sub.category == 'Weapon' and player.equipment.sub.damage then
 		Total_acc.sub = sub_acc_skill + math.floor((item_dex + player_dex + get_blu_spells_dex()) * 0.75) + item_acc + get_player_acc_from_job()
 	else
 		Total_acc.sub = 0
@@ -400,7 +444,7 @@ function get_player_acc(equip)
 	else
 		Total_acc.range = 0
 	end
-	if player.equipment.ammo.id ~= 0 and player.equipment.ammo.category == 'Weapon' and player.equipment.ammo.damage > 0 then
+	if player.equipment.ammo.id ~= 0 and player.equipment.ammo.category == 'Weapon' and player.equipment.ammo.damage then
 		Total_acc.ammo = ammo_acc_skill + math.floor((item_agi + player_agi) * 0.75) + item_racc + get_player_acc_from_job()
 	else
 		Total_acc.ammo = 0

@@ -1,33 +1,33 @@
 
-function get_packet_data()
+-- function get_packet_data()
 		
-	data = windower.packets.last_incoming(0x062)
-	if data == nil then
-        return
-    end
-	packet = packets.parse('incoming', data)
+	-- data = windower.packets.last_incoming(0x062)
+	-- if data == nil then
+        -- return
+    -- end
+	-- packet = packets.parse('incoming', data)
 	
-	-- packet is capitalised 'Great Katana Level'
-	-- player skill = 'great_katana'
-	if player.skill == nil then
-		player.skill = player.skills
-	end
+	-- -- packet is capitalised 'Great Katana Level'
+	-- -- player skill = 'great_katana'
+	-- if player.skill == nil then
+		-- player.skill = player.skills
+	-- end
 
-	for k,v in pairs(packet) do
-		--notice(k .. ' = ' ..tostring(v)) 
-		for i,j in pairs(skills_from_resources) do
-			if k == j.en ..' Level' and v ~= nil and player.skill[string.gsub(j.en:lower(), ' ', '_')] ~= nil then
-				if player.skill[string.gsub(j.en:lower(), ' ', '_')] > v then
-					if count == 0 then 
-						--log(k .. ' = ' ..v) 
-						count = count + 1 
-					end
-					player.skill[string.gsub(j.en:lower(), ' ', '_')] = v
-				end
-			end
-		end
-	end
-end
+	-- for k,v in pairs(packet) do
+		-- --notice(k .. ' = ' ..tostring(v)) 
+		-- for i,j in pairs(skills_from_resources) do
+			-- if k == j.en ..' Level' and v ~= nil and player.skill[string.gsub(j.en:lower(), ' ', '_')] ~= nil then
+				-- if player.skill[string.gsub(j.en:lower(), ' ', '_')] > v then
+					-- if count == 0 then 
+						-- --log(k .. ' = ' ..v) 
+						-- count = count + 1 
+					-- end
+					-- player.skill[string.gsub(j.en:lower(), ' ', '_')] = v
+				-- end
+			-- end
+		-- end
+	-- end
+-- end
 
 parse = {
     i={}, -- Incoming packets

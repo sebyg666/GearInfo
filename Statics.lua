@@ -5,6 +5,7 @@ player.equipment = T{}
 player.stats = T{}
 player.stats = {STR = 0, DEX = 0, VIT = 0, AGI = 0, INT = 0, MND = 0, CHR = 0}
 player.skill = player.skills
+player_base_skills = player.skills
 player.is_moving = false
 player.position = T{} 
 player.position = {x = 0, y = 0, x = 0} 

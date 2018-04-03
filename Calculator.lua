@@ -91,12 +91,11 @@ function determine_stp()
 	local sub_job_tp = 0
 	local main_job_tp = 0
 	local player_has_sj = false
-	for k,v in pairs(player) do
-		if k == 'sub_job' then
-			--log(v)
-			player_has_sj = true
-		end
+	
+	if player.sub_job ~= NON then
+		player_has_sj = true
 	end
+	
 	--log('player_has_sj ' .. tostring(player_has_sj))
 	if player_has_sj == true then
 		if player.sub_job:upper() == 'SAM' and player.sub_job_level < 10  then 
