@@ -14,10 +14,9 @@ function get_packet_data()
 	end
 
 	for k,v in pairs(packet) do
-		
+		--notice(k .. ' = ' ..tostring(v)) 
 		for i,j in pairs(skills_from_resources) do
 			if k == j.en ..' Level' and v ~= nil and player.skill[string.gsub(j.en:lower(), ' ', '_')] ~= nil then
-			
 				if player.skill[string.gsub(j.en:lower(), ' ', '_')] > v then
 					if count == 0 then 
 						--log(k .. ' = ' ..v) 

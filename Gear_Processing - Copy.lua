@@ -1,207 +1,360 @@
 
 function find_all_values(item)
-	-- notice(item.id)
-	local temp = check_for_augments(item)
-	local augs = Extdata.decode(item).augments
 	
-	local item = res.items:with('id', item.id)
+	if item == nil then return nil end
 	
-	if item.flags:contains('Equippable') then
+	local new_item = res.items:with('id', item.id)
 	
-		if res.item_descriptions[item.id] then
-			item.discription = string.gsub(res.item_descriptions:with('id', item.id ).en, '\n', ' ') 
-		else
-			item.discription = 'none'
-		end
-		
-		descript_table = T{}
-		descript_table = desypher_description(item.discription)
-		
-		item.defined_job = T{}
-		
-		for k, v in pairs(item.jobs) do
-			item.defined_job[k] = res.jobs:with('id', k ).ens	
-		end
-		
-		item.defined_slots = T{}
-		for k, v in pairs(item.slots) do
-			item.defined_slots[k] = res.slots:with('id', k ).en	
-		end
-		
-		local edited_item = T{en=item.en, id=item.id, category=item.category , discription = item.discription, jobs = item.defined_job, slots = item.defined_slots}
-		
-		if augs then edited_item.augments = augs end
-		
-		for k, v in pairs(descript_table) do
-			edited_item[k] = v
-		end
-		
-		-- Check "Enhances \"Dual Wield\" effect" Gear for value
-		for k, v in pairs(DW_Gear) do
-			if item.id == k then
-				if  edited_item['Dual Wield'] then
-					edited_item['Dual Wield'] = edited_item['Dual Wield'] + v["Dual Wield"]
-				else
-					edited_item['Dual Wield'] = v["Dual Wield"]
-				end
+	if new_item.flags:contains('Equippable') then
+		local bad = false
+		for k,v in pairs(bad_ids) do
+			if v == item.id then
+				bad = true
 			end
 		end
 		
-		-- Check Unity gear for stat and value.
-		for k, v in pairs(Unity_rank) do
-			if item.id == k then
-				if edited_item[v['Unity Ranking']] then
-					-- edited_item[v['Unity Ranking']] = edited_item[v['Unity Ranking']] + v.rank[settings.rank]
-					edited_item[v['Unity Ranking']] = edited_item[v['Unity Ranking']] + v.rank[1]
-				else
-					-- edited_item[v['Unity Ranking']] = v.rank[settings.rank]
-					edited_item[v['Unity Ranking']] = v.rank[1]
+		local str = ''
+		if bad == false then
+			str = res.item_descriptions:with('id', item.id ).en
+		end
+		
+		str = string.gsub(str, '\n', ' ')
+		
+		local valid_strings = L{'DEF','HP','MP','STR','DEX','VIT','AGI','INT','MND','CHR','Accuracy','Attack','Haste','Store TP','Dual Wield', 
+								'Ranged Accuracy', 'Ranged Attack', 'Rng.Acc.'}
+		
+		local temp_table = T{}
+		local key = 0
+		local str_table = str
+		temp_table.id = item.id
+		temp_table.en = new_item.en
+		temp_table.category = new_item.category
+		
+		for k,v in pairs(new_item) do
+			if k == 'delay' then	
+				temp_table[k] = tonumber(v)
+			end
+			if k == 'damage' then
+				temp_table[k] = tonumber(v)
+			end
+			if k == 'skill' then
+				local skill = res.skills:with('id', v ).en
+				temp_table[k] = skill
+			end
+			for i,j in pairs(res.skills) do
+				if j.id > 0 and j.id < 28 and j.id ~= 24 and j.id ~= 23 and j.id ~= 22	then
+					valid_strings:append(j.en.. ' skill')
 				end
 			end
 		end
+		--if new_item.id == 14739 then table.vprint(valid_strings) end
 		
-		if item.category == 'Weapon' then
-			for k,v in pairs(item) do
-				if k == 'delay' then	
-					edited_item[k] = tonumber(v)
-				end
-				if k == 'skill' then
-					local skill = res.skills:with('id', v ).en
-					edited_item[k] = skill
-				end
-			end
+		if str:contains('Pet:') then
+			str_table = str:psplit("Pet:")
+			str_table = str_table[1]
+		elseif str:contains('Wyvern:') then
+			str_table = str:psplit("Wyvern:")
+			str_table = str_table[1]
+		elseif str:contains('Avatar:') then
+			str_table = str:psplit("Avatar:")
+			str_table = str_table[1]
 		end
+		str_table = str_table:psplit("[+-]?%d+")
+		--table.vprint(str_table)
 		
-		if temp then
-			local temp_augments = T{}
-			for k, v in pairs(temp) do
-				temp_augments[k] = v
-			end
-			
-			for k, v in pairs(temp_augments) do
-				if edited_item[k] then
-					edited_item[k] = edited_item[k] + v
-				else
-					edited_item[k] = v
+		for k,v in pairs(str_table) do
+			if v == '%' then break end
+			if type(v) == 'string' then
+				if v:contains('Enhances \"Dual Wield\" effect') then
+					--str_table[k] = string.gsub(v, "Enhances \"Dual Wield\" effect", '')
+					v = string.gsub(v, "Enhances \"Dual Wield\" effect ", '')
+					--log(item.id .. ' = ' .. new_item.en)
 				end
-			end
-		end
-
-		return edited_item
-	end
-		
-end
-
-function check_for_augments(item)
-	
-	local augs = Extdata.decode(item).augments
-	local item_t = res.items:with('id', item.id)
-	local temp = T{}
-	if augs then
-		for k,v in pairs(augs) do
-			
-			if v:contains('Pet:') or v:contains('Wyvern:') or v:contains('Avatar:') then
+				if v:contains('Unity Ranking: \"Store TP\"') then
+					--str_table[k] = string.gsub(v, 'Unity Ranking: \"Store TP\"[+-]%d+%p[+-]%d+', '')
+					v = string.gsub(v, 'Unity Ranking: \"Store TP\"[+-]?%d+%p[+-]?%d+', '')
+				end
+				if #v < 2 then
+					break
+				end
+			else
 				break
 			end
-			for i, j in pairs(desypher_description(v, item_t)) do
-				if temp[i] then
-					temp[i] = temp[i] + j
+			if #v < 40 then  
+				--if item.id == 28477 then table.vprint(str_table) end
+				local startpos, endpos = str:find(v)
+				--if item.id == 28477 then log(v.. ' ' ..tostring(startpos)..' '..tostring(endpos)) end
+				local startpos, endpos = str:find("%a+%s?%a+%s?%a+", startpos)
+				--if item.id == 28477 then log(v.. ' ' ..str:sub(startpos, endpos)) end
+				if startpos ~= nil then 
+					local word = str:sub(startpos, endpos)
+					
+					if valid_strings:contains(word) then
+						local key = word
+						--if item.id == 20677 then log(word .. ' '..table.vprint(valid_strings)) end
+						local startpos2, endpos2 = str:find(word)
+						local startpos3, endpos3 = str:find("[+-]?%d+", endpos2 - 1)
+						if startpos3 ~= nil and endpos2 ~= nil then
+							if (startpos3 - endpos2) < 3 then									
+								key = string.gsub(word, ' ', '_')
+								temp_table[key] = tonumber(str:sub(startpos3, endpos3))
+							end
+						end
+					end
 				else
-					temp[i] = j
+					break
 				end
 			end
 		end
-		return temp
-	else
-		return nil
+		
+		local stp = check_gear_stp(new_item.en)
+		local dw = check_gear_dw(new_item.en)
+		
+		for k, v in pairs(temp_table) do
+			if v == "Store_TP" and stp > 0 then
+				temp_table[v] = temp_table[v] + stp
+				stp = 0
+			end
+			if v == "Dual_Wield" and dw > 0 then
+				temp_table[v] = temp_table[v] + dw
+				dw = 0
+			end
+		end
+		
+		if stp > 0 then temp_table.Store_TP = stp end
+		if dw > 0 then temp_table.Dual_Wield = dw end
+		
+
+		local item_has_augment = Extdata.decode(item)
+		temp_table.augments = item_has_augment.augments
+		
+		if item_has_augment.augments then
+			
+			for k,v in pairs(temp_table.augments) do
+				
+				if v:contains('Pet:') or v:contains('Wyvern:') or v:contains('Avatar:') then
+					break
+				end
+				
+				local key = 0
+				local j = 0
+				
+				for i = 0 , #v do
+					if i == j then
+						valid_strings:append('DMG')
+						local startpos, endpos = v:find("%a+%.?%s?%a+%.?", i)
+						if startpos ~= nil then
+							j = endpos
+							local word = v:sub(startpos, endpos)
+							if valid_strings:contains(word) then
+								--local startpos2, endpos2 = v:find(word, i)
+								local startpos2, endpos2 = v:find("[+-]?%d+",endpos)
+								local value = tonumber(v:sub(startpos2, endpos2))
+								if word == 'Rng.Acc.' then
+									word = 'Ranged Accuracy'
+								elseif word == 'DMG' then
+									word = 'damage'
+								end
+								key = string.gsub(word, ' ', '_')
+								--log(new_item.en .. ' '..new_item.id..' '..temp_key.. ' '..v..' '..word)
+								--if new_item.id == 27404 then log(new_item.en .. ' '..new_item.id..' '..key..' '..value) end
+								if (startpos2 - endpos) < 3 then 
+									if temp_table[key] ~= nil then
+										temp_table[key] = temp_table[key] + value
+										j = endpos2
+									else
+										temp_table[key] = value
+										j = endpos2
+									end
+								else
+									break
+								end
+							else
+								break
+							end
+						else
+							break
+						end
+					end
+				end				
+			end
+		end
+		
+		return temp_table
 	end
-	
 end
 
-function desypher_description(discription_string, item_t)
+function check_gear_stp(item)
+		
+	local stp_info = 0
 	
-	-- string that need modifying to stop clashing
-	discription_string = string.gsub(discription_string, 'Ranged Accuracy%s?', 'Ranged_accuracy') 
-	discription_string = string.gsub(discription_string, 'Rng.%s?Acc.%s?', 'Ranged_accuracy')  
-	discription_string = string.gsub(discription_string, 'Ranged Attack%s?', 'Ranged_attack') 
-	discription_string = string.gsub(discription_string, 'Rng.%s?Atk.%s?', 'Ranged_attack') 
-	
-	discription_string = string.gsub(discription_string, 'Magic Accuracy%s?', 'Magic_accuracy')
-	discription_string = string.gsub(discription_string, 'Mag.%s?Acc.%s?', 'Magic_accuracy') 	
-	discription_string = string.gsub(discription_string, 'Magic Acc.%s?', 'Magic_accuracy') 
-	
-	discription_string = string.gsub(discription_string, '\"Magic Atk. Bonus\"', 'Magic Atk. Bonus' )
-	discription_string = string.gsub(discription_string, '\"Mag.%s?Atk.%s?Bns.\"', 'Magic Atk. Bonus' ) 
-	
-	discription_string = string.gsub(discription_string, 'Magic Evasion', 'Magic_evasion' )
-	
-	discription_string = string.gsub(discription_string,  "Great Axe skill",  "Great axe skill")
-	discription_string = string.gsub(discription_string,  "Great Katana skill",  "Great katana skill")
-	discription_string = string.gsub(discription_string,  "Great Sword skill",  "Great sword skill")
-	
-	local str_table = ''
-	
-	if discription_string:contains('Pet:') then
-		str_table = discription_string:psplit("Pet:")
-		discription_string = str_table[1]
-	elseif discription_string:contains('Wyvern:') then
-		str_table = discription_string:psplit("Wyvern:")
-		discription_string = str_table[1]
-	elseif discription_string:contains('Avatar:') then
-		str_table = discription_string:psplit("Avatar:")
-		discription_string = str_table[1]
-	elseif discription_string:contains('Unity Ranking:') then
-		str_table = discription_string:psplit("Unity Ranking:")
-		discription_string = str_table[1]
-	end
-
-	local valid_strings = L{'DEF','HP','MP','STR','DEX','VIT','AGI','INT','MND','CHR',
-								'Accuracy','Acc.','Attack','Atk.',
-								'Ranged_accuracy', 'Ranged_attack',
-								'Magic_accuracy', 'Magic Atk. Bonus',
-								'Haste','\"Slow\"','\"Store TP\"','\"Dual Wield\"','\"Fast Cast\"',
-								'DMG',
-								"Hand-to-Hand skill", "Dagger skill", "Sword skill", "Great sword skill", "Axe skill", "Great axe skill",  "Scythe skill", "Polearm skill", 
-								"Katana skill", "Great katana skill", "Club skill",  "Staff skill", "Archery skill", "Marksmanship skill" , "Throwing skill"
-								}
-	
-	local temp_table = T{}
-	local temp_key = { 
-		["Acc."] = "Accuracy",
-		["Atk."] = 'Attack',
-		['\"Slow\"'] = 'Slow',
-		['\"Store TP\"'] = 'Store TP', 
-		['\"Dual Wield\"'] = 'Dual Wield' ,
-		['\"Fast Cast\"'] = 'Fast Cast' ,
-		['Magic_accuracy'] = 'Magic Accuracy' , 
-		['Ranged_accuracy'] =  'Ranged Accuracy' ,
-		['Ranged_attack'] =  'Ranged Attack' ,
-		['Magic_evasion'] = 'Magic Evasion',
-		["Great axe skill"] = "Great Axe skill" ,
-		["Great katana skill"] = "Great Katana skill",
-		["Great sword skill"] = "Great Sword skill",
-		['DMG'] = 'damage'
-	}
-	
-	for k, v in pairs(valid_strings) do
-		-- v = DEF etc
-		pattern = "("..v.."):?%s?([+-]?%d+)"
-		for key , val in discription_string:gmatch(pattern) do
-			
-			if temp_key[key] then
-				temp_table[temp_key[key]] = tonumber(val)
-			else
-				temp_table[key] = tonumber(val)	
-			end
-			-- if item_t then
-				-- if item_t.id == 25643 then
-					-- notice('('..discription_string .. ') '..key .. ' ' ..val)
-				-- end
-			-- end
+	if item:lower() == 'anathema harpe' then
+		-- 1 - 5
+		if settings.rank == 1 then stp_info = stp_info + 5
+		elseif settings.rank == 2 then stp_info = stp_info + 4
+		elseif settings.rank == 3 then stp_info = stp_info + 3
+		elseif settings.rank == 4 then stp_info = stp_info + 2
+		elseif settings.rank == 5 then stp_info = stp_info + 1
+		end
+	elseif item:lower() == 'anathema harpe +1' then
+		-- 1 - 5
+		if settings.rank == 1 then stp_info = stp_info + 5
+		elseif settings.rank == 2 then stp_info = stp_info + 4
+		elseif settings.rank == 3 then stp_info = stp_info + 3
+		elseif settings.rank == 4 then stp_info = stp_info + 2
+		elseif settings.rank == 5 then stp_info = stp_info + 1
+		end
+	elseif item:lower() == 'tatenashi haramaki' then
+		-- 5 - 9
+		if settings.rank == 1 then stp_info = stp_info + 9
+		elseif settings.rank == 2 then stp_info = stp_info + 8
+		elseif settings.rank == 3 then stp_info = stp_info + 7
+		elseif settings.rank == 4 then stp_info = stp_info + 6
+		elseif settings.rank == 5 then stp_info = stp_info + 5
+		end
+	elseif item:lower() == 'tatenashi haramaki +1' then
+		-- 5 - 9
+		if settings.rank == 1 then stp_info = stp_info + 9
+		elseif settings.rank == 2 then stp_info = stp_info + 8
+		elseif settings.rank == 3 then stp_info = stp_info + 7
+		elseif settings.rank == 4 then stp_info = stp_info + 6
+		elseif settings.rank == 5 then stp_info = stp_info + 5
+		end
+	elseif item:lower() == 'tatenashi gote' then
+		-- 4 - 8
+		if settings.rank == 1 then stp_info = stp_info + 8
+		elseif settings.rank == 2 then stp_info = stp_info + 7
+		elseif settings.rank == 3 then stp_info = stp_info + 6
+		elseif settings.rank == 4 then stp_info = stp_info + 5
+		elseif settings.rank == 5 then stp_info = stp_info + 4
+		end
+	elseif item:lower() == 'tatenashi gote +1' then
+		-- 4 - 8
+		if settings.rank == 1 then stp_info = stp_info + 8
+		elseif settings.rank == 2 then stp_info = stp_info + 7
+		elseif settings.rank == 3 then stp_info = stp_info + 6
+		elseif settings.rank == 4 then stp_info = stp_info + 5
+		elseif settings.rank == 5 then stp_info = stp_info + 4
+		end
+	elseif item:lower() == 'tatenashi haidate' then
+		-- 4 - 8
+		if settings.rank == 1 then stp_info = stp_info + 8
+		elseif settings.rank == 2 then stp_info = stp_info + 7
+		elseif settings.rank == 3 then stp_info = stp_info + 6
+		elseif settings.rank == 4 then stp_info = stp_info + 5
+		elseif settings.rank == 5 then stp_info = stp_info + 4
+		end
+	elseif item:lower() == 'tatenashi haidate +1' then
+		-- 4 - 8
+		if settings.rank == 1 then stp_info = stp_info + 8
+		elseif settings.rank == 2 then stp_info = stp_info + 7
+		elseif settings.rank == 3 then stp_info = stp_info + 6
+		elseif settings.rank == 4 then stp_info = stp_info + 5
+		elseif settings.rank == 5 then stp_info = stp_info + 4
+		end
+	elseif item:lower() == 'tatenashi sune-ate' then
+		-- 4 - 8
+		if settings.rank == 1 then stp_info = stp_info + 8
+		elseif settings.rank == 2 then stp_info = stp_info + 7
+		elseif settings.rank == 3 then stp_info = stp_info + 6
+		elseif settings.rank == 4 then stp_info = stp_info + 5
+		elseif settings.rank == 5 then stp_info = stp_info + 4
+		end
+	elseif item:lower() == 'tatenashi sune-ate +1' then
+		-- 4 - 8
+		if settings.rank == 1 then stp_info = stp_info + 8
+		elseif settings.rank == 2 then stp_info = stp_info + 7
+		elseif settings.rank == 3 then stp_info = stp_info + 6
+		elseif settings.rank == 4 then stp_info = stp_info + 5
+		elseif settings.rank == 5 then stp_info = stp_info + 4
+		end
+	elseif item:lower() == 'kentarch belt' then
+		-- 1 - 5
+		if settings.rank == 1 then stp_info = stp_info + 5
+		elseif settings.rank == 2 then stp_info = stp_info + 4
+		elseif settings.rank == 3 then stp_info = stp_info + 3
+		elseif settings.rank == 4 then stp_info = stp_info + 2
+		elseif settings.rank == 5 then stp_info = stp_info + 1
+		end
+	elseif item:lower() == 'kentarch belt +1' then
+		-- 1 - 5
+		if settings.rank == 1 then stp_info = stp_info + 5
+		elseif settings.rank == 2 then stp_info = stp_info + 4
+		elseif settings.rank == 3 then stp_info = stp_info + 3
+		elseif settings.rank == 4 then stp_info = stp_info + 2
+		elseif settings.rank == 5 then stp_info = stp_info + 1
 		end
 	end
-	return temp_table
+	
+	return stp_info
 end
+
+function check_gear_dw(item)
+	local dw_info = 0
+	if item:lower() == 'suppanomimi' then
+		dw_info = dw_info + 5
+	elseif item:lower() == 'sarashi' then
+		dw_info = dw_info + 1
+	elseif item:lower() == 'ninja chainmail' then
+		dw_info = dw_info + 5
+	elseif item:lower() == 'ninja chainmail +1' then
+		dw_info = dw_info + 5
+	elseif item:lower() == 'koga hakama' then
+		dw_info = dw_info + 5
+	elseif item:lower() == 'koga hakama +1' then
+		dw_info = dw_info + 5
+	elseif item:lower() == 'charis necklace' then
+		dw_info = dw_info + 3	
+	elseif item:lower() == 'auric dagger' then
+		dw_info = dw_info + 5
+	elseif item:lower() == 'raider\'s boomerang' then
+		dw_info = dw_info + 3
+	elseif item:lower() == 'iga zukin +2' then
+		dw_info = dw_info + 5
+	elseif item:lower() == 'iga mimikazari' then
+		dw_info = dw_info + 1
+	elseif item:lower() == 'charis casaque +1' then
+		dw_info = dw_info + 5
+	elseif item:lower() == 'charis casaque +2' then
+		dw_info = dw_info + 10
+	elseif item:lower() == 'koga chainmail +2' then
+		dw_info = dw_info + 3
+	elseif item:lower() == 'koga hakama +2' then
+		dw_info = dw_info + 7
+	elseif item:lower() == 'patentia sash' then
+		dw_info = dw_info + 5
+	elseif item:lower() == 'skadi\'s cuirie +1' then
+		dw_info = dw_info + 7
+	elseif item:lower() == 'thurandaut chapeau' then
+		dw_info = dw_info + 5
+	elseif item:lower() == 'thurandaut chapeau +1' then
+		dw_info = dw_info + 5
+	elseif item:lower() == 'hachiya chainmail' then
+		dw_info = dw_info + 7
+	elseif item:lower() == 'hachiya chainmail +1' then
+		dw_info = dw_info + 8
+	elseif item:lower() == 'hachiya hakama' then
+		dw_info = dw_info + 3
+	elseif item:lower() == 'hachiya hakama +1' then
+		dw_info = dw_info + 3
+	elseif item:lower() == 'mochizuki chainmail' then
+		dw_info = dw_info + 6
+	elseif item:lower() == 'mochizuki hakama' then
+		dw_info = dw_info + 8
+	elseif item:lower() == 'dudgeon earring' then
+		dw_info = dw_info + 0
+	elseif item:lower() == 'heartseeker earring' then
+		dw_info = dw_info + 0
+	end
+	
+	return dw_info
+	
+end
+
+bad_ids = {10293,6102,6103,6104,6105,6106,6107,6108,6109,6110,6111,6112,6113,6114,6115,6116,6117,6118,6119,6120,6121,6122,6123,6124,6125,6126,6127,6128,6129,6130,6132,
+			11697,11988,11989,11990,11991,11992,11993,11994,11995,11996,11997,11998,11999,12000,12001,12002,12003,12004,12005,12006,12007,12491,12619,13121,13122,
+			13147,13517,13842,14117,14242,14628,14629,14647,14648,15847,15848,15930,15931,15932,16008,16285,16286,16287,16288,16289,16290,16295,17345,17353,17356,18338}
+
 		
 function get_equip_stats(equipment_table)
 	local item_haste = 0
@@ -218,11 +371,9 @@ function get_equip_stats(equipment_table)
 			for i,j in pairs(v) do
 				if i == 'Haste' then
 					item_haste = item_haste + j
-				elseif i == 'Slow' then
-					item_haste = item_haste - j
-				elseif i == 'Dual Wield' then 
+				elseif i == 'Dual_Wield' then 
 					item_dw = item_dw + j
-				elseif i == 'Store TP' then
+				elseif i == 'Store_TP' then
 					item_stp = item_stp + j
 				end
 			end
@@ -248,7 +399,7 @@ function get_equip_stats(equipment_table)
 end
 
 function get_player_acc(equip)
-	--get_packet_data()
+	get_packet_data()
 	--table.vprint(equip)
 	
 	local main_hand = {skill = 'hand_to_hand', value = 0}
@@ -328,7 +479,7 @@ function get_player_acc(equip)
 					--log(item_acc .. ' '..v.en)
 				elseif i == 'AGI' then 
 					item_agi = item_agi + j
-				elseif i == 'Ranged Accuracy' then 
+				elseif i == 'Ranged_Accuracy' then 
 					item_racc = item_racc + j
 				elseif v.category == "Armor" then
 					--log(i .. ' ' .. string.gsub(main_hand.skill, ' ', '_')..'_skill')

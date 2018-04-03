@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.6.2.1'
+_addon.version = '1.6.3.0'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -10,6 +10,9 @@ require('strings')
 require('logger')
 require('lists')
 require('pack')
+
+DW_Gear = require('DW_Gear')
+Unity_rank = require('Unity rank gear')
 
 res = require('resources')
 skills_from_resources = res.skills
@@ -33,7 +36,7 @@ defaults = {}
 defaults.player = {}
 defaults.player.show_total_haste = true
 defaults.player.show_tp_Stuff = true
-defaults.player.show_acc_Stuff = true
+defaults.player.show_acc_Stuff = false
 defaults.player.update_gs = true
 defaults.player.rank = 1
 defaults.Bards = {}
@@ -272,20 +275,22 @@ windower.register_event('addon command', function(command, ...)
 				end
 				log('Show Tp calculations = '..tostring(settings.player.show_tp_Stuff))
 			elseif args[1]:lower() == 'acc' then
-				if settings.player.show_acc_Stuff == false then
-					settings.player.show_acc_Stuff = true
-				elseif settings.player.show_acc_Stuff then
-					settings.player.show_acc_Stuff = false
-				end
-				log('Show Total Acc = '..tostring(settings.player.show_acc_Stuff))
+				-- if settings.player.show_acc_Stuff == false then
+					-- settings.player.show_acc_Stuff = true
+				-- elseif settings.player.show_acc_Stuff then
+					-- settings.player.show_acc_Stuff = false
+				-- end
+				log('Currently dissabled, in testing.')
+				--log('Show Total Acc = '..tostring(settings.player.show_acc_Stuff))
 			end
 			settings:save()
 		elseif command:lower() == 'test' then
 			--player.stats = get_packet_data_base_stats()
-			get_packet_data()
-			Total_acc = get_player_acc(check_equipped())
-			log(player.stats.DEX .. ' '.. Total_acc.dex .. ' '.. Total_acc.main.. ' '.. Total_acc.sub)
-			log(player.stats.AGI .. ' '.. Total_acc.agi .. ' '.. Total_acc.range.. ' '.. Total_acc.ammo)
+			-- get_packet_data()
+			-- Total_acc = get_player_acc(check_equipped())
+			-- log(player.stats.DEX .. ' '.. Total_acc.dex .. ' '.. Total_acc.main.. ' '.. Total_acc.sub)
+			-- log(player.stats.AGI .. ' '.. Total_acc.agi .. ' '.. Total_acc.range.. ' '.. Total_acc.ammo)
+			-- table.vprint(player.skill)
 		elseif command:lower() == 'debug' then
 			if debug_mode == false then
 				debug_mode = true
@@ -314,7 +319,7 @@ windower.register_event('addon command', function(command, ...)
 			windower.add_to_chat(6, ' ')
 			windower.add_to_chat(6, chat_l_blue.. 	'\'\/\/gi parse\'' .. chat_white .. '  --  Will reload your inventory to file (eg. after changing unity rank).')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi rank\'' .. chat_white .. '   --  Shows current unity rank setting.')
-			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi rank #\'' .. chat_white .. '  --  Change # to your unity rank, anything over 5 is set to 5.')
+			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi rank #\'' .. chat_white .. '  --  Change # to your unity rank, anything under 5 is set to 5.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi stp #\'' .. chat_white .. '  --  Change # to + or - \'Store TP\' manually. eg. ' .. chat_yellow .. ' \/\/gs stp +10'.. chat_white ..' or ' .. chat_yellow  .. '\/\/gs stp 10')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi dw #\'' .. chat_white .. '  --  Change # to + or - \'Dual Wield\' manually. eg. ' .. chat_yellow .. ' \/\/gs dw +10'.. chat_white ..' or ' .. chat_yellow  .. '\/\/gs dw 10')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi haste #\'' .. chat_white .. '  --  Change # to + or - \'Haste\' manually. eg. ' .. chat_yellow .. ' \/\/gs haste +10'.. chat_white ..' or ' .. chat_yellow  .. '\/\/gs haste 10')
