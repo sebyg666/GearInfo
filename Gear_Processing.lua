@@ -50,13 +50,16 @@ function find_all_values(item)
 		-- Check Unity gear for stat and value.
 		for k, v in pairs(Unity_rank) do
 			if item.id == k then
+				value = math.floor(((v['rank']['max'] - v['rank']['min'])/ 11) * (11 - (settings.player.rank -1))) + v['rank']['min']
 				if edited_item[v['Unity Ranking']] then
 					-- edited_item[v['Unity Ranking']] = edited_item[v['Unity Ranking']] + v.rank[settings.rank]
-					edited_item[v['Unity Ranking']] = edited_item[v['Unity Ranking']] + v.rank[1]
+					edited_item[v['Unity Ranking']] = edited_item[v['Unity Ranking']] + value
+					edited_item['Unity Ranking Bonus Applied'] = v['Unity Ranking'] .. ' + ' ..tostring(value)
 				else
-					-- edited_item[v['Unity Ranking']] = v.rank[settings.rank]
-					edited_item[v['Unity Ranking']] = v.rank[1]
-				end
+					-- edited_item[v['Unity Ranking']] = v['rank'][settings.rank]
+					edited_item[v['Unity Ranking']] = value
+					edited_item['Unity Ranking Bonus Applied'] = v['Unity Ranking'] .. ' + ' ..tostring(value)
+				end 
 			end
 		end
 		

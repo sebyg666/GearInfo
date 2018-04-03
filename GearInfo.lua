@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.6.3.0'
+_addon.version = '1.6.3.1'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -12,7 +12,7 @@ require('lists')
 require('pack')
 
 DW_Gear = require('DW_Gear')
-Unity_rank = require('Unity rank gear')
+Unity_rank = require('Unity_Gear')
 
 res = require('resources')
 skills_from_resources = res.skills
@@ -170,13 +170,10 @@ windower.register_event('addon command', function(command, ...)
 			parse_inventory()
 		elseif command:lower() == 'rank' then
 			--table.vprint(args)
-			if type(tonumber(args[1])) == 'number' and tonumber(args[1]) < 6 then
+			if type(tonumber(args[1])) == 'number'  then
 				settings.player.rank = tonumber(args[1])
 				log('Changed \'Unity Rank\' to '..tonumber(args[1])..'.')
 				config.save(settings)
-			elseif type(tonumber(args[1])) == 'number' and tonumber(args[1]) > 5 then
-				settings.player.rank = 5
-				log('Changed \'Unity Rank\' to lowest: 5.')
 			else
 				log('Your current \'Unity Rank\' setting is: '..settings.player.rank..'.')
 			end
@@ -364,6 +361,7 @@ function save_table_to_file(item_table)
 	-- Quick method
 	f:write('return ' .. T(new_item):tovstring())
     f:close()
+	notice('File Saved')
 end
 
 function get_equipment_from_file()
@@ -654,15 +652,17 @@ function update()
 		DW_needed = dual_wield_needed()
 		
 		if player.equipment.sub.category == 'Weapon' then 
-			if player.equipment.sub.damage > 0 then
-				DW = true
-				inform.dw_needed = ( (DW_needed + manual_dw_needed) >= 0 and
-										' \\cs'..blue..'[DW Needed:\\cr\\cs'..white..(DW_needed + manual_dw_needed).. '\\cr\\cs'..blue..'] \n\\cr'
-									or (DW_needed + manual_dw_needed) < 0  and
-										' \\cs'..blue..'[DW Needed:\\cr\\cs'..red..(DW_needed + manual_dw_needed).. '\\cr\\cs'..blue..'] \n\\cr')
-			else
-				DW = false
-				inform.dw_needed = ('')
+			if player.equipment.sub.damage then
+				if player.equipment.sub.damage > 0 then
+					DW = true
+					inform.dw_needed = ( (DW_needed + manual_dw_needed) >= 0 and
+											' \\cs'..blue..'[DW Needed:\\cr\\cs'..white..(DW_needed + manual_dw_needed).. '\\cr\\cs'..blue..'] \n\\cr'
+										or (DW_needed + manual_dw_needed) < 0  and
+											' \\cs'..blue..'[DW Needed:\\cr\\cs'..red..(DW_needed + manual_dw_needed).. '\\cr\\cs'..blue..'] \n\\cr')
+				else
+					DW = false
+					inform.dw_needed = ('')
+				end
 			end
 		else
 			DW = false
