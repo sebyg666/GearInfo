@@ -155,6 +155,8 @@ function options_load()
 		manual_stp = 0
 		manual_dw = 0
 		manual_ghaste = 0
+		settings.player.show_acc_Stuff = false
+		settings:save()
 	end
 	
 end
