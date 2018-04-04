@@ -150,7 +150,7 @@ function desypher_description(discription_string, item_t)
 	discription_string = string.gsub(discription_string, 'Magic damage taken', 'MDT' )
 	discription_string = string.gsub(discription_string, 'Phys. dmg. taken', 'PDT' )
 	discription_string = string.gsub(discription_string, 'Magic dmg. taken', 'MDT' )
-	discription_string = string.gsub(discription_string, 'Damage taken', 'DT_' )
+	discription_string = string.gsub(discription_string, 'Damage taken', 'D_T' )
 	
 	discription_string = string.gsub(discription_string,  "Great Axe skill",  "Great axe skill")
 	discription_string = string.gsub(discription_string,  "Great Katana skill",  "Great katana skill")
@@ -177,7 +177,7 @@ function desypher_description(discription_string, item_t)
 								'Ranged_accuracy', 'Ranged_attack',
 								'Magic_accuracy', 'Magic Atk. Bonus',
 								'Haste','\"Slow\"','\"Store TP\"','\"Dual Wield\"','\"Fast Cast\"',
-								'DMG','PDT','MDT','BDT','DT_','MDT_2','PDT_2',
+								'DMG','PDT','MDT','BDT','D_T','MDT_2','PDT_2',
 								"Hand-to-Hand skill", "Dagger skill", "Sword skill", "Great sword skill", "Axe skill", "Great axe skill",  "Scythe skill", "Polearm skill", 
 								"Katana skill", "Great katana skill", "Club skill",  "Staff skill", "Archery skill", "Marksmanship skill" , "Throwing skill","Guard skill","Evasion skill","Shield skill","Parrying skill",
 								"Divine Magic skill","Healing Magic skill","Enhancing Magic skill","Enfeebling Magic skill","Elemental Magic skill","Dark Magic skill","Summoning Magic skill","Ninjutsu skill","Singing skill",
@@ -200,7 +200,7 @@ function desypher_description(discription_string, item_t)
 		["Great katana skill"] = "Great Katana skill",
 		["Great sword skill"] = "Great Sword skill",
 		['DMG'] = 'damage',
-		['DT_'] = 'DT',
+		['D_T'] = 'DT',
 		['MDT_2'] = 'MDT2',
 		['PDT_2'] = 'PDT2',
 	}
