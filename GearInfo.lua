@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.6.4.1'
+_addon.version = '1.6.4.2'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -712,13 +712,9 @@ function update()
 							or Total_acc.sub == 0 and
 							'\n \\cs'..blue..'[Acc:\\cr\\cs'..white..Total_acc.main..'\\cr\\cs'..blue..'] \\cr' )
 							
-			inform.T_racc = ( Total_acc.range > 0 and Total_acc.ammo > 0 and (player.equipment.range.skill == 'Marksmanship' or player.equipment.range.skill == 'Archery') and
-							'\n \\cs'..blue..'[RAcc:\\cr\\cs'..white..Total_acc.range..'\\cr\\cs'..blue..'] \\cr'
-							or Total_acc.range == 0 and Total_acc.ammo > 0 and
-							'\n \\cs'..blue..'[RAcc:\\cr\\cs'..white..Total_acc.ammo..'\\cr\\cs'..blue..'] \\cr'	
-							or Total_acc.range > 0 and Total_acc.ammo == 0 and
-							'\n \\cs'..blue..'[RAcc:\\cr\\cs'..white..Total_acc.range..'\\cr\\cs'..blue..'] \\cr'	
-							or Total_acc.range == 0 and Total_acc.ammo == 0 and
+			inform.T_racc = ( Total_acc.range > 0 and
+							'\n \\cs'..blue..'[RAcc:\\cr\\cs'..white..(Total_acc.range + Total_acc.ammo )..'\\cr\\cs'..blue..'] \\cr'
+							or Total_acc.range == 0 and
 							'')
 		else
 			inform.T_acc = ''
@@ -831,6 +827,7 @@ function update()
 									or (Gear_info.bdt + Gear_info.dt) == 0 and
 									'\\cs'..blue..'[BDT:\\cr\\cs'..white..(Gear_info.bdt + Gear_info.dt)..'\\cr\\cs'..blue..'/50] \\cr' )
 			else
+				inform.title4 = ''
 				inform.dt2 = ''
 				inform.pdt2 = ''
 				inform.mdt2 = ''

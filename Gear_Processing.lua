@@ -293,15 +293,17 @@ function get_player_skill_in_gear(equip)
 	
 	if equip then
 		for slot ,item in pairs(equip) do
-			if slot == 'main' or slot == 'sub' or slot == 'ranged' or slot == 'ammo' then
+			if slot == 'main' or slot == 'sub' or slot == 'range' or slot == 'ammo' then
 				if item.category == 'Weapon' then
-					if not item.damage then
-						if not item.item_level then
+					if item.damage == nil then
+						if item.item_level == nil then
 							for stat_key, value in pairs(item) do
 								if skills:contains(stat_key) then
 									str = string.gsub(stat_key, ' skill', '')
 									if player_base_skills[string.gsub(str, ' ', '_'):lower()] then
 										player_base_skills[string.gsub(str, ' ', '_'):lower()] = player_base_skills[string.gsub(str, ' ', '_'):lower()] - value
+										-- notice('value 1 = ' .. value)
+										-- break
 									end
 								end
 							end
@@ -314,6 +316,8 @@ function get_player_skill_in_gear(equip)
 						str = string.gsub(stat_key, ' skill', '')
 						if player_base_skills[string.gsub(str, ' ', '_'):lower()] then
 							player_base_skills[string.gsub(str, ' ', '_'):lower()] = player_base_skills[string.gsub(str, ' ', '_'):lower()] - value
+							-- notice('value 2 = ' .. value .. ' for item: ' .. item.en)
+							-- break
 						end
 					end
 				end
@@ -330,7 +334,7 @@ function get_player_acc(equip)
 	local main_hand = {skill = 'hand_to_hand', value = 0}
 	local sub_hand = {skill = '', value = 0}
 	local ranged = {skill = '', value = 0}
-	local ammo = {skill = '', value = 0}
+	local ammo_slot = {skill = '', value = 0}
 	local item_dex = 0
 	local item_agi = 0
 	local item_acc = 0
@@ -349,24 +353,37 @@ function get_player_acc(equip)
 		for k,v in pairs(equip) do
 			--if v.id == 20677 then table.vprint(v) end
 			if k == 'main' and v.id ~= 0 and v.category == 'Weapon' and melee_skills:contains(v.skill) then
-				main_hand.skill = v.skill
-				main_hand.value = v[main_hand.skill..' skill']
+				if v.damage then
+					main_hand.skill = v.skill
+				end
+				if v[main_hand.skill..' skill'] then
+					main_hand.value = v[main_hand.skill..' skill']
+				end
 				--table.vprint(main_hand)
 			elseif k == 'sub' and v.id ~= 0 and v.category == 'Weapon' and melee_skills:contains(v.skill) then
 				if v.damage then
 					sub_hand.skill = v.skill
+				end
+				if v[sub_hand.skill..' skill'] then
 					sub_hand.value = v[sub_hand.skill..' skill']
 				end
 			end
 			if k == 'range' and v.id ~= 0 and v.category == 'Weapon' and ranged_skills:contains(v.skill) then
-				ranged.skill = v.skill
-				ranged.value = v[ranged.skill..' skill']
+				if v.damage then
+					ranged.skill = v.skill
+				end
+				if v[ranged.skill..' skill'] then
+					ranged.value = v[ranged.skill..' skill']
+				end
 				--table.vprint(main_hand)
 			elseif k == 'ammo' and v.id ~= 0 and v.category == 'Weapon' and ranged_skills:contains(v.skill) then
 				--if v.en == 'Ochu' then table.vprint(v) end
+				-- notice(ammo_slot.skill..' skill')
 				if v.damage then
-					ammo.skill = v.skill
-					ammo.value = v[ammo.skill..' skill']
+					ammo_slot.skill = v.skill
+				end
+				if v[ammo_slot.skill..' skill'] then
+					ammo_slot.value = v[ammo_slot.skill..' skill']
 				end
 			end
 		end
@@ -392,7 +409,7 @@ function get_player_acc(equip)
 					if i ==ranged.skill..' skill' then
 						skill_from_gear_ranged = skill_from_gear_ranged + j
 					end
-					if i == ammo.skill..' skill' then
+					if i == ammo_slot.skill..' skill' then
 						skill_from_gear_ammo = skill_from_gear_ammo + j
 					end
 				end
@@ -410,8 +427,8 @@ function get_player_acc(equip)
 		if k == string.gsub(ranged.skill:lower(), ' ', '_') then
 			ranged.value = ranged.value + v
 		end
-		if k == string.gsub(ammo.skill:lower(), ' ', '_') then
-			ammo.value = ammo.value + v
+		if k == string.gsub(ammo_slot.skill:lower(), ' ', '_') then
+			ammo_slot.value = ammo_slot.value + v
 		end
 	end
 	
@@ -431,7 +448,7 @@ function get_player_acc(equip)
 	local main_acc_skill = acc_from_skill(main_hand.value + skill_from_gear_main )
 	local sub_acc_skill = acc_from_skill(sub_hand.value + skill_from_gear_sub )
 	local ranged_acc_skill = racc_from_skill(ranged.value + skill_from_gear_ranged )
-	local ammo_acc_skill = racc_from_skill(ammo.value + skill_from_gear_ammo )
+	local ammo_acc_skill = racc_from_skill(ammo_slot.value + skill_from_gear_ammo )
 	
 	Total_acc.main = main_acc_skill + (math.floor((item_dex + player_dex + get_blu_spells_dex()) * 0.75)) + item_acc + get_player_acc_from_job()
 
