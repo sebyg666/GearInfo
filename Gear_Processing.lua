@@ -109,13 +109,14 @@ function check_for_augments(item)
 		for k,v in pairs(augs) do
 			
 			if v:contains('Pet:') or v:contains('Wyvern:') or v:contains('Avatar:') then
-				break
-			end
-			for i, j in pairs(desypher_description(v, item_t)) do
-				if temp[i] then
-					temp[i] = temp[i] + j
-				else
-					temp[i] = j
+			
+			else
+				for i, j in pairs(desypher_description(v, item_t)) do
+					if temp[i] then
+						temp[i] = temp[i] + j
+					else
+						temp[i] = j
+					end
 				end
 			end
 		end
@@ -183,6 +184,7 @@ function desypher_description(discription_string, item_t)
 								"Katana skill", "Great katana skill", "Club skill",  "Staff skill", "Archery skill", "Marksmanship skill" , "Throwing skill","Guard skill","Evasion skill","Shield skill","Parrying skill",
 								"Divine Magic skill","Healing Magic skill","Enhancing Magic skill","Enfeebling Magic skill","Elemental Magic skill","Dark Magic skill","Summoning Magic skill","Ninjutsu skill","Singing skill",
 								"Stringed Instrument skill","Wind Instrument skill","Blue Magic skill","Geomancy skill","Handbell skill",
+								"Phalanx",
 								}
 	
 	local temp_table = T{}
