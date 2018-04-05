@@ -328,7 +328,7 @@ function determine_DW()
 		
 		main_job_dw = main_job_dw + jp_dw_bonus
 	end
-	--add_to_chat(122, '[Sub dw: ' .. sub_job_dw .. '] [Main dw: ' .. main_job_dw .. ']')
+	--notice( '[Sub dw: ' .. sub_job_dw .. '] [Main dw: ' .. main_job_dw .. ']')
 	
 	-- if the sub job DW is higher return that instead of blue mage spell DW
 	if sub_job_dw > main_job_dw then
@@ -360,6 +360,7 @@ function get_total_haste()
 		ja_haste = Buffs_inform.ja_haste + manual_jahaste
 	end
 	total = gear_haste + magic_haste + ja_haste
+	
 	return total
 end
 
@@ -367,9 +368,12 @@ function dual_wield_needed()
 	local DW_needed = 0
 	local Weapon_Delay = determine_Weapon_Delay()
 	local total_delay = Weapon_Delay.melee_delay
+	local total_haste = get_total_haste()
+	
+	if total_haste > 819 then total_haste = 819 end
 		
 	if player.equipment.main.delay > 0 and Weapon_Delay.sub then	
-		DW_needed = math.floor((((total_delay * 0.2) / total_delay / ((1024 - (get_total_haste())) / 1024 ) -1) * -1 * 100) - determine_DW())
+		DW_needed = math.floor((((total_delay * 0.2) / total_delay / ((1024 - (total_haste)) / 1024 ) -1) * -1 * 100) - determine_DW())
 	end
 	
 	return DW_needed

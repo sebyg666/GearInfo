@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.6.4.2'
+_addon.version = '1.6.4.3'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -669,7 +669,10 @@ function update()
 		Total_haste = get_total_haste()
 		
 		if settings.player.show_total_haste == true then
-			inform.thaste = '\n \\cs'..blue..'[T.Haste:\\cr\\cs'..white..Total_haste.. '\\cr\\cs'..blue..'/1024] \\cr'
+			inform.thaste = (Total_haste > 820 and
+								'\n \\cs'..blue..'[T.Haste:\\cr\\cs'..red..Total_haste.. '\\cr\\cs'..blue..'/820] \\cr'
+								or 
+								'\n \\cs'..blue..'[T.Haste:\\cr\\cs'..white..Total_haste.. '\\cr\\cs'..blue..'/820] \\cr')
 		else
 			inform.thaste = ('')
 		end
@@ -840,6 +843,7 @@ function update()
 			inform.pdt = ''
 			inform.mdt = ''
 			inform.mdtii = ''
+			inform.pdtii = ''
 			inform.bdt = ''
 			inform.title4 = ''
 			inform.dt2 = ''
