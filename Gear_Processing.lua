@@ -306,6 +306,8 @@ function get_player_skill_in_gear(equip)
 										player_base_skills[string.gsub(str, ' ', '_'):lower()] = player_base_skills[string.gsub(str, ' ', '_'):lower()] - value
 										-- notice('value 1 = ' .. value)
 										-- break
+									elseif player_base_skills[string.gsub(str, '-', '_'):lower()]  then
+										player_base_skills[string.gsub(str, '-', '_'):lower()] = player_base_skills[string.gsub(str, '-', '_'):lower()] - value
 									end
 								end
 							end
@@ -320,6 +322,8 @@ function get_player_skill_in_gear(equip)
 							player_base_skills[string.gsub(str, ' ', '_'):lower()] = player_base_skills[string.gsub(str, ' ', '_'):lower()] - value
 							-- notice('value 2 = ' .. value .. ' for item: ' .. item.en)
 							-- break
+						elseif player_base_skills[string.gsub(str, '-', '_'):lower()]  then
+							player_base_skills[string.gsub(str, '-', '_'):lower()] = player_base_skills[string.gsub(str, '-', '_'):lower()] - value
 						end
 					end
 				end
