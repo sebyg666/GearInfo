@@ -179,32 +179,101 @@ end
 function determine_Weapon_Delay()
 	local Weapon_Delay = T{melee_delay = 480, sub = false, ranged_delay = 0, range = false, ammo = false}
 	
-	for k,v in pairs(player.equipment.main) do
-		if k == 'delay' then
-			Weapon_Delay.melee_delay = player.equipment.main.delay
-		end		
-	end
-	for k,v in pairs(player.equipment.sub) do
-		if player.equipment.sub.category == 'Weapon' then
+	local Base_Delay = 480
+	
+	if player.equipment.main.skill == "Hand-to-Hand" then
+		
+		local MainJ_Base_Delay = 480
+		local SubJ_Base_Delay = 480
+		
+		if player.main_job:upper() == 'MNK'  then
+			if player.main_job_level == 1 then  MainJ_Base_Delay = 400
+			elseif player.main_job_level  > 1 and player.main_job_level  < 31 then MainJ_Base_Delay = 380
+			elseif player.main_job_level  > 30 and player.main_job_level  < 46 then MainJ_Base_Delay = 360
+			elseif player.main_job_level  > 45 and player.main_job_level  < 61 then MainJ_Base_Delay = 340
+			elseif player.main_job_level  > 60 and player.main_job_level  < 75 then MainJ_Base_Delay = 320
+			elseif player.main_job_level  > 74 and player.main_job_level  < 82 then MainJ_Base_Delay = 300
+			elseif player.main_job_level  > 81 then MainJ_Base_Delay = 280
+			end
+			
+			local jp = player.job_points['mnk']['jp_spent']			
+			if jp > 99 and jp < 1200 then MainJ_Base_Delay = MainJ_Base_Delay - 5
+			elseif jp > 1199 then MainJ_Base_Delay = MainJ_Base_Delay - 10
+			end
+		end
+		
+		if player.main_job:upper() == 'PUP'  then
+			if player.main_job_level > 24  and player.main_job_level  < 50 then  MainJ_Base_Delay = 400
+			elseif player.main_job_level  > 49 and player.main_job_level  < 75 then MainJ_Base_Delay = 380
+			elseif player.main_job_level  > 74 and player.main_job_level  < 87 then MainJ_Base_Delay = 360
+			elseif player.main_job_level  > 86 and player.main_job_level  < 97 then MainJ_Base_Delay = 340
+			elseif player.main_job_level  > 96 then MainJ_Base_Delay = 320
+			end
+		end
+		
+		if player.sub_job:upper() == 'MNK'  then
+			if player.sub_job_level  == 1 then  SubJ_Base_Delay = 400
+			elseif player.sub_job_level   > 1 and player.sub_job_level   < 31 then SubJ_Base_Delay = 380
+			elseif player.sub_job_level   > 30 and player.sub_job_level   < 46 then SubJ_Base_Delay = 360
+			elseif player.sub_job_level   > 45  then SubJ_Base_Delay = 340
+			end
+		end
+		
+		if player.sub_job:upper() == 'PUP'  then
+			if player.sub_job_level  > 24 then  SubJ_Base_Delay = 400
+			end
+		end
+		
+		if SubJ_Base_Delay < MainJ_Base_Delay then
+			Base_Delay = SubJ_Base_Delay
+		else
+			Base_Delay = MainJ_Base_Delay
+		end
+		for equip_slot,item in pairs(player.equipment) do
+			-- Wrestler's Mantle	Latent Effect (Monk sub job): Hand-to-Hand Delay -10
+			if item.id == 13660 and player.sub_job:upper() == 'MNK' then Base_Delay = Base_Delay - 10 end
+			-- check all other gear with martial arts
+			for MA_id, MA_item in pairs(Martial_Arts_Gear)do
+				if item.id == MA_id then
+					Base_Delay = Base_Delay - MA_item.delay
+				end
+			end
+		end
+		if Base_Delay + player.equipment.main.delay <= 96 then
+			Weapon_Delay.melee_delay = 96
+		else
+			Weapon_Delay.melee_delay = Base_Delay + player.equipment.main.delay
+		end
+	else
+		for k,v in pairs(player.equipment.main) do
+			if player.equipment.main.skill ~= "Hand-to-Hand" then
+				if k == 'delay' then
+					Weapon_Delay.melee_delay = player.equipment.main.delay
+				end
+			end
+		end
+		for k,v in pairs(player.equipment.sub) do
+			if player.equipment.sub.category == 'Weapon' then
+				if k == 'damage' and v > 0 then
+					Weapon_Delay.melee_delay = Weapon_Delay.melee_delay + player.equipment.sub.delay
+					Weapon_Delay.sub = true
+				end	
+			end
+		end
+		for k,v in pairs(player.equipment.range) do
 			if k == 'damage' and v > 0 then
-				Weapon_Delay.melee_delay = Weapon_Delay.melee_delay + player.equipment.sub.delay
-				Weapon_Delay.sub = true
-			end	
+				Weapon_Delay.ranged_delay = Weapon_Delay.ranged_delay + player.equipment.range.delay
+				Weapon_Delay.range = true
+			end		
+		end
+		for k,v in pairs(player.equipment.ammo) do
+			if k == 'damage' and v > 0 then
+				Weapon_Delay.ranged_delay = Weapon_Delay.ranged_delay + player.equipment.ammo.delay
+				Weapon_Delay.ammo = true
+			end		
 		end
 	end
-	for k,v in pairs(player.equipment.range) do
-		if k == 'damage' and v > 0 then
-			Weapon_Delay.ranged_delay = Weapon_Delay.ranged_delay + player.equipment.range.delay
-			Weapon_Delay.range = true
-		end		
-	end
-	for k,v in pairs(player.equipment.ammo) do
-		if k == 'damage' and v > 0 then
-			Weapon_Delay.ranged_delay = Weapon_Delay.ranged_delay + player.equipment.ammo.delay
-			Weapon_Delay.ammo = true
-		end		
-	end
-	--table.vprint(player.equipment.range)
+	-- notice(Weapon_Delay.melee_delay )
 	return Weapon_Delay
 end
 
@@ -271,30 +340,30 @@ function determine_DW()
 		end
 	elseif player.main_job:upper() == 'NIN' then
 		
-		if 	   player.main_job:upper() == 'NIN' and player.main_job_level < 10 and  player.main_job_level > 0 then main_job_dw = 0
-		elseif player.main_job:upper() == 'NIN' and player.main_job_level < 25 and  player.main_job_level > 9 then main_job_dw = 10
-		elseif player.main_job:upper() == 'NIN' and player.main_job_level < 45 and  player.main_job_level > 24 then main_job_dw = 15
-		elseif player.main_job:upper() == 'NIN' and player.main_job_level < 65 and  player.main_job_level > 44 then main_job_dw = 25
-		elseif player.main_job:upper() == 'NIN' and player.main_job_level < 85 and  player.main_job_level > 64 then main_job_dw = 30
-		elseif player.main_job:upper() == 'NIN' and player.main_job_level < 100 and  player.main_job_level > 84 then main_job_dw = 35
+		if player.main_job_level < 10 and  player.main_job_level > 0 then main_job_dw = 0
+		elseif player.main_job_level < 25 and  player.main_job_level > 9 then main_job_dw = 10
+		elseif player.main_job_level < 45 and  player.main_job_level > 24 then main_job_dw = 15
+		elseif player.main_job_level < 65 and  player.main_job_level > 44 then main_job_dw = 25
+		elseif player.main_job_level < 85 and  player.main_job_level > 64 then main_job_dw = 30
+		elseif player.main_job_level < 100 and  player.main_job_level > 84 then main_job_dw = 35
 		end
 	elseif player.sub_job:upper() == 'NIN' then
 		
-		if 	   player.sub_job:upper() == 'NIN' and player.sub_job_level < 10 and  player.sub_job_level > 0 then sub_job_dw = 0
-		elseif player.sub_job:upper() == 'NIN' and player.sub_job_level < 25 and  player.sub_job_level > 9 then sub_job_dw = 10
-		elseif player.sub_job:upper() == 'NIN' and player.sub_job_level < 45 and  player.sub_job_level > 24 then sub_job_dw = 15
-		elseif player.sub_job:upper() == 'NIN' and player.sub_job_level < 65 and  player.sub_job_level > 44 then sub_job_dw = 25
-		elseif player.sub_job:upper() == 'NIN' and player.sub_job_level < 85 and  player.sub_job_level > 64 then sub_job_dw = 30
-		elseif player.sub_job:upper() == 'NIN' and player.sub_job_level < 100 and  player.sub_job_level > 84 then sub_job_dw = 35
+		if 	   player.sub_job_level < 10 and  player.sub_job_level > 0 then sub_job_dw = 0
+		elseif player.sub_job_level < 25 and  player.sub_job_level > 9 then sub_job_dw = 10
+		elseif player.sub_job_level < 45 and  player.sub_job_level > 24 then sub_job_dw = 15
+		elseif player.sub_job_level < 65 and  player.sub_job_level > 44 then sub_job_dw = 25
+		elseif player.sub_job_level < 85 and  player.sub_job_level > 64 then sub_job_dw = 30
+		elseif player.sub_job_level < 100 and  player.sub_job_level > 84 then sub_job_dw = 35
 		end
 	
 	elseif player.main_job:upper() == 'DNC' then
 	
-		if 	   player.main_job:upper() == 'DNC' and player.main_job_level < 20 and  player.main_job_level > 0 then main_job_dw = 0
-		elseif player.main_job:upper() == 'DNC' and player.main_job_level < 40 and  player.main_job_level > 19 then main_job_dw = 10
-		elseif player.main_job:upper() == 'DNC' and player.main_job_level < 60 and  player.main_job_level > 39 then main_job_dw = 15
-		elseif player.main_job:upper() == 'DNC' and player.main_job_level < 80 and  player.main_job_level > 59 then main_job_dw = 25
-		elseif player.main_job:upper() == 'DNC' and player.main_job_level < 100 and  player.main_job_level > 79 then main_job_dw = 30
+		if 	   player.main_job_level < 20 and  player.main_job_level > 0 then main_job_dw = 0
+		elseif player.main_job_level < 40 and  player.main_job_level > 19 then main_job_dw = 10
+		elseif player.main_job_level < 60 and  player.main_job_level > 39 then main_job_dw = 15
+		elseif player.main_job_level < 80 and  player.main_job_level > 59 then main_job_dw = 25
+		elseif player.main_job_level < 100 and  player.main_job_level > 79 then main_job_dw = 30
 		end
 		
 		local jp = player.job_points['dnc']['jp_spent']
@@ -306,19 +375,19 @@ function determine_DW()
 	
 	elseif player.sub_job:upper() == 'DNC' then
 	
-		if 	   player.sub_job:upper() == 'DNC' and player.sub_job_level < 20 and  player.sub_job_level > 0 then sub_job_dw = 0
-		elseif player.sub_job:upper() == 'DNC' and player.sub_job_level < 40 and  player.sub_job_level > 19 then sub_job_dw = 10
-		elseif player.sub_job:upper() == 'DNC' and player.sub_job_level < 60 and  player.sub_job_level > 39 then sub_job_dw = 15
-		elseif player.sub_job:upper() == 'DNC' and player.sub_job_level < 80 and  player.sub_job_level > 59 then sub_job_dw = 25
-		elseif player.sub_job:upper() == 'DNC' and player.sub_job_level < 100 and  player.sub_job_level > 79 then sub_job_dw = 30
+		if 	   player.sub_job_level < 20 and  player.sub_job_level > 0 then sub_job_dw = 0
+		elseif player.sub_job_level < 40 and  player.sub_job_level > 19 then sub_job_dw = 10
+		elseif player.sub_job_level < 60 and  player.sub_job_level > 39 then sub_job_dw = 15
+		elseif player.sub_job_level < 80 and  player.sub_job_level > 59 then sub_job_dw = 25
+		elseif player.sub_job_level < 100 and  player.sub_job_level > 79 then sub_job_dw = 30
 		end
 		
 	elseif player.main_job:upper() == 'THF' then
 	
-		if 	   player.main_job:upper() == 'THF' and player.main_job_level < 83 and  player.main_job_level > 0 then main_job_dw = 0
-		elseif player.main_job:upper() == 'THF' and player.main_job_level < 90 and  player.main_job_level > 82 then main_job_dw = 10
-		elseif player.main_job:upper() == 'THF' and player.main_job_level < 98 and  player.main_job_level > 89 then main_job_dw = 15
-		elseif player.main_job:upper() == 'THF' and player.main_job_level < 100 and  player.main_job_level > 97 then main_job_dw = 25
+		if 	   player.main_job_level < 83 and  player.main_job_level > 0 then main_job_dw = 0
+		elseif player.main_job_level < 90 and  player.main_job_level > 82 then main_job_dw = 10
+		elseif player.main_job_level < 98 and  player.main_job_level > 89 then main_job_dw = 15
+		elseif player.main_job_level < 100 and  player.main_job_level > 97 then main_job_dw = 25
 		end
 		
 		local jp = player.job_points['thf']['jp_spent']

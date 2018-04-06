@@ -1,0 +1,18 @@
+return {
+	[11734] = {id=11734,en="Shaolin Belt", delay=10},
+	[11602] = {id=11602,en="Cirque Necklace", delay=10},
+	[11085] = {id=11085,en="Tantra Cyclas +2", delay=5},
+	[26900] = {id=26900,en="Bhikku Cyclas", delay=5},
+	[26901] = {id=26901,en="Bhikku Cyclas +1", delay=6},
+	[11241] = {id=11241,en="Cirq. Pantaloni +1", delay=5},
+	[11141] = {id=11141,en="Cirq. Pantaloni +2", delay=10},
+	[27096] = {id=27096,en="Count's Cuffs", delay=5},
+	[27271] = {id=27271,en="Karagoz Pantaloni", delay=10},
+	[27272] = {id=27272,en="Kara. Pantaloni +1", delay=11},
+	[19008] = {id=19008,en="Kenkonken", delay=20},
+	[19077] = {id=19077,en="Kenkonken", delay=30},
+	[19097] = {id=19097,en="Kenkonken", delay=40},
+	[19629] = {id=19629,en="Kenkonken", delay=45},
+	[19727] = {id=19727,en="Kenkonken", delay=45},
+	[19836] = {id=19836,en="Kenkonken", delay=50},
+}

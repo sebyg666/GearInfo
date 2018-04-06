@@ -15,7 +15,7 @@ function find_all_values(item)
 		end
 		
 		descript_table = T{}
-		descript_table = desypher_description(item.discription)
+		descript_table = desypher_description(item.discription, item)
 		
 		item.defined_job = T{}
 		
@@ -70,9 +70,9 @@ function find_all_values(item)
 		
 		if item.category == 'Weapon' then
 			for k,v in pairs(item) do
-				if k == 'delay' then	
-					edited_item[k] = tonumber(v)
-				end
+				-- if k == 'delay' then	
+					-- edited_item[k] = tonumber(v)
+				-- end
 				if k == 'skill' then
 					local skill = res.skills:with('id', v ).en
 					edited_item[k] = skill
@@ -169,26 +169,30 @@ function desypher_description(discription_string, item_t)
 	elseif discription_string:contains('Avatar:') then
 		str_table = discription_string:psplit("Avatar:")
 		discription_string = str_table[1]
+	elseif discription_string:contains('Latent effect:') then
+		str_table = discription_string:psplit("Latent effect:")
+		discription_string = str_table[1]
 	elseif discription_string:contains('Unity Ranking:') then
 		str_table = discription_string:psplit("Unity Ranking:")
 		discription_string = str_table[1]
 	end
 
-	local valid_strings = L{'DEF','HP','MP','STR','DEX','VIT','AGI','INT','MND','CHR',
+	local valid_strings = L{'Delay','DEF','HP','MP','STR','DEX','VIT','AGI','INT','MND','CHR',
 								'Accuracy','Acc.','Attack','Atk.',
 								'Ranged_accuracy', 'Ranged_attack',
 								'Magic_accuracy', 'Magic Atk. Bonus',
-								'Haste','\"Slow\"','\"Store TP\"','\"Dual Wield\"','\"Fast Cast\"',
+								'Haste','\"Slow\"','\"Store TP\"','\"Dual Wield\"','\"Fast Cast\"','\"Martial Arts\"',
 								'DMG','PDT','MDT','BDT','D_T','MDT_2','PDT_2',
-								"Hand-to-Hand skill", "Dagger skill", "Sword skill", "Great sword skill", "Axe skill", "Great axe skill",  "Scythe skill", "Polearm skill", 
-								"Katana skill", "Great katana skill", "Club skill",  "Staff skill", "Archery skill", "Marksmanship skill" , "Throwing skill","Guard skill","Evasion skill","Shield skill","Parrying skill",
+								"Hand%-to%-Hand skill", "Dagger skill", "Sword skill", "Great sword skill", "Axe skill", "Great axe skill",  "Scythe skill", "Polearm skill", 
+								"Katana skill", "Great katana skill", "Club skill",  "Staff skill", "Archery skill", "Marksmanship skill" , "Throwing skill","Guarding skill","Evasion skill","Shield skill","Parrying skill",
 								"Divine Magic skill","Healing Magic skill","Enhancing Magic skill","Enfeebling Magic skill","Elemental Magic skill","Dark Magic skill","Summoning Magic skill","Ninjutsu skill","Singing skill",
 								"Stringed Instrument skill","Wind Instrument skill","Blue Magic skill","Geomancy skill","Handbell skill",
-								"Phalanx",
+								"Phalanx",'All magic skills','All skills','Combat skills','Magic skills',
 								}
 	
 	local temp_table = T{}
 	local temp_key = { 
+		['Delay'] = 'delay',
 		["Acc."] = "Accuracy",
 		["Atk."] = 'Attack',
 		['\"Slow\"'] = 'Slow',
@@ -206,6 +210,7 @@ function desypher_description(discription_string, item_t)
 		['D_T'] = 'DT',
 		['MDT_2'] = 'MDT2',
 		['PDT_2'] = 'PDT2',
+		['\"Martial Arts\"'] = 'Martial Arts',
 	}
 	
 	for k, v in pairs(valid_strings) do
@@ -218,11 +223,11 @@ function desypher_description(discription_string, item_t)
 			else
 				temp_table[key] = tonumber(val)	
 			end
-			-- if item_t then
-				-- if item_t.id == 25643 then
-					-- notice('('..discription_string .. ') '..key .. ' ' ..val)
-				-- end
-			-- end
+			if item_t then
+				if item_t.id == 20540 then
+					notice('('..discription_string .. ') '..key .. ' ' ..val)
+				end
+			end
 		end
 	end
 	return temp_table
@@ -306,8 +311,8 @@ function get_player_skill_in_gear(equip)
 										player_base_skills[string.gsub(str, ' ', '_'):lower()] = player_base_skills[string.gsub(str, ' ', '_'):lower()] - value
 										-- notice('value 1 = ' .. value)
 										-- break
-									elseif player_base_skills[string.gsub(str, '-', '_'):lower()]  then
-										player_base_skills[string.gsub(str, '-', '_'):lower()] = player_base_skills[string.gsub(str, '-', '_'):lower()] - value
+									elseif player_base_skills['hand_to_hand'] and stat_key == "Hand-to-Hand skill" then
+										player_base_skills['hand_to_hand'] = player_base_skills['hand_to_hand'] - value
 									end
 								end
 							end
@@ -322,8 +327,8 @@ function get_player_skill_in_gear(equip)
 							player_base_skills[string.gsub(str, ' ', '_'):lower()] = player_base_skills[string.gsub(str, ' ', '_'):lower()] - value
 							-- notice('value 2 = ' .. value .. ' for item: ' .. item.en)
 							-- break
-						elseif player_base_skills[string.gsub(str, '-', '_'):lower()]  then
-							player_base_skills[string.gsub(str, '-', '_'):lower()] = player_base_skills[string.gsub(str, '-', '_'):lower()] - value
+						elseif player_base_skills['hand_to_hand'] and stat_key == "Hand-to-Hand skill" then
+							player_base_skills['hand_to_hand'] = player_base_skills['hand_to_hand'] - value
 						end
 					end
 				end
@@ -424,7 +429,8 @@ function get_player_acc(equip)
 	end
 	--log(string.gsub(main_hand.skill, ' ', '_')..'_skill'..' '..skill_from_gear_main ..' '..string.gsub(sub_hand.skill, ' ', '_')..'_skill'..' '..skill_from_gear_sub)
 	for k,v in pairs(player_base_skills) do
-		if k == string.gsub(main_hand.skill:lower(), ' ', '_') or k == string.gsub(main_hand.skill:lower(), '-', '_')  then
+		--notice(main_hand.skill)
+		if k == string.gsub(main_hand.skill:lower(), ' ', '_') or (main_hand.skill == 'Hand-to-Hand' and k == 'hand_to_hand' )  then
 			main_hand.value = main_hand.value + v
 		end
 		if k == string.gsub(sub_hand.skill:lower(), ' ', '_') then
@@ -678,10 +684,10 @@ function get_player_acc_from_job()
 		local jp = player.job_points['thf']['jp_spent']
 		
 		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 41
-		elseif jp > 779 and jp < 1530 then jp_acc = 26
-		elseif jp > 279 and jp < 780 then jp_acc = 15
-		elseif jp > 29 and jp < 280 then jp_acc = 6
+		if jp > 1529 and jp < 2101 then jp_acc = 36
+		elseif jp > 779 and jp < 1530 then jp_acc = 23
+		elseif jp > 279 and jp < 780 then jp_acc = 13
+		elseif jp > 29 and jp < 280 then jp_acc = 5
 		end
 		
 		main_job_acc = main_job_acc + jp_acc

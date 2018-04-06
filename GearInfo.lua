@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.6.4.4'
+_addon.version = '1.6.5.1'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -13,6 +13,7 @@ require('pack')
 
 DW_Gear = require('DW_Gear')
 Unity_rank = require('Unity_Gear')
+Martial_Arts_Gear = require('Martial_Arts_Gear')
 
 res = require('resources')
 skills_from_resources = res.skills
@@ -304,7 +305,7 @@ windower.register_event('addon command', function(command, ...)
 			end
 			settings:save()
 		elseif command:lower() == 'test' then
-			table.vprint(player.sub_job)
+			table.vprint(player.skills)
 			-- player_base_skills = player.skills
 			-- get_player_skill_in_gear(check_equipped())
 			--player.stats = get_packet_data_base_stats()
