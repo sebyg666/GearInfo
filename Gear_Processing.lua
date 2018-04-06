@@ -420,7 +420,7 @@ function get_player_acc(equip)
 	end
 	--log(string.gsub(main_hand.skill, ' ', '_')..'_skill'..' '..skill_from_gear_main ..' '..string.gsub(sub_hand.skill, ' ', '_')..'_skill'..' '..skill_from_gear_sub)
 	for k,v in pairs(player_base_skills) do
-		if k == string.gsub(main_hand.skill:lower(), ' ', '_') then
+		if k == string.gsub(main_hand.skill:lower(), ' ', '_') or k == string.gsub(main_hand.skill:lower(), '-', '_')  then
 			main_hand.value = main_hand.value + v
 		end
 		if k == string.gsub(sub_hand.skill:lower(), ' ', '_') then
