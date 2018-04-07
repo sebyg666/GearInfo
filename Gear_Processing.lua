@@ -291,11 +291,17 @@ end
 
 function get_player_skill_in_gear(equip)
 	
+	player_base_skills = player.skills
+	
 	-- string.gsub(sub_hand.skill, ' ', '_')
+	local combat_skills = L{"hand_to_hand", "dagger", "sword", "great_sword", "axe", "great_axe",  "scythe", "polearm", 
+										"katana", "great_katana", "club",  "staff", "archery", "marksmanship" , "throwing","guard","evasion","shield","parrying",}
+	local magic_skills = L{"divine_magic","healing_magic","enhancing_magic","enfeebling_magic","elemental_magic","dark_magic","summoning_magic",
+									"ninjutsu","singing","stringed Instrument","wind Instrument","blue_magic","geomancy","handbell"}
 	local skills = L{"Hand-to-Hand skill", "Dagger skill", "Sword skill", "Great sword skill", "Axe skill", "Great axe skill",  "Scythe skill", "Polearm skill", 
 							"Katana skill", "Great katana skill", "Club skill",  "Staff skill", "Archery skill", "Marksmanship skill" , "Throwing skill","Guard skill","Evasion skill","Shield skill","Parrying skill",
 							"Divine Magic skill","Healing Magic skill","Enhancing Magic skill","Enfeebling Magic skill","Elemental Magic skill","Dark Magic skill","Summoning Magic skill","Ninjutsu skill","Singing skill",
-							"Stringed Instrument skill","Wind Instrument skill","Blue Magic skill","Geomancy skill","Handbell skill",
+							"Stringed Instrument skill","Wind Instrument skill","Blue Magic skill","Geomancy skill","Handbell skill",'All magic skills','Combat skills','Magic skills',
 							}
 	
 	if equip then
@@ -313,6 +319,18 @@ function get_player_skill_in_gear(equip)
 										-- break
 									elseif player_base_skills['hand_to_hand'] and stat_key == "Hand-to-Hand skill" then
 										player_base_skills['hand_to_hand'] = player_base_skills['hand_to_hand'] - value
+									elseif stat_key == "Combat skills" then
+										for k, player_skill in pairs(player_base_skills) do
+											if combat_skills:contains(player_skill) then
+												player_base_skills.player_skill = player_base_skills.player_skill - value
+											end
+										end
+									elseif stat_key == 'All magic skills' or stat_key == 'Magic skills' then
+										for k, player_skill in pairs(player_base_skills) do
+											if magic_skills:contains(player_skill) then
+												player_base_skills.player_skill = player_base_skills.player_skill - value
+											end
+										end
 									end
 								end
 							end
@@ -329,6 +347,18 @@ function get_player_skill_in_gear(equip)
 							-- break
 						elseif player_base_skills['hand_to_hand'] and stat_key == "Hand-to-Hand skill" then
 							player_base_skills['hand_to_hand'] = player_base_skills['hand_to_hand'] - value
+						elseif stat_key == "Combat skills" then
+							for k, player_skill in pairs(player_base_skills) do
+								if combat_skills:contains(player_skill) then
+									player_base_skills.player_skill = player_base_skills.player_skill - value
+								end
+							end
+						elseif stat_key == 'All magic skills' or stat_key == 'Magic skills' then
+							for k, player_skill in pairs(player_base_skills) do
+								if magic_skills:contains(player_skill) then
+									player_base_skills.player_skill = player_base_skills.player_skill - value
+								end
+							end
 						end
 					end
 				end
@@ -398,30 +428,36 @@ function get_player_acc(equip)
 				end
 			end
 		end
-		for k,v in pairs(equip) do
-			for i,j in pairs(v) do
-				if i == 'DEX' then
-					item_dex = item_dex + j
-				elseif i == 'Accuracy' then 
-					item_acc = item_acc + j
+		for slot, item in pairs(equip) do
+			for stat, value in pairs(item) do
+				if stat == 'DEX' then
+					item_dex = item_dex + value
+				elseif stat == 'Accuracy' then 
+					item_acc = item_acc + value
 					--log(item_acc .. ' '..v.en)
-				elseif i == 'AGI' then 
-					item_agi = item_agi + j
-				elseif i == 'Ranged Accuracy' then 
-					item_racc = item_racc + j
-				elseif v.category == "Armor" then
+				elseif stat == 'AGI' then 
+					item_agi = item_agi + value
+				elseif stat == 'Ranged Accuracy' then 
+					item_racc = item_racc + value
+				elseif item.category == "Armor" then
 					--log(i .. ' ' .. string.gsub(main_hand.skill, ' ', '_')..'_skill')
-					if i == main_hand.skill..' skill' then
-						skill_from_gear_main = skill_from_gear_main + j
+					if stat == main_hand.skill..' skill' then
+						skill_from_gear_main = skill_from_gear_main + value
 					end
-					if i == sub_hand.skill..' skill' then 
-						skill_from_gear_sub = skill_from_gear_sub + j
+					if stat == sub_hand.skill..' skill' then 
+						skill_from_gear_sub = skill_from_gear_sub + value
 					end
-					if i ==ranged.skill..' skill' then
-						skill_from_gear_ranged = skill_from_gear_ranged + j
+					if stat == ranged.skill..' skill' then
+						skill_from_gear_ranged = skill_from_gear_ranged + value
 					end
-					if i == ammo_slot.skill..' skill' then
-						skill_from_gear_ammo = skill_from_gear_ammo + j
+					if stat == ammo_slot.skill..' skill' then
+						skill_from_gear_ammo = skill_from_gear_ammo + value
+					end
+					if stat == "Combat skills" then
+						skill_from_gear_main = skill_from_gear_main + value
+						skill_from_gear_sub = skill_from_gear_sub + value
+						skill_from_gear_ranged = skill_from_gear_ranged + value
+						skill_from_gear_ammo = skill_from_gear_ammo + value
 					end
 				end
 			end

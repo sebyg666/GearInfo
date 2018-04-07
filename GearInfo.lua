@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.6.5.1'
+_addon.version = '1.6.5.2'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -42,6 +42,8 @@ defaults.player.show_dt_Stuff = false
 defaults.player.update_gs = true
 defaults.player.rank = 1
 defaults.Bards = {}
+defaults.Bards["joachim"] = 0
+defaults.Bards["ulmia"] = 0
 defaults.display = {}
 defaults.display.pos = {}
 defaults.display.pos.x = 0
@@ -305,7 +307,7 @@ windower.register_event('addon command', function(command, ...)
 			end
 			settings:save()
 		elseif command:lower() == 'test' then
-			table.vprint(player.skills)
+			table.vprint(settings.Bards)
 			-- player_base_skills = player.skills
 			-- get_player_skill_in_gear(check_equipped())
 			--player.stats = get_packet_data_base_stats()

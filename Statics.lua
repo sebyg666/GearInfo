@@ -1,5 +1,4 @@
 
-
 player = windower.ffxi.get_player()
 player.equipment = T{}
 player.stats = T{}
