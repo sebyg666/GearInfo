@@ -347,16 +347,6 @@ function determine_DW()
 		elseif player.main_job_level < 85 and  player.main_job_level > 64 then main_job_dw = 30
 		elseif player.main_job_level < 100 and  player.main_job_level > 84 then main_job_dw = 35
 		end
-	elseif player.sub_job:upper() == 'NIN' then
-		
-		if 	   player.sub_job_level < 10 and  player.sub_job_level > 0 then sub_job_dw = 0
-		elseif player.sub_job_level < 25 and  player.sub_job_level > 9 then sub_job_dw = 10
-		elseif player.sub_job_level < 45 and  player.sub_job_level > 24 then sub_job_dw = 15
-		elseif player.sub_job_level < 65 and  player.sub_job_level > 44 then sub_job_dw = 25
-		elseif player.sub_job_level < 85 and  player.sub_job_level > 64 then sub_job_dw = 30
-		elseif player.sub_job_level < 100 and  player.sub_job_level > 84 then sub_job_dw = 35
-		end
-	
 	elseif player.main_job:upper() == 'DNC' then
 	
 		if 	   player.main_job_level < 20 and  player.main_job_level > 0 then main_job_dw = 0
@@ -372,15 +362,6 @@ function determine_DW()
 		if jp > 549 then jp_dw_bonus = 5 end
 		
 		main_job_dw = main_job_dw + jp_dw_bonus
-	
-	elseif player.sub_job:upper() == 'DNC' then
-	
-		if 	   player.sub_job_level < 20 and  player.sub_job_level > 0 then sub_job_dw = 0
-		elseif player.sub_job_level < 40 and  player.sub_job_level > 19 then sub_job_dw = 10
-		elseif player.sub_job_level < 60 and  player.sub_job_level > 39 then sub_job_dw = 15
-		elseif player.sub_job_level < 80 and  player.sub_job_level > 59 then sub_job_dw = 25
-		elseif player.sub_job_level < 100 and  player.sub_job_level > 79 then sub_job_dw = 30
-		end
 		
 	elseif player.main_job:upper() == 'THF' then
 	
@@ -397,6 +378,28 @@ function determine_DW()
 		
 		main_job_dw = main_job_dw + jp_dw_bonus
 	end
+	
+	if player.sub_job:upper() == 'NIN' then
+		
+		if 	   player.sub_job_level < 10 and  player.sub_job_level > 0 then sub_job_dw = 0
+		elseif player.sub_job_level < 25 and  player.sub_job_level > 9 then sub_job_dw = 10
+		elseif player.sub_job_level < 45 and  player.sub_job_level > 24 then sub_job_dw = 15
+		elseif player.sub_job_level < 65 and  player.sub_job_level > 44 then sub_job_dw = 25
+		elseif player.sub_job_level < 85 and  player.sub_job_level > 64 then sub_job_dw = 30
+		elseif player.sub_job_level < 100 and  player.sub_job_level > 84 then sub_job_dw = 35
+		end
+		
+	elseif player.sub_job:upper() == 'DNC' then
+	
+		if 	   player.sub_job_level < 20 and  player.sub_job_level > 0 then sub_job_dw = 0
+		elseif player.sub_job_level < 40 and  player.sub_job_level > 19 then sub_job_dw = 10
+		elseif player.sub_job_level < 60 and  player.sub_job_level > 39 then sub_job_dw = 15
+		elseif player.sub_job_level < 80 and  player.sub_job_level > 59 then sub_job_dw = 25
+		elseif player.sub_job_level < 100 and  player.sub_job_level > 79 then sub_job_dw = 30
+		end
+		
+	end
+	
 	--notice( '[Sub dw: ' .. sub_job_dw .. '] [Main dw: ' .. main_job_dw .. ']')
 	
 	-- if the sub job DW is higher return that instead of blue mage spell DW

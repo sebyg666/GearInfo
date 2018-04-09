@@ -223,11 +223,11 @@ function desypher_description(discription_string, item_t)
 			else
 				temp_table[key] = tonumber(val)	
 			end
-			if item_t then
-				if item_t.id == 20540 then
-					notice('('..discription_string .. ') '..key .. ' ' ..val)
-				end
-			end
+			-- if item_t then
+				-- if item_t.id == 20540 then
+					-- notice('('..discription_string .. ') '..key .. ' ' ..val)
+				-- end
+			-- end
 		end
 	end
 	return temp_table
