@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.6.6.1'
+_addon.version = '1.6.6.2'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -741,26 +741,26 @@ function update()
 		if settings.player.show_dt_Stuff == true then
 			inform.title3 = ('\n \\cs'..blue..'[\\cr\\cs'..white..'Defence Info\\cr\\cs'..blue..'] \\cr' )
 			-- DT
-			inform.dt = (	Gear_info.dt < (-51) and
-								'\n \\cs'..blue..'[DT:\\cr\\cs'..red..Gear_info.dt*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-								or Gear_info.dt ~= 0 and
-								'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info.dt*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-								or Gear_info.dt == 0 and
-								'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info.dt..'\\cr\\cs'..blue..'/50] \\cr' )
+			inform.dt = (	Gear_info['DT'] < (-51) and
+								'\n \\cs'..blue..'[DT:\\cr\\cs'..red..Gear_info['DT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
+								or Gear_info['DT'] ~= 0 and
+								'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info['DT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
+								or Gear_info['DT'] == 0 and
+								'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info['DT']..'\\cr\\cs'..blue..'/50] \\cr' )
 			-- PDT
-			inform.pdt = (	Gear_info.pdt < -51 and
-								'\\cs'..blue..'[PDT:\\cr\\cs'..red..Gear_info.pdt*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-								or Gear_info.pdt ~= 0 and
-								'\\cs'..blue..'[PDT:\\cr\\cs'..white..Gear_info.pdt*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-								or Gear_info.pdt == 0 and
-								'\\cs'..blue..'[PDT:\\cr\\cs'..white..Gear_info.pdt..'\\cr\\cs'..blue..'/50] \\cr')
+			inform.pdt = (	Gear_info['PDT'] < -51 and
+								'\\cs'..blue..'[PDT:\\cr\\cs'..red..Gear_info['PDT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+								or Gear_info['PDT'] ~= 0 and
+								'\\cs'..blue..'[PDT:\\cr\\cs'..white..Gear_info['PDT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+								or Gear_info['PDT'] == 0 and
+								'\\cs'..blue..'[PDT:\\cr\\cs'..white..Gear_info['PDT']..'\\cr\\cs'..blue..'/50] \\cr')
 			-- MDT			
-			inform.mdt = (	Gear_info.mdt < -51 and
-								'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..Gear_info.mdt*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-								or Gear_info.mdt ~= 0 and
-								'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..Gear_info.mdt*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-								or Gear_info.mdt == 0 and
-								'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..Gear_info.mdt..'\\cr\\cs'..blue..'/50] \\cr' )
+			inform.mdt = (	Gear_info['MDT'] < -51 and
+								'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..Gear_info['MDT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+								or Gear_info['MDT'] ~= 0 and
+								'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..Gear_info['MDT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
+								or Gear_info['MDT'] == 0 and
+								'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..Gear_info['MDT']..'\\cr\\cs'..blue..'/50] \\cr' )
 			-- BDT
 			inform.bdt = (	Gear_info.bdt < -51 and
 								'\\cs'..blue..'[BDT:\\cr\\cs'..red..Gear_info.bdt*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
@@ -769,78 +769,78 @@ function update()
 								or Gear_info.bdt == 0 and
 								'\\cs'..blue..'[BDT:\\cr\\cs'..white..Gear_info.bdt..'\\cr\\cs'..blue..'/50] \\cr')			
 			-- PDT2					
-			if Gear_info.pdtii  < 0 then
-				inform.pdtii = (	Gear_info.pdt < -51 and
-									'\n \\cs'..blue..'[PDT2:\\cr\\cs'..red..Gear_info.pdtii*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+			if Gear_info['PDT']ii  < 0 then
+				inform.pdtii = (	Gear_info['PDT'] < -51 and
+									'\n \\cs'..blue..'[PDT2:\\cr\\cs'..red..Gear_info['PDT']ii*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
 									or 
-									'\n \\cs'..blue..'[PDT2:\\cr\\cs'..white..Gear_info.pdtii*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
+									'\n \\cs'..blue..'[PDT2:\\cr\\cs'..white..Gear_info['PDT']ii*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
 			else 
 				inform.pdtii = ''
 			end
 			-- MDT2
-			if Gear_info.mdtii  < 0 then
-				if Gear_info.pdtii  == 0 then inform.bdt = inform.bdt .. '\n ' end
-				inform.mdtii = (	Gear_info.mdtii < -51 and
-									'\\cs'..blue..'[MDT2:\\cr\\cs'..red..Gear_info.mdtii*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+			if Gear_info['MDT']ii  < 0 then
+				if Gear_info['PDT']ii  == 0 then inform.bdt = inform.bdt .. '\n ' end
+				inform.mdtii = (	Gear_info['MDT']ii < -51 and
+									'\\cs'..blue..'[MDT2:\\cr\\cs'..red..Gear_info['MDT']ii*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
 									or 
-									'\\cs'..blue..'[MDT2:\\cr\\cs'..white..Gear_info.mdtii*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
+									'\\cs'..blue..'[MDT2:\\cr\\cs'..white..Gear_info['MDT']ii*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
 			else 
 				inform.mdtii = ''
 			end
 			
 			--  Combined values
-			if Gear_info.dt < 0 or Gear_info.pdtii  < 0 or Gear_info.mdtii  < 0 then
+			if Gear_info['DT'] < 0 or Gear_info['PDT']ii  < 0 or Gear_info['MDT']ii  < 0 then
 				inform.title4 = ('\n \\cs'..blue..'[\\cr\\cs'..white..'Combined Defence\\cr\\cs'..blue..'] \\cr' )
 				-- DT
-				inform.dt2 = (	Gear_info.dt < (-51) and
-									'\n \\cs'..blue..'[DT:\\cr\\cs'..red..Gear_info.dt*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-									or Gear_info.dt ~= 0 and
-									'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info.dt*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-									or Gear_info.dt == 0 and
-									'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info.dt..'\\cr\\cs'..blue..'/50] \\cr' )
+				inform.dt2 = (	Gear_info['DT'] < (-51) and
+									'\n \\cs'..blue..'[DT:\\cr\\cs'..red..Gear_info['DT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
+									or Gear_info['DT'] ~= 0 and
+									'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info['DT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
+									or Gear_info['DT'] == 0 and
+									'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info['DT']..'\\cr\\cs'..blue..'/50] \\cr' )
 									
-				if Gear_info.pdtii  < 0 then		
+				if Gear_info['PDT']ii  < 0 then		
 					-- PDT + PDT2 + DT
-					inform.pdt2 = (	(Gear_info.pdt + Gear_info.pdtii + Gear_info.dt) < -87.6 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..red..(Gear_info.pdt + Gear_info.pdtii + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr'
-										or (Gear_info.pdt + Gear_info.pdtii + Gear_info.dt) ~= 0 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info.pdt + Gear_info.pdtii + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr' 
-										or (Gear_info.pdt + Gear_info.pdtii + Gear_info.dt) == 0 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info.pdt + Gear_info.pdtii + Gear_info.dt)..'\\cr\\cs'..blue..'/87.5] \\cr' )		
+					inform.pdt2 = (	(Gear_info['PDT'] + Gear_info['PDT']ii + Gear_info['DT']) < -87.6 and
+										'\\cs'..blue..'[PDT:\\cr\\cs'..red..(Gear_info['PDT'] + Gear_info['PDT']ii + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr'
+										or (Gear_info['PDT'] + Gear_info['PDT']ii + Gear_info['DT']) ~= 0 and
+										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info['PDT'] + Gear_info['PDT']ii + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr' 
+										or (Gear_info['PDT'] + Gear_info['PDT']ii + Gear_info['DT']) == 0 and
+										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info['PDT'] + Gear_info['PDT']ii + Gear_info['DT'])..'\\cr\\cs'..blue..'/87.5] \\cr' )		
 				else				
 					-- PDT + DT
-					inform.pdt2 = (	(Gear_info.pdt+ Gear_info.dt) < -51 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..red..(Gear_info.pdt+ Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-										or (Gear_info.pdt+ Gear_info.dt) ~= 0 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info.pdt+ Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-										or (Gear_info.pdt+ Gear_info.dt) == 0 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info.pdt+ Gear_info.dt)..'\\cr\\cs'..blue..'/50] \\cr' )
+					inform.pdt2 = (	(Gear_info['PDT']+ Gear_info['DT']) < -51 and
+										'\\cs'..blue..'[PDT:\\cr\\cs'..red..(Gear_info['PDT']+ Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+										or (Gear_info['PDT']+ Gear_info['DT']) ~= 0 and
+										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info['PDT']+ Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
+										or (Gear_info['PDT']+ Gear_info['DT']) == 0 and
+										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info['PDT']+ Gear_info['DT'])..'\\cr\\cs'..blue..'/50] \\cr' )
 				end					
-				if Gear_info.mdtii  < 0 then
+				if Gear_info['MDT']ii  < 0 then
 					-- MDT + MDT2 + DT
-					inform.mdt2 = (	(Gear_info.mdt + Gear_info.mdtii + Gear_info.dt) < -87.6 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..(Gear_info.mdt + Gear_info.mdtii + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr'
-										or (Gear_info.mdt + Gear_info.mdtii + Gear_info.dt) ~= 0 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info.mdt + Gear_info.mdtii + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr' 
-										or (Gear_info.mdt + Gear_info.mdtii + Gear_info.dt) == 0 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info.mdt + Gear_info.mdtii + Gear_info.dt)..'\\cr\\cs'..blue..'/87.5] \\cr' )
+					inform.mdt2 = (	(Gear_info['MDT'] + Gear_info['MDT']ii + Gear_info['DT']) < -87.6 and
+										'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..(Gear_info['MDT'] + Gear_info['MDT']ii + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr'
+										or (Gear_info['MDT'] + Gear_info['MDT']ii + Gear_info['DT']) ~= 0 and
+										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info['MDT'] + Gear_info['MDT']ii + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr' 
+										or (Gear_info['MDT'] + Gear_info['MDT']ii + Gear_info['DT']) == 0 and
+										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info['MDT'] + Gear_info['MDT']ii + Gear_info['DT'])..'\\cr\\cs'..blue..'/87.5] \\cr' )
 										
 				else
 					-- MDT + DT
-					inform.mdt2 = ((Gear_info.mdt + Gear_info.dt) < -51 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..(Gear_info.mdt + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-										or (Gear_info.mdt + Gear_info.dt) ~= 0 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info.mdt + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-										or (Gear_info.mdt + Gear_info.dt) == 0 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info.mdt + Gear_info.dt)..'\\cr\\cs'..blue..'/50] \\cr')
+					inform.mdt2 = ((Gear_info['MDT'] + Gear_info['DT']) < -51 and
+										'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..(Gear_info['MDT'] + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+										or (Gear_info['MDT'] + Gear_info['DT']) ~= 0 and
+										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info['MDT'] + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
+										or (Gear_info['MDT'] + Gear_info['DT']) == 0 and
+										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info['MDT'] + Gear_info['DT'])..'\\cr\\cs'..blue..'/50] \\cr')
 				end
 				-- BDT + DT
-				inform.bdt2= (	(Gear_info.bdt + Gear_info.dt) < -51 and
-									'\\cs'..blue..'[BDT:\\cr\\cs'..red..(Gear_info.bdt + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-									or (Gear_info.bdt + Gear_info.dt) ~= 0 and
-									'\\cs'..blue..'[BDT:\\cr\\cs'..white..(Gear_info.bdt + Gear_info.dt)*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-									or (Gear_info.bdt + Gear_info.dt) == 0 and
-									'\\cs'..blue..'[BDT:\\cr\\cs'..white..(Gear_info.bdt + Gear_info.dt)..'\\cr\\cs'..blue..'/50] \\cr' )
+				inform.bdt2= (	(Gear_info.bdt + Gear_info['DT']) < -51 and
+									'\\cs'..blue..'[BDT:\\cr\\cs'..red..(Gear_info.bdt + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
+									or (Gear_info.bdt + Gear_info['DT']) ~= 0 and
+									'\\cs'..blue..'[BDT:\\cr\\cs'..white..(Gear_info.bdt + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
+									or (Gear_info.bdt + Gear_info['DT']) == 0 and
+									'\\cs'..blue..'[BDT:\\cr\\cs'..white..(Gear_info.bdt + Gear_info['DT'])..'\\cr\\cs'..blue..'/50] \\cr' )
 			else
 				inform.title4 = ''
 				inform.dt2 = ''
