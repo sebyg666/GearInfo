@@ -34,15 +34,16 @@ parse = {
     o={}  -- Outgoing packets, currently none are really parsed for information
     }
 parse.i[0x00A] = function (data)
-	player.stats = {
-		STR = data:unpack('H',0xCD), 
-		DEX = data:unpack('H',0xCF), 
-		VIT = data:unpack('H',0xD1), 
-		AGI = data:unpack('H',0xD3), 
-		INT = data:unpack('H',0xD5), 
-		MND = data:unpack('H',0xD7), 
-		CHR = data:unpack('H',0xD9) 
-	}
+	-- player.stats = {
+		-- STR = data:unpack('H',0xCD), 
+		-- DEX = data:unpack('H',0xCF), 
+		-- VIT = data:unpack('H',0xD1), 
+		-- AGI = data:unpack('H',0xD3), 
+		-- INT = data:unpack('H',0xD5), 
+		-- MND = data:unpack('H',0xD7), 
+		-- CHR = data:unpack('H',0xD9) 
+	-- }
+	-- notice('Player stat update | agi = '..player.stats.DEX)
 	update_party()
 	blank_0x063_v9_inc = true
 end
@@ -57,6 +58,19 @@ parse.i[0x061] = function (data)
 		MND = data:unpack('H',0x1F), 
 		CHR = data:unpack('H',0x21) 
 	} 
+	--notice('Player stat update | agi = '..player.stats.AGI)
+end
+
+parse.i[0x062] = function (data)
+    for i = 1,0x71,2 do
+        local skill = data:unpack('H',i + 0x82)%32768
+        local current_skill = res.skills[math.floor(i/2)+1]
+        if current_skill then
+            player.skills[to_windower_api(current_skill.english)] = skill
+        end
+    end
+	get_player_skill_in_gear(check_equipped())
+	--notice('Skill packet update')
 end
 
 function check_these_buffs(x, y)

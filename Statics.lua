@@ -42,8 +42,11 @@ show_acc_Stuff = true
 old_DW_needed = 0
 DW = false
 dancer_main = false
+__raw = {lower = string.lower, upper = string.upper,}
 
-
+function to_windower_api(str)
+    return __raw.lower(str:gsub(' ','_'))
+end
 
 
 

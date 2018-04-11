@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.6.5.2'
+_addon.version = '1.6.6.1'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -14,6 +14,9 @@ require('pack')
 DW_Gear = require('DW_Gear')
 Unity_rank = require('Unity_Gear')
 Martial_Arts_Gear = require('Martial_Arts_Gear')
+Set_bonus_by_Set_ID= require('Set_bonus_by_Set_ID')
+Set_bonus_by_item_id = require('Set_bonus_by_item_id')
+Blu_spells = require('Blue_Mage_Spells')
 
 res = require('resources')
 skills_from_resources = res.skills
@@ -153,7 +156,6 @@ function options_load()
 	if windower.ffxi.get_player() then
 		player = windower.ffxi.get_player()
 		update_party()
-		initialize_packet_parsing()
 		local this_file = files.new('data\\'..player.name..'_data.lua',true)
 		
 		if not files.exists('data\\'..player.name..'_data.lua') then
@@ -171,7 +173,8 @@ function options_load()
 		manual_stp = 0
 		manual_dw = 0
 		manual_ghaste = 0
-		get_player_skill_in_gear(check_equipped())
+		initialize_packet_parsing()
+		-- get_player_skill_in_gear(check_equipped())
 	end
 	
 end
@@ -307,7 +310,15 @@ windower.register_event('addon command', function(command, ...)
 			end
 			settings:save()
 		elseif command:lower() == 'test' then
-			table.vprint(settings.Bards)
+			--check_equipped()
+
+			--table.vprint( determine_Weapon_Delay())
+			-- local stat_table = get_equip_stats(check_equipped())
+			-- local player_Acc = get_player_acc(stat_table)
+			-- table.vprint(stat_table.range)
+			-- log(player_Acc.agi.. '  '..stat_table["Throwing skill"] .. '  '..stat_table['Ranged Accuracy'])
+			-- table.vprint( player_Acc )
+			-- log(player_base_skills['hand_to_hand'])
 			-- player_base_skills = player.skills
 			-- get_player_skill_in_gear(check_equipped())
 			--player.stats = get_packet_data_base_stats()
@@ -528,8 +539,8 @@ options_load()
 			
 windower.register_event('job change',function()
 	player = windower.ffxi.get_player()
-	get_player_skill_in_gear(check_equipped())
-	--player.stats = get_packet_data_base_stats()
+	-- get_player_skill_in_gear(check_equipped())
+	-- player.stats = get_packet_data_base_stats()
     initialize(text_box,settings)
 end)
 
@@ -547,9 +558,6 @@ function outgoing_chunk(id,original,data,injected,blocked)
         parse.o[id](data,injected)
     end
 end
-
-windower.register_event('incoming chunk',incoming_chunk)
-windower.register_event('outgoing chunk',outgoing_chunk)
 
 function update()
 	local inform = {}
@@ -584,10 +592,12 @@ function update()
 		local red = '(255,0,0)'
 		
 		----------------------------------------------- TP calc Stuff ------------------------------------------
+		local current_equip = check_equipped()
+		Gear_info = get_equip_stats(current_equip)
 		
 		if settings.player.show_tp_Stuff == true then 
 		
-			Gear_TP = get_tp_per_hit(check_equipped())
+			Gear_TP = get_tp_per_hit()
 			
 			inform.title = ' \\cs'..blue..'[\\cr\\cs'..white..'TP Calculator\\cr\\cs'..blue..'] \n\\cr'
 			inform.tp_per__hit = ' \\cs'..blue..'[Tp/hit:\\cr\\cs'..white..Gear_TP.tp_per_hit_melee.. '\\cr\\cs'..blue..'] \n\\cr'
@@ -633,11 +643,10 @@ function update()
 		end
 		
 		----------------------------------------------------- Haste Stuff ------------------------------------------
-		Gear_info = get_equip_stats(check_equipped())
 		
 		inform.title2 = ' \\cs'..blue..'[\\cr\\cs'..white..'Gear Info\\cr\\cs'..blue..'] \n\\cr'
-		inform.stp = ' \\cs'..blue..'[STP:\\cr\\cs'..white..Gear_info.stp.. '\\cr\\cs'..blue..']\\cr'
-		inform.dw = ' \\cs'..blue..'[DW:\\cr\\cs'..white..Gear_info.dual_wield.. '\\cr\\cs'..blue..'] \n\\cr'
+		inform.stp = ' \\cs'..blue..'[STP:\\cr\\cs'..white..Gear_info['Store TP'].. '\\cr\\cs'..blue..']\\cr'
+		inform.dw = ' \\cs'..blue..'[DW:\\cr\\cs'..white..Gear_info['Dual Wield'].. '\\cr\\cs'..blue..'] \n\\cr'
 		
 		if Buffs_inform.STP > 0 then
 			inform.bstp = ' \\cs'..blue..'[Buff STP:\\cr\\cs'..white..Buffs_inform.STP.. '\\cr\\cs'..blue..'] \n\\cr'
@@ -645,10 +654,10 @@ function update()
 			inform.bstp = ''
 		end
 		
-		inform.ghaste = ( Gear_info.haste < 257 and
-							' \\cs'..blue..'[G.Haste:\\cr\\cs'..red..Gear_info.haste.. '\\cr\\cs'..blue..'/256] \\cr'
-						or Gear_info.haste > 256 and
-							' \\cs'..blue..'[G.Haste:\\cr\\cs'..white..Gear_info.haste.. '\\cr\\cs'..blue..'/256] \\cr')
+		inform.ghaste = ( Gear_info['Haste'] < 257 and
+							' \\cs'..blue..'[G.Haste:\\cr\\cs'..red..Gear_info['Haste'].. '\\cr\\cs'..blue..'/256] \\cr'
+						or Gear_info['Haste'] > 256 and
+							' \\cs'..blue..'[G.Haste:\\cr\\cs'..white..Gear_info['Haste'].. '\\cr\\cs'..blue..'/256] \\cr')
 		
 		if (Buffs_inform.magic_haste + manual_mhaste) > 0 then
 			inform.mhaste = ( (Buffs_inform.magic_haste + manual_mhaste) < 449 and
@@ -711,7 +720,7 @@ function update()
 		----------------------------------------------------------------- ACC Stuff ---------------------------------------------------
 		
 		if settings.player.show_acc_Stuff == true then
-			Total_acc = get_player_acc(check_equipped())
+			Total_acc = get_player_acc(Gear_info)
 			
 			inform.T_acc = (Total_acc.sub > 0 and
 							'\n \\cs'..blue..'[Acc:\\cr\\cs'..white..Total_acc.main..','..Total_acc.sub ..'\\cr\\cs'..blue..'] \\cr'
@@ -719,7 +728,7 @@ function update()
 							'\n \\cs'..blue..'[Acc:\\cr\\cs'..white..Total_acc.main..'\\cr\\cs'..blue..'] \\cr' )
 							
 			inform.T_racc = ( Total_acc.range > 0 and
-							'\n \\cs'..blue..'[RAcc:\\cr\\cs'..white..(Total_acc.range + Total_acc.ammo )..'\\cr\\cs'..blue..'] \\cr'
+							'\n \\cs'..blue..'[RAcc:\\cr\\cs'..white..(Total_acc.range)..'\\cr\\cs'..blue..'] \\cr'
 							or Total_acc.range == 0 and
 							'')
 		else
@@ -881,7 +890,7 @@ windower.register_event('prerender',function()
 		local temp_pos = player.position
         player = windower.ffxi.get_player()
         player.equipment = temp_equip
-		get_player_skill_in_gear(check_equipped())
+		-- get_player_skill_in_gear(check_equipped())
         player.stats = temp_stats
 		player.position = temp_pos
 		player.is_moving = check_player_movement(player)
@@ -891,6 +900,9 @@ windower.register_event('prerender',function()
     end
     frame_count = frame_count + 1
 end)
+
+windower.register_event('incoming chunk',incoming_chunk)
+windower.register_event('outgoing chunk',outgoing_chunk)
 
 function update_gs(DW, Total_DW_needed, haste)
 	if DW == true then

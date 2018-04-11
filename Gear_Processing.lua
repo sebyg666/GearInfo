@@ -68,6 +68,12 @@ function find_all_values(item)
 			end
 		end
 		
+		for k, v in pairs(Set_bonus_by_item_id) do
+			if item.id == k then
+				edited_item['Set Bonus'] = {["set id"] = v["set id"], ["bonus"] = v["bonus"] }
+			end		
+		end
+		
 		if item.category == 'Weapon' then
 			for k,v in pairs(item) do
 				-- if k == 'delay' then	
@@ -232,61 +238,187 @@ function desypher_description(discription_string, item_t)
 	end
 	return temp_table
 end
-		
+
 function get_equip_stats(equipment_table)
-	local item_haste = 0
-	local item_dw = 0
-	local item_stp = 0
-	local haste_info_perc = 0
-	local item_info = {haste = 0, dual_wield = 0, stp = 0, dt = 0, pdt = 0, mdt = 0, bdt = 0, mdtii = 0, pdtii = 0 }
+
+	local stat_table = { ['Haste'] = 0, ['Slow'] = 0, ['Dual Wield'] = 0, ['Store TP'] = 0, ['Accuracy'] = 0, ['Ranged Accuracy'] = 0,
+
+									['DT'] = 0, ['PDT'] = 0, ['PDT2'] = 0, ['MDT'] = 0, ['MDT2'] = 0, ['BDT'] = 0,
+							 
+									["MND"]=0, ["AGI"]=0, ["DEX"]=0, ["VIT"]=0, ["STR"]=0, ["INT"]=0,  ["CHR"]=0, 
+							 
+									["Hand-to-Hand skill"]=0, ["Dagger skill"]=0, ["Sword skill"]=0, ["Great sword skill"]=0, ["Axe skill"]=0, ["Great axe skill"]=0, ["Scythe skill"]=0, ["Polearm skill"]=0, 
+									["Katana skill"]=0, ["Great katana skill"]=0,["Club skill"]=0,["Staff skill"]=0,["Archery skill"]=0,["Marksmanship skill"]=0,["Throwing skill"]=0,['Combat skills']=0,
+									
+									['main'] = {['skill'] = '', value = 0}, ['sub'] = {['skill'] = '', value = 0}, ['range'] = {['skill'] = '', value = 0}, ['ammo'] = {['skill'] = '', value = 0},
+								}
+								
+	local melee_skills = L{"Hand-to-Hand skill", "Dagger skill", "Sword skill", "Great Sword skill", "Axe skill", "Great Axe skill", "Scythe skill", "Polearm skill", "Katana skill", "Great Katana skill", "Club skill", "Staff skill"}
+	local ranged_skills = L{"Archery skill", "Marksmanship skill", "Throwing skill"}
+							
+	local set_bonus = {}
 	
 	if type(equipment_table) ~= 'table' or equipment_table == nil then
-		windower.add_to_chat(200,'get_equip_stats() function went wrong')
-		return item_info
-	else
-		for k,v in pairs(equipment_table) do
-			for i,j in pairs(v) do
-				if i == 'Haste' then
-					item_haste = item_haste + math.floor(j / 100 * 1024)
-				elseif i == 'Slow' then
-					item_haste = item_haste - math.floor(j / 100 * 1024)
-				elseif i == 'Dual Wield' then 
-					item_dw = item_dw + j
-				elseif i == 'Store TP' then
-					item_stp = item_stp + j
-				elseif i == 'DT' then
-					item_info.dt = item_info.dt + j
-				elseif i == 'PDT' then
-					item_info.pdt = item_info.pdt + j
-				elseif i == 'PDT2' then
-					item_info.pdtii = item_info.pdtii + j
-				elseif i == 'MDT' then
-					item_info.mdt = item_info.mdt + j
-				elseif i == 'MDT2' then
-					item_info.mdtii = item_info.mdtii + j
-				elseif i == 'BDT' then
-					item_info.bdt = item_info.bdt + j
+		error('get_equip_stats() function went wrong')
+		return stat_table
+	else	
+		for equip_slot, equipped_item in pairs(equipment_table) do
+			for key, value in pairs(equipped_item) do
+				if stat_table[key] then
+					if equipped_item["category"]=="Weapon" then
+						if equipped_item['skill'] then
+							stat_table[equip_slot]['skill'] =  equipped_item['skill']
+							if 	equipped_item[equipped_item['skill'] ..' skill'] then
+								stat_table[equip_slot].value =  equipped_item[equipped_item['skill'] ..' skill']
+							end
+						end
+						if not melee_skills:contains(key) and not ranged_skills:contains(key) then
+							if key == 'Haste' then
+								stat_table['Haste'] = stat_table['Haste'] + math.floor(value / 100 * 1024)
+							elseif key == 'Slow' then
+								stat_table['Haste'] = stat_table['Haste'] - math.floor(value / 100 * 1024)
+							elseif key == 'Combat skills' then
+								stat_table['main'].value = stat_table['main'].value + value
+								stat_table['sub'].value = stat_table['sub'].value + value
+								stat_table['range'].value = stat_table['range'].value + value
+								stat_table['ammo'].value = stat_table['ammo'].value + value
+							else
+								stat_table[key] = stat_table[key] + value
+							end
+						end
+					else
+						if key == 'Haste' then
+							stat_table['Haste'] = stat_table['Haste'] + math.floor(value / 100 * 1024)
+						elseif key == 'Slow' then
+							stat_table['Haste'] = stat_table['Haste'] - math.floor(value / 100 * 1024)
+						elseif key == 'Combat skills' then
+							stat_table['main'].value = stat_table['main'].value + value
+							stat_table['sub'].value = stat_table['sub'].value + value
+							stat_table['range'].value = stat_table['range'].value + value
+							stat_table['ammo'].value = stat_table['ammo'].value + value
+						else
+							stat_table[key] = stat_table[key] + value
+						end
+					end
+				elseif equip_slot == 'main' and equipped_item.en == '' then
+					stat_table['main']['skill'] = 'Hand-to-Hand'
+				end
+				if key == "Set Bonus" then
+					if  set_bonus[value["set id"]]  then
+						set_bonus[value["set id"]] = set_bonus[value["set id"]] + 1
+					else
+						set_bonus[value["set id"]]  = 1
+					end
+				end
+			end
+		end
+
+		for k, v in pairs(set_bonus) do
+			if v > 1 then
+				if v >= Set_bonus_by_Set_ID[k]["minimum peices"] then
+					if Set_bonus_by_Set_ID[k]["bonus"][v] then
+						for key, value in pairs(Set_bonus_by_Set_ID[k]["bonus"][v]) do
+							if stat_table[key] then
+								stat_table[key] = stat_table[key] + value
+							end
+						end
+					end
 				end
 			end
 		end
 	end
+	-- table.vprint(stat_table['main'])
+	stat_table['Haste'] = stat_table['Haste'] + manual_ghaste
+	stat_table['Dual Wield'] = stat_table['Dual Wield'] + manual_dw
+	stat_table['Store TP'] = stat_table['Store TP'] + manual_stp
 	
-	-- Set bonus declaration
-	if (player.equipment.right_ear.en == 'Dudgeon Earring' and player.equipment.left_ear.en == 'Heartseeker Earring') or  (player.equipment.right_ear.en == 'Heartseeker Earring' and player.equipment.left_ear.en == 'Dudgeon Earring') then
-		item_dw = item_dw + 7
+	return stat_table
+	
+end
+
+function get_player_acc(stat_table)
+	
+	local stat_table = stat_table
+	
+	for skill_name, value in pairs(player_base_skills) do
+		--notice(main_hand.skill)
+		--log(skill_name  .. ' | ' .. string.gsub(stat_table['main'].skill:lower(), ' ', '_'))
+		if skill_name == string.gsub(stat_table['main'].skill:lower(), ' ', '_') then
+			--log(stat_table['main'].value..'  ' ..value.. '  '..stat_table[stat_table['main'].skill .. ' skill'])
+			
+			stat_table['main'].value = stat_table['main'].value + value + stat_table[stat_table['main'].skill .. ' skill']
+		end
+		if skill_name == string.gsub(stat_table['sub'].skill:lower(), ' ', '_') then
+			stat_table['sub'].value = stat_table['sub'].value + value + stat_table[stat_table['sub'].skill .. ' skill']
+		end
+		if skill_name == string.gsub(stat_table['range'].skill:lower(), ' ', '_') then
+			stat_table['range'].value = stat_table['range'].value + value + stat_table[stat_table['range'].skill .. ' skill']
+		end
+		if skill_name == string.gsub(stat_table['ammo'].skill:lower(), ' ', '_') then
+			stat_table['ammo'].value = stat_table['ammo'].value + value + stat_table[stat_table['ammo'].skill .. ' skill']
+		end
+	end
+
+	for stat, value in pairs(player.stats) do
+		if stat_table[stat] then 
+			stat_table[stat] = stat_table[stat] + value 
+		end	
+	end	
+
+	
+	stat_table = get_blue_mage_stats_from_equipped_spells(stat_table)
+	
+	local Total_acc = {main = 0, sub = 0, range = 0, ammo = 0, dex = 0, agi = 0}
+	local main_acc_skill = acc_from_skill(stat_table['main'].value)
+	local sub_acc_skill = acc_from_skill(stat_table['sub'].value )
+	local ranged_acc_skill = racc_from_skill(stat_table['range'].value )
+	local ammo_acc_skill = racc_from_skill(stat_table['ammo'].value )
+	Total_acc.dex = math.floor(stat_table['DEX'] * 0.75)
+	Total_acc.agi = math.floor(stat_table['AGI'] * 0.75)
+	
+	Total_acc.main = main_acc_skill + (math.floor(stat_table['DEX'] * 0.75)) + stat_table['Accuracy'] + get_player_acc_from_job()
+
+	if player.equipment.sub.id ~= 0 and player.equipment.sub.category == 'Weapon' and player.equipment.sub.damage then
+		Total_acc.sub = sub_acc_skill + (math.floor(stat_table['DEX'] * 0.75)) + stat_table['Accuracy'] + get_player_acc_from_job()
+	else
+		Total_acc.sub = 0
+	end
+	if player.equipment.range.id ~= 0 and player.equipment.range.category == 'Weapon' then
+		Total_acc.range = ranged_acc_skill + math.floor(stat_table['AGI'] * 0.75) + stat_table['Ranged Accuracy'] + get_player_acc_from_job()
+	else
+		Total_acc.range = 0
+	end
+	if player.equipment.ammo.id ~= 0 and player.equipment.ammo.category == 'Weapon' and player.equipment.ammo.damage then
+		Total_acc.ammo = ammo_acc_skill + math.floor(stat_table['AGI'] * 0.75) + stat_table['Ranged Accuracy'] + get_player_acc_from_job()
+	else
+		Total_acc.ammo = 0
 	end
 	
-	-- haste_info_perc = math.floor(item_haste / 100 * 1024)
+	--notice('Main Acc = '.. Total_acc.main .. ' | Off hand Acc = '.. Total_acc.sub .. ' | Ranged Acc = '.. Total_acc.range .. ' | ammo Acc = '.. Total_acc.ammo)
+	--log('Dex = '.. stat_table['DEX'] .. ' | Main skill  = '.. stat_table['main'].value .. ' | Sub skill = '.. stat_table['sub'].value .. ' | job acc = ' ..get_player_acc_from_job() .. ' | gear acc = ' .. stat_table['Accuracy'])
+	--log('Agi = '.. stat_table['AGI'] .. ' | Range skill  = '.. stat_table['range'].value .. ' | Ammo skill = '.. stat_table['ammo'].value .. ' | job acc = ' ..get_player_acc_from_job().. ' | gear r.acc = ' .. stat_table['Ranged Accuracy'])
 	
-	--log(haste_info_perc)
+	--log(main_acc_skill.. ' ' .. item_acc .. ' ' .. get_player_acc_from_job() .. ' ' .. main_hand.value .. ' ' .. skill_from_gear_main .. ' ' ..item_dex .. ' ' .. player_dex )
+	--log(ammo_acc_skill.. ' ' .. item_racc .. ' ' .. get_player_acc_from_job() .. ' ' .. ammo.value .. ' ' .. skill_from_gear_ammo .. ' ' ..item_agi .. ' ' .. player_agi )
 	
-	-- local temp_info = item_info
-	item_info.haste = item_haste + manual_ghaste
-	item_info.dual_wield = item_dw + manual_dw
-	item_info.stp = item_stp + manual_stp
-	--table.vprint(item_info)
-	return item_info
+	return Total_acc
 	
+	
+end
+
+function get_blue_mage_stats_from_equipped_spells(stat_table)
+
+	local spells_set = T(windower.ffxi.get_mjob_data().spells):filter(function(id) return id ~= 512 end):map(function(id) return id end)
+	
+	for key, spell_id in pairs(spells_set) do
+		for stat, value in pairs(Blu_spells[spell_id]) do
+			if stat_table[stat] then 
+				stat_table[stat] = stat_table[stat] + value 
+			end
+		end
+	end
+
+	return stat_table
 end
 
 function get_player_skill_in_gear(equip)
@@ -367,161 +499,6 @@ function get_player_skill_in_gear(equip)
 	end
 	-- notice(player_base_skills.sword)
 end
-
-function get_player_acc(equip)
-	--get_packet_data()
-	--table.vprint(equip)
-	
-	local main_hand = {skill = 'hand_to_hand', value = 0}
-	local sub_hand = {skill = '', value = 0}
-	local ranged = {skill = '', value = 0}
-	local ammo_slot = {skill = '', value = 0}
-	local item_dex = 0
-	local item_agi = 0
-	local item_acc = 0
-	local item_racc = 0
-	local player_dex = 0
-	local player_agi = 0
-	local skill_from_gear_main = 0
-	local skill_from_gear_sub = 0
-	local skill_from_gear_ranged = 0
-	local skill_from_gear_ammo = 0
-	
-	local melee_skills = L{"Hand-to-Hand", "Dagger", "Sword", "Great Sword", "Axe", "Great Axe", "Scythe", "Polearm", "Katana", "Great Katana", "Club", "Staff"}
-	local ranged_skills = L{"Archery", "Marksmanship", "Throwing"}
-	
-	if equip ~= nil then
-		for k,v in pairs(equip) do
-			--if v.id == 20677 then table.vprint(v) end
-			if k == 'main' and v.id ~= 0 and v.category == 'Weapon' and melee_skills:contains(v.skill) then
-				if v.damage then
-					main_hand.skill = v.skill
-				end
-				if v[main_hand.skill..' skill'] then
-					main_hand.value = v[main_hand.skill..' skill']
-				end
-				--table.vprint(main_hand)
-			elseif k == 'sub' and v.id ~= 0 and v.category == 'Weapon' and melee_skills:contains(v.skill) then
-				if v.damage then
-					sub_hand.skill = v.skill
-				end
-				if v[sub_hand.skill..' skill'] then
-					sub_hand.value = v[sub_hand.skill..' skill']
-				end
-			end
-			if k == 'range' and v.id ~= 0 and v.category == 'Weapon' and ranged_skills:contains(v.skill) then
-				if v.damage then
-					ranged.skill = v.skill
-				end
-				if v[ranged.skill..' skill'] then
-					ranged.value = v[ranged.skill..' skill']
-				end
-				--table.vprint(main_hand)
-			elseif k == 'ammo' and v.id ~= 0 and v.category == 'Weapon' and ranged_skills:contains(v.skill) then
-				--if v.en == 'Ochu' then table.vprint(v) end
-				-- notice(ammo_slot.skill..' skill')
-				if v.damage then
-					ammo_slot.skill = v.skill
-				end
-				if v[ammo_slot.skill..' skill'] then
-					ammo_slot.value = v[ammo_slot.skill..' skill']
-				end
-			end
-		end
-		for slot, item in pairs(equip) do
-			for stat, value in pairs(item) do
-				if stat == 'DEX' then
-					item_dex = item_dex + value
-				elseif stat == 'Accuracy' then 
-					item_acc = item_acc + value
-					--log(item_acc .. ' '..v.en)
-				elseif stat == 'AGI' then 
-					item_agi = item_agi + value
-				elseif stat == 'Ranged Accuracy' then 
-					item_racc = item_racc + value
-				elseif item.category == "Armor" then
-					--log(i .. ' ' .. string.gsub(main_hand.skill, ' ', '_')..'_skill')
-					if stat == main_hand.skill..' skill' then
-						skill_from_gear_main = skill_from_gear_main + value
-					end
-					if stat == sub_hand.skill..' skill' then 
-						skill_from_gear_sub = skill_from_gear_sub + value
-					end
-					if stat == ranged.skill..' skill' then
-						skill_from_gear_ranged = skill_from_gear_ranged + value
-					end
-					if stat == ammo_slot.skill..' skill' then
-						skill_from_gear_ammo = skill_from_gear_ammo + value
-					end
-					if stat == "Combat skills" then
-						skill_from_gear_main = skill_from_gear_main + value
-						skill_from_gear_sub = skill_from_gear_sub + value
-						skill_from_gear_ranged = skill_from_gear_ranged + value
-						skill_from_gear_ammo = skill_from_gear_ammo + value
-					end
-				end
-			end
-		end
-	end
-	--log(string.gsub(main_hand.skill, ' ', '_')..'_skill'..' '..skill_from_gear_main ..' '..string.gsub(sub_hand.skill, ' ', '_')..'_skill'..' '..skill_from_gear_sub)
-	for k,v in pairs(player_base_skills) do
-		--notice(main_hand.skill)
-		if k == string.gsub(main_hand.skill:lower(), ' ', '_') or (main_hand.skill == 'Hand-to-Hand' and k == 'hand_to_hand' )  then
-			main_hand.value = main_hand.value + v
-		end
-		if k == string.gsub(sub_hand.skill:lower(), ' ', '_') then
-			sub_hand.value = sub_hand.value + v
-		end
-		if k == string.gsub(ranged.skill:lower(), ' ', '_') then
-			ranged.value = ranged.value + v
-		end
-		if k == string.gsub(ammo_slot.skill:lower(), ' ', '_') then
-			ammo_slot.value = ammo_slot.value + v
-		end
-	end
-	
-	for k,v in pairs(player) do
-		if k == 'stats' then 
-			for i,j in pairs(v) do
-				if i == 'DEX' then 
-					player_dex = j 
-				elseif i == 'AGI' then 
-					player_agi = j 
-				end	
-			end	
-		end
-	end	
-	
-	local Total_acc = {main = 0, sub = 0, range = 0, ammo = 0, dex = 0, agi = 0}
-	local main_acc_skill = acc_from_skill(main_hand.value + skill_from_gear_main )
-	local sub_acc_skill = acc_from_skill(sub_hand.value + skill_from_gear_sub )
-	local ranged_acc_skill = racc_from_skill(ranged.value + skill_from_gear_ranged )
-	local ammo_acc_skill = racc_from_skill(ammo_slot.value + skill_from_gear_ammo )
-	
-	Total_acc.main = main_acc_skill + (math.floor((item_dex + player_dex + get_blu_spells_dex()) * 0.75)) + item_acc + get_player_acc_from_job()
-
-	if player.equipment.sub.id ~= 0 and player.equipment.sub.category == 'Weapon' and player.equipment.sub.damage then
-		Total_acc.sub = sub_acc_skill + math.floor((item_dex + player_dex + get_blu_spells_dex()) * 0.75) + item_acc + get_player_acc_from_job()
-	else
-		Total_acc.sub = 0
-	end
-	if player.equipment.range.id ~= 0 and player.equipment.range.category == 'Weapon' then
-		Total_acc.range = ranged_acc_skill + math.floor((item_agi + player_agi) * 0.75) + item_racc + get_player_acc_from_job()
-	else
-		Total_acc.range = 0
-	end
-	if player.equipment.ammo.id ~= 0 and player.equipment.ammo.category == 'Weapon' and player.equipment.ammo.damage then
-		Total_acc.ammo = ammo_acc_skill + math.floor((item_agi + player_agi) * 0.75) + item_racc + get_player_acc_from_job()
-	else
-		Total_acc.ammo = 0
-	end
-	--log(main_acc_skill.. ' ' .. item_acc .. ' ' .. get_player_acc_from_job() .. ' ' .. main_hand.value .. ' ' .. skill_from_gear_main .. ' ' ..item_dex .. ' ' .. player_dex )
-	--log(ammo_acc_skill.. ' ' .. item_racc .. ' ' .. get_player_acc_from_job() .. ' ' .. ammo.value .. ' ' .. skill_from_gear_ammo .. ' ' ..item_agi .. ' ' .. player_agi )
-	Total_acc.dex = item_dex + player_dex + get_blu_spells_dex()
-	Total_acc.agi = item_agi + player_agi
-	
-	return Total_acc
-end
 	
 function acc_from_skill(skill)
 	
@@ -535,53 +512,11 @@ end
 function racc_from_skill(skill)
 	
 	if skill < 200 then return skill end
-	if skill < 400 and skill > 199 then return (math.floor(skill * 0.9)) end
-	if skill < 600 and skill > 399 then return (math.floor(skill * 0.9)) end
-	if skill > 599 then return (math.floor(skill * 0.9)) end
+	if skill < 400 and skill > 199 then return (math.floor((skill -200) * 0.9) + 200) end
+	if skill < 600 and skill > 399 then return (math.floor((skill -400) * 0.8) + 380) end
+	if skill > 599 then return (math.floor((skill -600) * 0.9) + 540) end
 
 end
-
-function get_blu_spells_dex()
-
-	local dex = 0
-	local spells_set = T(windower.ffxi.get_mjob_data().spells):filter(function(id) return id ~= 512 end):map(function(id) return blu_spells[id].english end)
-	-- here we give each spell a value of 4 or 8 and add the values together
-	for index, spell in pairs(spells_set) do
-	--for spell in spells_set:it() do
-		if spell == 'Acrid Stream' then dex = dex + 2 end
-		if spell == 'Anvil Lightning' then dex = dex + 8 end
-		if spell == 'Barbed Crescent' then dex = dex + 4 end
-		if spell == 'Battle Dance' then dex = dex + 2 end
-		if spell == 'Benthic Typhoon' then dex = dex - 1 end
-		if spell == 'Blitzstrahl' then dex = dex + 3 end
-		if spell == 'Cannonball' then dex = dex + 1 end
-		if spell == 'Charged Whisker' then dex = dex + 2 end
-		if spell == 'Cimicine Discharge' then dex = dex + 1 end
-		if spell == 'Dimensional Death' then dex = dex + 1 end
-		if spell == 'Fantod' then dex = dex + 2 end
-		if spell == 'Frypan' then dex = dex + 2 end
-		if spell == 'Glutinous Dart' then dex = dex + 3 end
-		if spell == 'Goblin Rush' then dex = dex + 2 end
-		if spell == 'Head Butt' then dex = dex + 2 end
-		if spell == 'Hysteric Barrage' then dex = dex + 2 end
-		if spell == 'Jet Stream' then dex = dex + 2 end
-		if spell == 'Nat. Meditation' then dex = dex + 6 end
-		if spell == 'Orcish Counterstance' then dex = dex -2 end
-		if spell == 'Palling Salvo' then dex = dex + 6 end
-		if spell == 'Paralyzing Triad' then dex = dex + 4 end
-		if spell == 'Plasma Charge' then dex = dex + 3 end
-		if spell == 'Quadratic Continuum' then dex = dex + 3 end
-		if spell == 'Sinker Drill' then dex = dex + 4 end
-		if spell == 'Sudden Lunge' then dex = dex + 1 end
-		if spell == 'Thunder Breath' then dex = dex + 2 end
-		if spell == 'Uppercut' then dex = dex + 1 end
-		if spell == 'Whirl of Rage' then dex = dex + 2 end
-		if spell == 'Thrashing Assault' then dex = dex + 8 end		
-	end
-
-	return dex
-end
-
 
 function get_player_acc_from_job()
 	

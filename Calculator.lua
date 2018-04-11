@@ -1,4 +1,4 @@
-function get_tp_per_hit(equip)
+function get_tp_per_hit()
 	-- tp_per_hit = {melee = 0, range = 0}
 	local tp_per_hit = determine_Base_tp_hit()
 	local tp_per_hit_zanshin = 0
@@ -19,20 +19,20 @@ function get_tp_per_hit(equip)
 		end
 		
 		--log('Main job is SAM Job points TP bonus value:' .. jp_tp_bonus)
-		if Gear_info.stp ~= nil then
+		if Gear_info['Store TP'] ~= nil then
 			local zanshin = tp_per_hit.melee + (3 * player.merits.ikishoten)
 			--log('ikishoten merits = '.. player.merits.ikishoten .. ' STP merits: ' ..player.merits.store_tp_effect  )
 			--log('zanshin = tp_per_hit + 3 x merits + jp bonus : ' .. zanshin)
 			local merit_STP = (player.merits.store_tp_effect * 2)
-			tp_per_hit_zanshin =  math.floor(zanshin * (100 + Gear_info.stp + Job_STP + merit_STP + jp_tp_bonus + buff) / 100 )
-			--log('zanshin tp return = ' ..global_tp_hit_zanshin .. ' where gear STP = ' ..  Gear_info.stp)
-			tp_per_hit.melee = math.floor(tp_per_hit.melee * (100 + Gear_info.stp + merit_STP + jp_tp_bonus + Job_STP + buff) / 100 )
-			tp_per_hit.range = math.floor(tp_per_hit.range * (100 + Gear_info.stp + merit_STP + jp_tp_bonus + Job_STP + buff) / 100 )
+			tp_per_hit_zanshin =  math.floor(zanshin * (100 + Gear_info['Store TP'] + Job_STP + merit_STP + jp_tp_bonus + buff) / 100 )
+			--log('zanshin tp return = ' ..global_tp_hit_zanshin .. ' where gear STP = ' ..  Gear_info['Store TP'])
+			tp_per_hit.melee = math.floor(tp_per_hit.melee * (100 + Gear_info['Store TP'] + merit_STP + jp_tp_bonus + Job_STP + buff) / 100 )
+			tp_per_hit.range = math.floor(tp_per_hit.range * (100 + Gear_info['Store TP'] + merit_STP + jp_tp_bonus + Job_STP + buff) / 100 )
 		end
 	else
-		if Gear_info.stp ~= nil then
-			tp_per_hit.melee = math.floor(tp_per_hit.melee * (100 + Gear_info.stp + Job_STP + buff) / 100 )
-			tp_per_hit.range = math.floor(tp_per_hit.range * (100 + Gear_info.stp + Job_STP + buff) / 100 )
+		if Gear_info['Store TP'] ~= nil then
+			tp_per_hit.melee = math.floor(tp_per_hit.melee * (100 + Gear_info['Store TP'] + Job_STP + buff) / 100 )
+			tp_per_hit.range = math.floor(tp_per_hit.range * (100 + Gear_info['Store TP'] + Job_STP + buff) / 100 )
 			tp_per_hit_zanshin = 0
 		end
 	end
@@ -48,8 +48,8 @@ function determine_Base_tp_hit()
 	local weapons = determine_Weapon_Delay()
 	local DW = determine_DW()
 	
-	if Gear_info.dual_wield ~= nil and DW ~= nil then
-		total_dw = Gear_info.dual_wield + DW
+	if Gear_info['Dual Wield'] ~= nil and DW ~= nil then
+		total_dw = Gear_info['Dual Wield'] + DW
 	end
 	
 	local base_delay = {melee = 0, range = 0}
@@ -181,7 +181,7 @@ function determine_Weapon_Delay()
 	
 	local Base_Delay = 480
 	
-	if player.equipment.main.skill == "Hand-to-Hand" then
+	if player.equipment.main.skill == "Hand-to-Hand" or player.equipment.main.en == '' then
 		
 		local MainJ_Base_Delay = 480
 		local SubJ_Base_Delay = 480
@@ -244,35 +244,35 @@ function determine_Weapon_Delay()
 		else
 			Weapon_Delay.melee_delay = Base_Delay + player.equipment.main.delay
 		end
-	else
-		for k,v in pairs(player.equipment.main) do
-			if player.equipment.main.skill ~= "Hand-to-Hand" then
-				if k == 'delay' then
-					Weapon_Delay.melee_delay = player.equipment.main.delay
-				end
+	end
+	for k,v in pairs(player.equipment.main) do
+		if player.equipment.main.skill ~= "Hand-to-Hand" and player.equipment.main.en ~= '' then
+			if k == 'delay' then
+				Weapon_Delay.melee_delay = player.equipment.main.delay
 			end
-		end
-		for k,v in pairs(player.equipment.sub) do
-			if player.equipment.sub.category == 'Weapon' then
-				if k == 'damage' and v > 0 then
-					Weapon_Delay.melee_delay = Weapon_Delay.melee_delay + player.equipment.sub.delay
-					Weapon_Delay.sub = true
-				end	
-			end
-		end
-		for k,v in pairs(player.equipment.range) do
-			if k == 'damage' and v > 0 then
-				Weapon_Delay.ranged_delay = Weapon_Delay.ranged_delay + player.equipment.range.delay
-				Weapon_Delay.range = true
-			end		
-		end
-		for k,v in pairs(player.equipment.ammo) do
-			if k == 'damage' and v > 0 then
-				Weapon_Delay.ranged_delay = Weapon_Delay.ranged_delay + player.equipment.ammo.delay
-				Weapon_Delay.ammo = true
-			end		
 		end
 	end
+	for k,v in pairs(player.equipment.sub) do
+		if player.equipment.sub.category == 'Weapon' then
+			if k == 'damage' and v > 0 then
+				Weapon_Delay.melee_delay = Weapon_Delay.melee_delay + player.equipment.sub.delay
+				Weapon_Delay.sub = true
+			end	
+		end
+	end
+	for k,v in pairs(player.equipment.range) do
+		if k == 'damage' and v > 0 then
+			Weapon_Delay.ranged_delay = Weapon_Delay.ranged_delay + player.equipment.range.delay
+			Weapon_Delay.range = true
+		end		
+	end
+	for k,v in pairs(player.equipment.ammo) do
+		if k == 'damage' and v > 0 then
+			Weapon_Delay.ranged_delay = Weapon_Delay.ranged_delay + player.equipment.ammo.delay
+			Weapon_Delay.ammo = true
+		end		
+	end
+	--table.vprint(Weapon_Delay)
 	-- notice(Weapon_Delay.melee_delay )
 	return Weapon_Delay
 end
@@ -416,10 +416,10 @@ function get_total_haste()
 	local ja_haste = 0
 	local total = 0
 	
-	if (Gear_info.haste + manual_ghaste) > 256 then
+	if (Gear_info['Haste'] + manual_ghaste) > 256 then
 		gear_haste = 256
 	else
-		gear_haste = Gear_info.haste + manual_ghaste
+		gear_haste = Gear_info['Haste'] + manual_ghaste
 	end
 	if (Buffs_inform.magic_haste + manual_mhaste) > 448 then
 		magic_haste = 448
