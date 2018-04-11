@@ -5,18 +5,21 @@ function get_tp_per_hit()
 	local Job_STP = determine_stp()
 	local Return_table = T{}
 	local buff = Buffs_inform.STP
-
+	
+	local jp_tp_bonus = 0
+	local jp = player.job_points[player.main_job:lower()]['jp_spent']
+		
+	for k, v in pairs(Gifts[player.main_job:upper()]['Gifts']) do
+		if k <= jp then
+			for i, j in pairs(v) do
+				if i == 'Store TP Effect' then
+				end
+			end
+		end
+	end
+	
 	--log("base delay =" ..base_delay.. ' | tp_per_hit :' .. tp_per_hit .. ' | Job_traits :'.. Job_STP )
 	if player.main_job:upper() == 'SAM' then
-		
-		local jp = player.job_points['sam']['jp_spent']
-		local jp_tp_bonus = 0
-		
-		if jp > 124 and jp < 450 then jp_tp_bonus = 2
-		elseif jp > 449 and jp < 1050 then jp_tp_bonus = 4
-		elseif jp > 1049 and jp < 1900 then jp_tp_bonus = 6
-		elseif jp > 1899 and jp < 2101 then jp_tp_bonus = 8
-		end
 		
 		--log('Main job is SAM Job points TP bonus value:' .. jp_tp_bonus)
 		if Gear_info['Store TP'] ~= nil then
@@ -31,8 +34,8 @@ function get_tp_per_hit()
 		end
 	else
 		if Gear_info['Store TP'] ~= nil then
-			tp_per_hit.melee = math.floor(tp_per_hit.melee * (100 + Gear_info['Store TP'] + Job_STP + buff) / 100 )
-			tp_per_hit.range = math.floor(tp_per_hit.range * (100 + Gear_info['Store TP'] + Job_STP + buff) / 100 )
+			tp_per_hit.melee = math.floor(tp_per_hit.melee * (100 + Gear_info['Store TP'] + jp_tp_bonus + Job_STP + buff) / 100 )
+			tp_per_hit.range = math.floor(tp_per_hit.range * (100 + Gear_info['Store TP'] + jp_tp_bonus + Job_STP + buff) / 100 )
 			tp_per_hit_zanshin = 0
 		end
 	end
@@ -112,6 +115,8 @@ function determine_stp()
 		-- here we look up job points spent on blue for the DW bonus
 		local jp_boost = 0
 		local jp = player.job_points['blu']['jp_spent']
+		
+		local jp_boost = 0
 		if jp < 100 then
 			jp_boost = 0
 		elseif jp >= 100 and jp < 1200 then
@@ -120,48 +125,38 @@ function determine_stp()
 			jp_boost = 2
 		end
 		
-		--here we look up spells currently equipped to check for DW trait
-		local TP_Spells_Equipped_Level = 0
-		local spells_set = T(windower.ffxi.get_mjob_data().spells):filter(function(id) return id ~= 512 end):map(function(id) return blu_spells[id].english end)
-		--table.vprint(spells_set)
+		local spells_set = T(windower.ffxi.get_mjob_data().spells):filter(function(id) return id ~= 512 end):map(function(id) return id end)
 		local spell_value = 0
-		-- here we give each spell a value of 4 or 8 and add the values together
-		for index, spell in pairs(spells_set) do
-		--for spell in spells_set:it() do
-			if spell == "Sickle Slash" or spell == "Tail Slap" or spell == "Fantod" or spell == "Sudden Lunge" then
-			   spell_value = spell_value + 4
-			elseif spell == "Diffusion Ray" then 
-				spell_value = spell_value + 8
+		for key, spell_id in pairs(spells_set) do
+			if Blu_spells[spell_id].trait == 'Store TP' then
+				spell_value = spell_value + Blu_spells[spell_id]['points']
 			end
-			--add_to_chat(122, '[Spell: '.. spell .. '] [Spell value: ' .. spell_value.. ']')
 		end
-		--add_to_chat(122, '[Spell value: ' .. spell_value.. ']')
 		
-		--here we determine the DW level equipped with job points
-		if spell_value ~= 0 then
-			TP_Spells_Equipped_Level = math.floor(spell_value / 8) + jp_boost
+		if spell_value > 0 then
+			spell_value  = math.floor(spell_value / 8) + jp_boost
 		else
-			TP_Spells_Equipped_Level = 0
+			spell_value = 0
 		end
 		
 		--the we determine the actuall % value of DW equipped via blu spells 
-		if TP_Spells_Equipped_Level == 0 then main_job_tp = 0
-		elseif TP_Spells_Equipped_Level == 1 then main_job_tp = 10
-		elseif TP_Spells_Equipped_Level == 2 then main_job_tp = 15
-		elseif TP_Spells_Equipped_Level == 3 then main_job_tp = 20
-		elseif TP_Spells_Equipped_Level == 4 then main_job_tp = 25
-		elseif TP_Spells_Equipped_Level == 5 then main_job_tp = 30
+		if spell_value== 0 then main_job_tp = 0
+		elseif spell_value== 1 then main_job_tp = 10
+		elseif spell_value== 2 then main_job_tp = 15
+		elseif spell_value== 3 then main_job_tp = 20
+		elseif spell_value== 4 then main_job_tp = 25
+		elseif spell_value== 5 then main_job_tp = 30
 		end
 		--add_to_chat(122, '[Sub dw: ' .. sub_job_dw .. '] [Main dw: ' .. main_job_dw .. ']')
 	elseif player.main_job:upper() == 'SAM' then
 		--log('entered job traits function')
 		main_job_tp = 0
-		if player.main_job:upper() == 'SAM' and player.main_job_level < 10  then main_job_tp = 0
-		elseif player.main_job:upper() == 'SAM' and player.main_job_level < 30 and  player.main_job_level > 9 then main_job_tp = 10
-		elseif player.main_job:upper() == 'SAM' and player.main_job_level < 50 and  player.main_job_level > 31 then main_job_tp = 15
-		elseif player.main_job:upper() == 'SAM' and player.main_job_level < 70 and  player.main_job_level > 51 then main_job_tp = 20
-		elseif player.main_job:upper() == 'SAM' and player.main_job_level < 90 and  player.main_job_level > 71 then main_job_tp = 25
-		elseif player.main_job:upper() == 'SAM' and player.main_job_level < 100 and  player.main_job_level > 91 then main_job_tp = 30
+		if player.main_job_level < 10  then main_job_tp = 0
+		elseif player.main_job_level < 30 and  player.main_job_level > 9 then main_job_tp = 10
+		elseif player.main_job_level < 50 and  player.main_job_level > 31 then main_job_tp = 15
+		elseif player.main_job_level < 70 and  player.main_job_level > 51 then main_job_tp = 20
+		elseif player.main_job_level < 90 and  player.main_job_level > 71 then main_job_tp = 25
+		elseif player.main_job_level < 100 and  player.main_job_level > 91 then main_job_tp = 30
 		end
 		
 	end
@@ -195,11 +190,6 @@ function determine_Weapon_Delay()
 			elseif player.main_job_level  > 74 and player.main_job_level  < 82 then MainJ_Base_Delay = 300
 			elseif player.main_job_level  > 81 then MainJ_Base_Delay = 280
 			end
-			
-			local jp = player.job_points['mnk']['jp_spent']			
-			if jp > 99 and jp < 1200 then MainJ_Base_Delay = MainJ_Base_Delay - 5
-			elseif jp > 1199 then MainJ_Base_Delay = MainJ_Base_Delay - 10
-			end
 		end
 		
 		if player.main_job:upper() == 'PUP'  then
@@ -221,6 +211,18 @@ function determine_Weapon_Delay()
 		
 		if player.sub_job:upper() == 'PUP'  then
 			if player.sub_job_level  > 24 then  SubJ_Base_Delay = 400
+			end
+		end
+		
+		local jp = player.job_points[player.main_job:lower()]['jp_spent']
+		
+		for k, v in pairs(Gifts[player.main_job:upper()]['Gifts']) do
+			if k <= jp then
+				for i, j in pairs(v) do
+					if i == 'Martial Arts Effect' then
+						MainJ_Base_Delay = MainJ_Base_Delay - j
+					end
+				end
 			end
 		end
 		
@@ -282,21 +284,35 @@ function determine_DW()
 	local sub_job_dw = 0
 	local main_job_dw = 0
 	local player_has_sj = false
+	local jp_dw_bonus = 0
+	
 	for k,v in pairs(player) do
 		if v == 'sub_job' then
 			player_has_sj = true
 		end
 	end
+	
 	if player_has_sj == true then
 		if player.sub_job:upper() == 'DNC' then sub_job_dw = 15
 		elseif player.sub_job:upper() == 'NIN' then sub_job_dw = 25
 		end
 	end
 	
+	local jp = player.job_points[player.main_job:lower()]['jp_spent']
+		
+	for k, v in pairs(Gifts[player.main_job:upper()]['Gifts']) do
+		if k <= jp then
+			for i, j in pairs(v) do
+				if i == 'Dual Wield Effect' then
+					jp_dw_bonus = jp_dw_bonus + j
+				end
+			end
+		end
+	end
+	
 	if player.main_job:upper() == 'BLU' then
 		-- here we look up job points spent on blue for the DW bonus
 		local jp_boost = 0
-		local jp = player.job_points['blu']['jp_spent']
 		if jp < 100 then
 			jp_boost = 0
 		elseif jp >= 100 and jp < 1200 then
@@ -305,41 +321,31 @@ function determine_DW()
 			jp_boost = 2
 		end
 		
-		--here we look up spells currently equipped to check for DW trait
-		local DW_Spells_Equipped_Level = 0
-		local spells_set = T(windower.ffxi.get_mjob_data().spells):filter(function(id) return id ~= 512 end):map(function(id) return blu_spells[id].english end)
-		--table.vprint(spells_set)
+		local spells_set = T(windower.ffxi.get_mjob_data().spells):filter(function(id) return id ~= 512 end):map(function(id) return id end)
 		local spell_value = 0
-		-- here we give each spell a value of 4 or 8 and add the values together
-		for index, spell in pairs(spells_set) do
-		--for spell in spells_set:it() do
-			if spell == "Animating Wail" or spell == "Blazing Bound" or spell == "Quad. Continuum" or spell == "Delta Thrust" or spell == "Mortal Ray" or spell == "Barbed Crescent" then
-			   spell_value = spell_value + 4
-			elseif spell == "Molting Plumage" then 
-				spell_value = spell_value + 8
+		for key, spell_id in pairs(spells_set) do
+			if Blu_spells[spell_id].trait == 'Dual Wield' then
+				spell_value = spell_value + Blu_spells[spell_id]['points']
 			end
-			--add_to_chat(122, '[Spell: '.. spell .. '] [Spell value: ' .. spell_value.. ']')
 		end
-		--add_to_chat(122, '[Spell value: ' .. spell_value.. ']')
 		
-		--here we determine the DW level equipped with job points
-		if spell_value ~= 0 then
-			DW_Spells_Equipped_Level = math.floor(spell_value / 8) + jp_boost
+		if spell_value > 0 then
+			spell_value  = math.floor(spell_value / 8) + jp_boost
 		else
-			DW_Spells_Equipped_Level = 0
+			spell_value = 0
 		end
 		
 		--the we determine the actuall % value of DW equipped via blu spells 
-		if DW_Spells_Equipped_Level == 0 then main_job_dw = 0
-		elseif DW_Spells_Equipped_Level == 1 then main_job_dw = 10
-		elseif DW_Spells_Equipped_Level == 2 then main_job_dw = 15
-		elseif DW_Spells_Equipped_Level == 3 then main_job_dw = 25
-		elseif DW_Spells_Equipped_Level == 4 then main_job_dw = 30
-		elseif DW_Spells_Equipped_Level == 5 then main_job_dw = 35
-		elseif DW_Spells_Equipped_Level == 6 then main_job_dw = 40
+		if spell_value == 0 then main_job_dw = 0
+		elseif spell_value == 1 then main_job_dw = 10
+		elseif spell_value == 2 then main_job_dw = 15
+		elseif spell_value == 3 then main_job_dw = 25
+		elseif spell_value == 4 then main_job_dw = 30
+		elseif spell_value == 5 then main_job_dw = 35
+		elseif spell_value == 6 then main_job_dw = 40
 		end
-	elseif player.main_job:upper() == 'NIN' then
 		
+	elseif player.main_job:upper() == 'NIN' then
 		if player.main_job_level < 10 and  player.main_job_level > 0 then main_job_dw = 0
 		elseif player.main_job_level < 25 and  player.main_job_level > 9 then main_job_dw = 10
 		elseif player.main_job_level < 45 and  player.main_job_level > 24 then main_job_dw = 15
@@ -348,7 +354,7 @@ function determine_DW()
 		elseif player.main_job_level < 100 and  player.main_job_level > 84 then main_job_dw = 35
 		end
 	elseif player.main_job:upper() == 'DNC' then
-	
+		
 		if 	   player.main_job_level < 20 and  player.main_job_level > 0 then main_job_dw = 0
 		elseif player.main_job_level < 40 and  player.main_job_level > 19 then main_job_dw = 10
 		elseif player.main_job_level < 60 and  player.main_job_level > 39 then main_job_dw = 15
@@ -356,52 +362,16 @@ function determine_DW()
 		elseif player.main_job_level < 100 and  player.main_job_level > 79 then main_job_dw = 30
 		end
 		
-		local jp = player.job_points['dnc']['jp_spent']
-		local jp_dw_bonus = 0
-		
-		if jp > 549 then jp_dw_bonus = 5 end
-		
-		main_job_dw = main_job_dw + jp_dw_bonus
-		
 	elseif player.main_job:upper() == 'THF' then
-	
 		if 	   player.main_job_level < 83 and  player.main_job_level > 0 then main_job_dw = 0
 		elseif player.main_job_level < 90 and  player.main_job_level > 82 then main_job_dw = 10
 		elseif player.main_job_level < 98 and  player.main_job_level > 89 then main_job_dw = 15
 		elseif player.main_job_level < 100 and  player.main_job_level > 97 then main_job_dw = 25
 		end
-		
-		local jp = player.job_points['thf']['jp_spent']
-		local jp_dw_bonus = 0
-		
-		if jp > 549 then jp_dw_bonus = 5 end
-		
-		main_job_dw = main_job_dw + jp_dw_bonus
-	end
-	
-	if player.sub_job:upper() == 'NIN' then
-		
-		if 	   player.sub_job_level < 10 and  player.sub_job_level > 0 then sub_job_dw = 0
-		elseif player.sub_job_level < 25 and  player.sub_job_level > 9 then sub_job_dw = 10
-		elseif player.sub_job_level < 45 and  player.sub_job_level > 24 then sub_job_dw = 15
-		elseif player.sub_job_level < 65 and  player.sub_job_level > 44 then sub_job_dw = 25
-		elseif player.sub_job_level < 85 and  player.sub_job_level > 64 then sub_job_dw = 30
-		elseif player.sub_job_level < 100 and  player.sub_job_level > 84 then sub_job_dw = 35
-		end
-		
-	elseif player.sub_job:upper() == 'DNC' then
-	
-		if 	   player.sub_job_level < 20 and  player.sub_job_level > 0 then sub_job_dw = 0
-		elseif player.sub_job_level < 40 and  player.sub_job_level > 19 then sub_job_dw = 10
-		elseif player.sub_job_level < 60 and  player.sub_job_level > 39 then sub_job_dw = 15
-		elseif player.sub_job_level < 80 and  player.sub_job_level > 59 then sub_job_dw = 25
-		elseif player.sub_job_level < 100 and  player.sub_job_level > 79 then sub_job_dw = 30
-		end
-		
 	end
 	
 	--notice( '[Sub dw: ' .. sub_job_dw .. '] [Main dw: ' .. main_job_dw .. ']')
-	
+	main_job_dw = main_job_dw + jp_dw_bonus
 	-- if the sub job DW is higher return that instead of blue mage spell DW
 	if sub_job_dw > main_job_dw then
 		return sub_job_dw

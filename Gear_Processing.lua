@@ -358,12 +358,14 @@ function get_player_acc(stat_table)
 			stat_table['ammo'].value = stat_table['ammo'].value + value + stat_table[stat_table['ammo'].skill .. ' skill']
 		end
 	end
-
-	for stat, value in pairs(player.stats) do
-		if stat_table[stat] then 
-			stat_table[stat] = stat_table[stat] + value 
-		end	
-	end	
+	
+	if player.stats then
+		for stat, value in pairs(player.stats) do
+			if stat_table[stat] then 
+				stat_table[stat] = stat_table[stat] + value 
+			end	
+		end
+	end
 
 	
 	stat_table = get_blue_mage_stats_from_equipped_spells(stat_table)
@@ -399,11 +401,8 @@ function get_player_acc(stat_table)
 	--log('Agi = '.. stat_table['AGI'] .. ' | Range skill  = '.. stat_table['range'].value .. ' | Ammo skill = '.. stat_table['ammo'].value .. ' | job acc = ' ..get_player_acc_from_job().. ' | gear r.acc = ' .. stat_table['Ranged Accuracy'])
 	
 	--log(main_acc_skill.. ' ' .. item_acc .. ' ' .. get_player_acc_from_job() .. ' ' .. main_hand.value .. ' ' .. skill_from_gear_main .. ' ' ..item_dex .. ' ' .. player_dex )
-	--log(ammo_acc_skill.. ' ' .. item_racc .. ' ' .. get_player_acc_from_job() .. ' ' .. ammo.value .. ' ' .. skill_from_gear_ammo .. ' ' ..item_agi .. ' ' .. player_agi )
-	
+	--log(ammo_acc_skill.. ' ' .. item_racc .. ' ' .. get_player_acc_from_job() .. ' ' .. ammo.value .. ' ' .. skill_from_gear_ammo .. ' ' ..item_agi .. ' ' .. player_agi )	
 	return Total_acc
-	
-	
 end
 
 function get_blue_mage_stats_from_equipped_spells(stat_table)
@@ -544,12 +543,24 @@ function get_player_acc_from_job()
 			elseif player.sub_job_level > 29 then sub_job_acc = 10
 			end
 		end
-	end	
+	end
+
+	local jp = player.job_points[player.main_job:lower()]['jp_spent']
+		
+	local jp_acc = 0
+	for k, v in pairs(Gifts[player.main_job:upper()]['Gifts']) do
+		if k <= jp then
+			for i, j in pairs(v) do
+				if i == 'Physical Accuracy Bonus' then
+					jp_acc = jp_acc + j
+				end
+			end
+		end
+	end
 	
 	if player.main_job:upper() == 'BLU' then
 		-- here we look up job points spent on blue for the DW bonus
 		local jp_boost = 0
-		local jp = player.job_points['blu']['jp_spent']
 		if jp < 100 then
 			jp_boost = 0
 		elseif jp >= 100 and jp < 1200 then
@@ -558,162 +569,28 @@ function get_player_acc_from_job()
 			jp_boost = 2
 		end
 		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 36
-		elseif jp > 779 and jp < 1530 then jp_acc = 23
-		elseif jp > 279 and jp < 780 then jp_acc = 13
-		elseif jp > 29 and jp < 280 then jp_acc = 5
-		end
-		
-		--here we look up spells currently equipped to check for DW trait
-		local ACC_Spells_Equipped_Level = 0
-		local spells_set = T(windower.ffxi.get_mjob_data().spells):filter(function(id) return id ~= 512 end):map(function(id) return blu_spells[id].english end)
-		--table.vprint(spells_set)
+		local spells_set = T(windower.ffxi.get_mjob_data().spells):filter(function(id) return id ~= 512 end):map(function(id) return id end)
 		local spell_value = 0
-		-- here we give each spell a value of 4 or 8 and add the values together
-		for index, spell in pairs(spells_set) do
-		--for spell in spells_set:it() do
-			if spell == "Dimensional Death" or spell == "Frenetic Rip" or spell == "Disseverment" or spell == "Vanity Dive" then
-			   spell_value = spell_value + 4
-			elseif spell == "Nat. Meditation" or spell == "Anvil Lightning" then 
-				spell_value = spell_value + 8
+		for key, spell_id in pairs(spells_set) do
+			if Blu_spells[spell_id].trait == 'Accuracy Bonus' then
+				spell_value = spell_value + Blu_spells[spell_id]['points']
 			end
 		end
 		
-		--here we determine the DW level equipped with job points
-		if spell_value ~= 0 then
-			ACC_Spells_Equipped_Level = math.floor(spell_value / 8) + jp_boost
+		if spell_value > 0 then
+			spell_value  = math.floor(spell_value / 8) + jp_boost
 		else
-			ACC_Spells_Equipped_Level = 0
+			spell_value = 0
 		end
-		--the we determine the actuall % value of DW equipped via blu spells 
-		if ACC_Spells_Equipped_Level == 0 then main_job_acc = 0
-		elseif ACC_Spells_Equipped_Level == 1 then main_job_acc = 10
-		elseif ACC_Spells_Equipped_Level == 2 then main_job_acc = 22
-		elseif ACC_Spells_Equipped_Level == 3 then main_job_acc = 35
-		elseif ACC_Spells_Equipped_Level == 4 then main_job_acc = 48
-		elseif ACC_Spells_Equipped_Level == 5 then main_job_acc = 60
-		elseif ACC_Spells_Equipped_Level == 5 then main_job_acc = 73
+
+		if spell_value == 0 then main_job_acc = 0
+		elseif spell_value == 1 then main_job_acc = 10
+		elseif spell_value == 2 then main_job_acc = 22
+		elseif spell_value == 3 then main_job_acc = 35
+		elseif spell_value == 4 then main_job_acc = 48
+		elseif spell_value == 5 then main_job_acc = 60
+		elseif spell_value == 6 then main_job_acc = 73
 		end
-		
-		main_job_acc = main_job_acc + jp_acc
-		
-	elseif player.main_job:upper() == 'WAR' then
-	
-		local jp = player.job_points['war']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 36
-		elseif jp > 779 and jp < 1530 then jp_acc = 23
-		elseif jp > 279 and jp < 780 then jp_acc = 13
-		elseif jp > 29 and jp < 280 then jp_acc = 5
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-		
-	elseif player.main_job:upper() == 'MNK' then
-	
-		local jp = player.job_points['mnk']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 41
-		elseif jp > 779 and jp < 1530 then jp_acc = 26
-		elseif jp > 279 and jp < 780 then jp_acc = 15
-		elseif jp > 29 and jp < 280 then jp_acc = 6
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-		
-	elseif player.main_job:upper() == 'WHM' then
-	
-		local jp = player.job_points['whm']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1619 and jp < 2101 then jp_acc = 14
-		elseif jp > 844 and jp < 1620 then jp_acc = 9
-		elseif jp > 319 and jp < 845 then jp_acc = 5
-		elseif jp > 44 and jp < 320 then jp_acc = 2
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-	
-	elseif player.main_job:upper() == 'RDM' then
-	
-		local jp = player.job_points['rdm']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1619 and jp < 2101 then jp_acc = 22
-		elseif jp > 844 and jp < 1620 then jp_acc = 14
-		elseif jp > 319 and jp < 845 then jp_acc = 8
-		elseif jp > 44 and jp < 320 then jp_acc = 3
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-	
-	elseif player.main_job:upper() == 'THF' then
-	
-		local jp = player.job_points['thf']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 36
-		elseif jp > 779 and jp < 1530 then jp_acc = 23
-		elseif jp > 279 and jp < 780 then jp_acc = 13
-		elseif jp > 29 and jp < 280 then jp_acc = 5
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-		
-	elseif player.main_job:upper() == 'PLD' then
-	
-		local jp = player.job_points['pld']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 28
-		elseif jp > 779 and jp < 1530 then jp_acc = 18
-		elseif jp > 279 and jp < 780 then jp_acc = 10
-		elseif jp > 29 and jp < 280 then jp_acc = 4
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-		
-	elseif player.main_job:upper() == 'DRK' then
-	
-		local jp = player.job_points['drk']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 22
-		elseif jp > 779 and jp < 1530 then jp_acc = 14
-		elseif jp > 279 and jp < 780 then jp_acc = 8
-		elseif jp > 29 and jp < 280 then jp_acc = 3
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-		
-	elseif player.main_job:upper() == 'BST' then
-	
-		local jp = player.job_points['bst']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 36
-		elseif jp > 779 and jp < 1530 then jp_acc = 23
-		elseif jp > 279 and jp < 780 then jp_acc = 13
-		elseif jp > 29 and jp < 280 then jp_acc = 5
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-		
-	elseif player.main_job:upper() == 'BRD' then
-	
-		local jp = player.job_points['brd']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1444 and jp < 2101 then jp_acc = 21
-		elseif jp > 719 and jp < 1445 then jp_acc = 13
-		elseif jp > 244 and jp < 720 then jp_acc = 7
-		elseif jp > 19 and jp < 245 then jp_acc = 2
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
 		
 	elseif player.main_job:upper() == 'RNG' then
 		if player.main_job_level < 10  then main_job_acc = 0
@@ -724,43 +601,6 @@ function get_player_acc_from_job()
 		elseif player.main_job_level < 96 and  player.main_job_level > 85 then main_job_acc = 60
 		elseif player.main_job_level < 100 and  player.main_job_level > 95 then main_job_acc = 73
 		end
-		
-		local jp = player.job_points['rng']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 70
-		elseif jp > 779 and jp < 1530 then jp_acc = 45
-		elseif jp > 279 and jp < 780 then jp_acc = 25
-		elseif jp > 29 and jp < 280 then jp_acc = 10
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-	
-	elseif player.main_job:upper() == 'SAM' then
-	
-		local jp = player.job_points['sam']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 36
-		elseif jp > 779 and jp < 1530 then jp_acc = 23
-		elseif jp > 279 and jp < 780 then jp_acc = 13
-		elseif jp > 29 and jp < 280 then jp_acc = 5
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-	
-	elseif player.main_job:upper() == 'NIN' then
-	
-		local jp = player.job_points['nin']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 56
-		elseif jp > 779 and jp < 1530 then jp_acc = 36
-		elseif jp > 279 and jp < 780 then jp_acc = 20
-		elseif jp > 29 and jp < 280 then jp_acc = 8
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
 	
 	elseif player.main_job:upper() == 'DRG' then
 		if player.main_job_level < 30  then main_job_acc = 0
@@ -769,61 +609,12 @@ function get_player_acc_from_job()
 		elseif player.main_job_level > 75  then main_job_acc = 35
 		end
 		
-		local jp = player.job_points['drg']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 64
-		elseif jp > 779 and jp < 1530 then jp_acc = 41
-		elseif jp > 279 and jp < 780 then jp_acc = 23
-		elseif jp > 29 and jp < 280 then jp_acc = 9
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-		
-	elseif player.main_job:upper() == 'COR' then
-	
-		local jp = player.job_points['cor']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 36
-		elseif jp > 779 and jp < 1530 then jp_acc = 23
-		elseif jp > 279 and jp < 780 then jp_acc = 13
-		elseif jp > 29 and jp < 280 then jp_acc = 5
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-	
-	elseif player.main_job:upper() == 'PUP' then
-	
-		local jp = player.job_points['pup']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1444 and jp < 2101 then jp_acc = 50
-		elseif jp > 719 and jp < 1445 then jp_acc = 32
-		elseif jp > 244 and jp < 720 then jp_acc = 18
-		elseif jp > 19 and jp < 245 then jp_acc = 7
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-		
 	elseif player.main_job:upper() == 'DNC' then
-	
 		if player.main_job_level < 30  then main_job_acc = 0
 		elseif player.main_job_level > 29 and player.main_job_level < 60 then main_job_acc = 10
 		elseif player.main_job_level > 59 and player.main_job_level < 76 then main_job_acc = 22
 		elseif player.main_job_level > 75  then main_job_acc = 35
 		end
-		
-		local jp = player.job_points['dnc']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 64
-		elseif jp > 779 and jp < 1530 then jp_acc = 41
-		elseif jp > 279 and jp < 780 then jp_acc = 23
-		elseif jp > 29 and jp < 280 then jp_acc = 9
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
 		
 	elseif player.main_job:upper() == 'RUN' then
 		if player.main_job_level < 50  then main_job_acc = 0
@@ -831,20 +622,10 @@ function get_player_acc_from_job()
 		elseif player.main_job_level > 69 and player.main_job_level < 90 then main_job_acc = 22
 		elseif player.main_job_level > 89  then main_job_acc = 35
 		end
-		
-		local jp = player.job_points['run']['jp_spent']
-		
-		local jp_acc = 0
-		if jp > 1529 and jp < 2101 then jp_acc = 56
-		elseif jp > 779 and jp < 1530 then jp_acc = 36
-		elseif jp > 279 and jp < 780 then jp_acc = 20
-		elseif jp > 29 and jp < 280 then jp_acc = 8
-		end
-		
-		main_job_acc = main_job_acc + jp_acc
-		
 	end
 
+	main_job_acc = main_job_acc + jp_acc
+	
 	if sub_job_acc > main_job_acc then
 		return sub_job_acc
 	else

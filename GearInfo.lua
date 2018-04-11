@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.6.6.2'
+_addon.version = '1.6.6.3'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -17,6 +17,7 @@ Martial_Arts_Gear = require('Martial_Arts_Gear')
 Set_bonus_by_Set_ID= require('Set_bonus_by_Set_ID')
 Set_bonus_by_item_id = require('Set_bonus_by_item_id')
 Blu_spells = require('Blue_Mage_Spells')
+Gifts = require('Gifts')
 
 res = require('resources')
 skills_from_resources = res.skills
