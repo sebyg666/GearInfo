@@ -13,6 +13,7 @@ function get_tp_per_hit()
 		if k <= jp then
 			for i, j in pairs(v) do
 				if i == 'Store TP Effect' then
+					jp_tp_bonus = jp_tp_bonus + j
 				end
 			end
 		end
@@ -353,8 +354,8 @@ function determine_DW()
 		elseif player.main_job_level < 85 and  player.main_job_level > 64 then main_job_dw = 30
 		elseif player.main_job_level < 100 and  player.main_job_level > 84 then main_job_dw = 35
 		end
-	elseif player.main_job:upper() == 'DNC' then
 		
+	elseif player.main_job:upper() == 'DNC' then
 		if 	   player.main_job_level < 20 and  player.main_job_level > 0 then main_job_dw = 0
 		elseif player.main_job_level < 40 and  player.main_job_level > 19 then main_job_dw = 10
 		elseif player.main_job_level < 60 and  player.main_job_level > 39 then main_job_dw = 15
