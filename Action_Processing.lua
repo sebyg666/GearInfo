@@ -33,6 +33,7 @@ function on_action(action)
 	
 	local spells_to_watch = S{'Marcato', 'Soul Voice', 'Haste', 'Haste II', 'Hastega', 'Hastega II', "Erratic Flutter", 'Refueling', 'Honor March', 'Victory March', 'Advancing March'}
 	
+	-- check for haste spikes from haste samba
 	if action.actor_id == player.id and action.category == 1 then
 		if action.targets[1].actions[1].reaction == 8 then
 			if action.targets[1].actions[1].add_effect_animation == 23 then
@@ -47,34 +48,130 @@ function on_action(action)
 			end
 		end
 	end
-	-- if action.category == 3 and ((actor.is_npc and actor.charmed) or not actor.is_npc) and (action.param < 781 and action.param > 15 )then
-		-- local job_abil = res.job_abilities:with('id', action.param)
-		-- if spells_to_watch:contains(job_abil.en) then -- Garuda Hastega II
-			-- for index, target in pairs(action.targets) do
-				-- if type(target) == "table" then
-					-- if target.id == player.id then
-						-- -- member_table[windower.ffxi.get_mob_by_id(action.actor_id).name].Last_Spell = job_abil.en
-						-- -- table.vprint(member_table[windower.ffxi.get_mob_by_id(action.actor_id).name])
-						-- -- log('param 3 ' .. job_abil.en .. ' ' .. action.actor_id)
-					-- end
-				-- end
-			-- end
-		-- end
-	-- end
-	-- if action.category == 6 and ((actor.is_npc and actor.charmed) or not actor.is_npc) and (action.param < 781 and action.param > 15 )then
-		-- local job_abil = res.job_abilities:with('id', action.param)
-		-- if spells_to_watch:contains(job_abil.en) then -- Garuda Hastega II
-			-- for index, target in pairs(action.targets) do
-				-- if type(target) == "table" then
-					-- if target.id == player.id then
-						-- --member_table[windower.ffxi.get_mob_by_id(action.actor_id).name].Last_Spell = job_abil.en
-						-- --table.vprint(member_table[windower.ffxi.get_mob_by_id(action.actor_id).name])
-						-- --log('param 6 ' .. job_abil.en .. ' ' .. action.actor_id)
-					-- end
-				-- end
-			-- end
-		-- end
-	-- end
+	
+	-- check for cor rolls
+	if action.category == 6 and (table.containskey(Cor_Rolls, action.param) or action.param == 123) and ((actor.is_npc and actor.charmed) or not actor.is_npc) then
+		--notice('Step 1: ' .. action.param .. ' ' .. res.job_abilities:with('id', action.param).en)
+		for index, target in pairs(action.targets) do
+			if type(target) == "table" then
+				--notice('Step 2')
+				if target.id == player.id then
+					--notice('Step 3')
+					for index, m_table in pairs(member_table) do
+						if member_table[index].id == action.actor_id then
+							--notice('Step 4')
+							local rollID = action.param
+							local rollNum = action.targets[1].actions[1].param
+							local buff_potency = 0
+							local Roll_bonus = 0
+							-- check if we know the COR from the settings file for boost to phantom roll
+							if table.containskey(settings.Cors, member_table[index].name:lower()) then
+								Roll_bonus = settings.Cors[member_table[index].name:lower()]
+							else
+								Roll_bonus = manual_COR_bonus
+							end
+							if rollNum == 12 and Cor_Rolls[rollID].bust  ~= "?" then
+								buff_potency = Cor_Rolls[rollID].bust 
+							elseif Cor_Rolls[rollID].roll[rollNum] ~= "?" then
+								if rollID == 304 then
+									local hpval = Cor_Rolls[rollID].roll[rollNum][1] + (Cor_Rolls[rollID]["roll+1"][1] * Roll_bonus)
+									local tpval = Cor_Rolls[rollID].roll[rollNum][2] + (Cor_Rolls[rollID]["roll+1"][2] * Roll_bonus)
+									buff_potency = {hpval, tpval,}
+								else
+									buff_potency = {Cor_Rolls[rollID].roll[rollNum] + (Cor_Rolls[rollID]["roll+1"] * Roll_bonus),}
+								end
+							end
+							for k, v in pairs(member_table) do
+								if Cor_Rolls[rollID]['bonus']['Main job'] == v['Main job'] and v['Main job'] ~= 'NON'  then
+									buff_potency[1] = buff_potency[1] + Cor_Rolls[rollID]['bonus'].effect
+									break
+								elseif Cor_Rolls[rollID]['bonus']['Main job'] == 'NON' then
+									-- if action.actor_id == player.id then
+										-- local slot = Cor_Rolls[rollID]['bonus'].equipment.slot
+										-- if slot ~= '' then
+											-- if player.equipment[slot].id then
+												-- if Cor_Rolls[rollID]['bonus'].equipment.id:contains(player.equipment[slot].id) then
+													-- buff_potency = buff_potency + Cor_Rolls[rollID]['bonus'].effect
+													-- break
+												-- end
+											-- end
+										-- end
+									-- else
+										-- assume others use emperean equipment for boosting said rolls
+										if rollID == 304 then
+											buff_potency[1] = buff_potency[1] + Cor_Rolls[rollID]['bonus'].effect
+											buff_potency[2] = buff_potency[2] + Cor_Rolls[rollID]['bonus'].effect
+										else
+											buff_potency[1] = buff_potency[1] + Cor_Rolls[rollID]['bonus'].effect
+										end
+										break
+									--end
+								end
+							end
+							member_table[index] = {id = member_table[index].id, name = member_table[index].name, mob = member_table[index].mob,  Last_Spell = Cor_Rolls[rollID].en, effect = Cor_Rolls[rollID].effect, value = buff_potency}
+							--windower.add_to_chat(1, Cor_Rolls[rollID].en..' '..chars['circle' .. rollNum] ..' '..chars.implies..' '..Cor_Rolls[rollID].effect..' +'..buff_potency )
+							for i, buff in pairs(_ExtraData.player.buff_details) do
+								-- need to update buff list if its a double up and force a check_buffs() as the buff table does not change with a double up neither does the buff duration
+								if buff.id == res.buffs:with('english', Cor_Rolls[rollID].en).id then
+									_ExtraData.player.buff_details[i].value = buff_potency
+									_ExtraData.player.buff_details[i].Last_Spell = Cor_Rolls[rollID].en
+									_ExtraData.player.buff_details[i].effect = Cor_Rolls[rollID].bonus
+									--member_table[index] = {id = member_table[index].id, name = member_table[index].name, mob = member_table[index].mob,  Last_Spell = '', effect = '', value = 0}
+									--notice('Updated player info')
+									--table.vprint(_ExtraData.player.buff_details[index])
+									check_buffs()
+									break
+								end
+							end
+							
+							local partyColour = {
+								p0 = string.char(0x1E, 247),
+								p1 = string.char(0x1F, 204),
+								p2 = string.char(0x1E, 156),
+								p3 = string.char(0x1E, 238),
+								p4 = string.char(0x1E, 5),
+								p5 = string.char(0x1E, 6)
+							}
+							
+							local party = windower.ffxi.get_party()
+							rollMembers = {}
+							for partyMem in pairs(party) do
+								for effectedTarget = 1, #action.targets do
+									--if mob is nil then the party member is not in zone, will fire an error.
+									if type(party[partyMem]) == 'table' and party[partyMem].mob and action.targets[effectedTarget].id == party[partyMem].mob.id then   
+										rollMembers[effectedTarget] = partyColour[partyMem] .. party[partyMem].name .. chat.controls.reset
+									end
+								end
+							end
+							local membersHit = table.concat(rollMembers, ', ')
+							local amountHit =  '[' .. #rollMembers .. '] ' or ''
+							local luckChat = ''
+							local isLucky = false
+							if rollNum == Cor_Rolls[rollID].lucky or rollNum == 11 then 
+								isLucky = true
+								luckChat = string.char(31,158).." (Lucky!)"
+							end
+							
+							if rollNum == 12 and #rollMembers > 0 then
+								windower.add_to_chat(1, string.char(31,167)..amountHit..'Bust! '..chat.controls.reset..chars.implies..' '..membersHit..' '..chars.implies..' (\"'..Cor_Rolls[rollID].effect..'\" '..string.format("%+d", Cor_Rolls[rollID].bust)..')')
+							else
+								for k, v in pairs(buff_potency) do
+									buff_potency[k] = string.format("%+d", buff_potency[k])
+								end
+								buff_potency = table.concat(buff_potency, ", ")
+								windower.add_to_chat(1, string.char(31,167)..amountHit..chat.controls.reset..membersHit..chat.controls.reset..' '..chars.implies..' '..Cor_Rolls[rollID].en..' '..chars['circle' .. rollNum]..luckChat..string.char(31,13)..' (\"'..Cor_Rolls[rollID].effect..'\" '..buff_potency..')')
+							end
+						break
+						end
+					end
+				end
+			end
+		end
+	end
+	
+	--for index, buff in pairs(_ExtraData.player.buff_details) do
+	-- elseif table.containskey(buff, 'STP') then
+	
 	if action.category == 7 and ((actor.is_npc and actor.charmed) or not actor.is_npc) then
 		for index, target in pairs(action.targets) do
 			if type(target) == "table" then
@@ -87,8 +184,7 @@ function on_action(action)
 					end
 				end
 			end
-		end
-		
+		end		
 	end
 	--pet abilities
 	if action.category == 13 and ((actor.is_npc and actor.charmed) or not actor.is_npc) and (action.param < 781 and action.param > 15 )then

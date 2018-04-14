@@ -16,6 +16,7 @@ member_table = T{}
 seen_0x063_type9 = false
 delay_0x063_v9 = false
 debug_mode = false
+party_from_packet = {}
 
 _ExtraData = {
         player = {buff_details = {}},
@@ -31,6 +32,7 @@ manual_mhaste = 0
 manual_jahaste = 0
 manual_dw_needed = 0
 manual_bard_duration_bonus = 7
+manual_COR_bonus = 0
 manual_hide = false
 WSTP = 0
 loged_in_bool = false

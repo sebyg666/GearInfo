@@ -44,7 +44,6 @@ parse.i[0x00A] = function (data)
 		-- CHR = data:unpack('H',0xD9) 
 	-- }
 	-- notice('Player stat update | agi = '..player.stats.DEX)
-	update_party()
 	blank_0x063_v9_inc = true
 end
 	
@@ -263,6 +262,20 @@ parse.i[0x063] = function (data)
                         _ExtraData.player.buff_details[i].matched_exactly = true
 						newbuffs[n].time = temp_time
 						newbuffs[n].date = temp_date
+						for Character_name, Character_table in pairs(member_table) do
+							if table.containskey(Character_table, "Last_Spell") and Character_table.Last_Spell ~= '' and Character_table.value ~= 0 and Character_table.effect ~= '' then
+								if newbuffs[n].name == Character_table.Last_Spell then
+									newbuffs[n].full_name = Character_table.Last_Spell
+									newbuffs[n].Caster = Character_name:lower()
+									newbuffs[n].effect = Character_table.effect
+									newbuffs[n].value = Character_table.value
+									member_table[Character_name].Last_Spell = ''
+									member_table[Character_name].effect = ''
+									member_table[Character_name].value = 0
+								end
+							end
+						
+						end
                         break
                     end
                 end
@@ -327,6 +340,17 @@ parse.i[0x063] = function (data)
 								member_table[Character_name].Last_Spell = ''
 								break
 							end
+						elseif table.containskey(Character_table, "Last_Spell") and Character_table.Last_Spell ~= '' and Character_table.value ~= 0 and Character_table.effect ~= '' then
+							if newbuffs[n].name == Character_table.Last_Spell then
+								newbuffs[n].full_name = Character_table.Last_Spell
+								newbuffs[n].Caster = Character_name:lower()
+								newbuffs[n].effect = Character_table.effect
+								newbuffs[n].value = Character_table.value
+								member_table[Character_name].Last_Spell = ''
+								member_table[Character_name].Last_Spell = ''
+								member_table[Character_name].effect = ''
+								member_table[Character_name].value = 0
+							end
 						end
 					end
                 else
@@ -346,6 +370,16 @@ parse.i[0x063] = function (data)
 								end
 								member_table[Character_name].Last_Spell = ''
 								break
+							end
+						elseif table.containskey(Character_table, "Last_Spell") and Character_table.Last_Spell ~= '' and Character_table.value ~= 0 and Character_table.effect ~= '' then
+							if newbuffs[n].name == Character_table.Last_Spell then
+								newbuffs[n].full_name = Character_table.Last_Spell
+								newbuffs[n].Caster = Character_name:lower()
+								newbuffs[n].effect = Character_table.effect
+								newbuffs[n].value = Character_table.value
+								member_table[Character_name].Last_Spell = ''
+								member_table[Character_name].effect = ''
+								member_table[Character_name].value = 0
 							end
 						end
 					end
@@ -400,7 +434,7 @@ parse.i[0x063] = function (data)
 				--log('buff name = "' .. buff.full_name .. '" : ' .. buff.total_duration)
 			end
 		end
-		-- table.vprint(_ExtraData.player.buff_details)
+		--table.vprint(_ExtraData.player.buff_details)
         -- Cannot reliably recall this packet using last_incoming on load because there
         -- are 9 version of it and you only get the last one. Hence, this flag:
 		seen_0x063_type9 = true
@@ -420,7 +454,8 @@ end
 
 function update_party()
 	
-	local temp_table = member_table
+	local old = member_table
+	local new = {}
 	
 	member_table = {}
 	
@@ -430,32 +465,61 @@ function update_party()
    
     for k = 1, 6 do
         local member = party[key_indices[k]]
-        
         if member and member.mob then
-			-- not member.mob.is_npc and
-            if not table.containskey(member_table, member.mob.name) then
-                member_table[member.mob.name] = {id = member.mob.id , name = member.mob.name, Last_Spell = '' , mob = member.mob}
-            end
+			new[member.mob.name] = {id = member.mob.id , name = member.mob.name, Last_Spell = '' , effect ='', value = 0, mob = member.mob, ['Main job']=0,['Sub job']=0}
         end
 	end
 	
-	for index, t in pairs(temp_table) do
-		if table.containskey(member_table, index) then
-			member_table[index] = temp_table[index]
+	for new_name, new_member in pairs(new) do
+		for old_name, old_member in pairs(old) do
+			if old_name == new_name then
+				new[old_name] = {id = old_member.id , name = old_member.name, Last_Spell = old_member.Last_Spell , effect = old_member.effect, value = old_member.value, 
+												mob = old_member.mob, ['Main job'] = old_member['Main job'], ['Sub job'] = old_member['Sub job'],}
+			end
 		end
 	end
-	-- table.vprint(member_table)
+	
+	for new_name, new_member in pairs(new) do
+		if new_member.id == player.id then
+			new[new_name]['Main job'] = player.main_job:upper()
+			new[new_name]['Sub job'] = player.sub_job:upper()
+		elseif party_from_packet[new_member.id] and new_member.id ~= player.id then
+			new[new_name]['Main job'] = res.jobs:with('id', party_from_packet[new_member.id]['Main job']).ens
+			new[new_name]['Sub job'] = res.jobs:with('id', party_from_packet[new_member.id]['Sub job']).ens
+		end
+	end
+	
+	member_table = new
+	
 end
 
--- parse.i[0x0DD] = function (data)
-	-- local packet = packets.parse('incoming', data)
-	-- --table.vprint(packet)
+-- party update packet
 	
-	-- if not table.containskey(member_table, packet['Name']) then
-		-- member_table[packet['Name']] = {id = packet['ID'] , name = packet['Name'], Last_Spell = '', mob = windower.ffxi.get_mob_by_id(packet['ID'])}
-	-- end
+parse.i[0x0DD] = function (data)
+
+	-- {ctype='unsigned int',      label='ID',                 fn=id},             -- 04
+    -- {ctype='unsigned int',      label='HP'},                                    -- 08
+    -- {ctype='unsigned int',      label='MP'},                                    -- 0C
+    -- {ctype='unsigned int',      label='TP',                 fn=percent},        -- 10
+    -- {ctype='unsigned short',    label='Flags',              fn=bin+{2}},        -- 14
+    -- {ctype='unsigned short',    label='_unknown1'},                             -- 16
+    -- {ctype='unsigned short',    label='Index',              fn=index},          -- 18
+    -- {ctype='unsigned short',    label='_unknown2'},                             -- 1A
+    -- {ctype='unsigned char',     label='_unknown3'},                             -- 1C
+    -- {ctype='unsigned char',     label='HP%',                fn=percent},        -- 1D
+    -- {ctype='unsigned char',     label='MP%',                fn=percent},        -- 1E
+    -- {ctype='unsigned char',     label='_unknown4'},                             -- 1F
+    -- {ctype='unsigned short',    label='Zone',               fn=zone},           -- 20
+    -- {ctype='unsigned char',     label='Main job',           fn=job},            -- 22
+    -- {ctype='unsigned char',     label='Main job level'},                        -- 23
+    -- {ctype='unsigned char',     label='Sub job',            fn=job},            -- 24
+    -- {ctype='unsigned char',     label='Sub job level'},                         -- 25
+    -- {ctype='char*',             label='Name'},                                  -- 26
 	
--- end
+	local packet = packets.parse('incoming', data)
+	party_from_packet[packet['ID']] = {id = packet['ID'] , name = packet['Name'], ['Main job'] = packet['Main job'], ['Sub job'] = packet['Sub job'],} 
+	-- ['Main job level'] = packet['Main job level'], ['Sub job level'] = packet['Sub job level']}
+end
 
 parse.i[0x076] = function (data)
     -- buff marcato = 231, soul voice = 52 , "Troubadour" = 348 
@@ -492,6 +556,10 @@ parse.i[0x076] = function (data)
 	end
 	--table.vprint(member_table)
 end
+
+-- Party list request (4 byte packet)
+-- fields.outgoing[0x078] = L{
+-- }
 
 function initialize_packet_parsing()
     for i,v in pairs(parse.i) do

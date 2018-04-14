@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.6.6.3'
+_addon.version = '1.6.6.4'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -8,8 +8,8 @@ require('tables')
 require('lists')
 require('strings')
 require('logger')
-require('lists')
 require('pack')
+require('luau')
 
 DW_Gear = require('res/DW_Gear')
 Unity_rank = require('res/Unity_Gear')
@@ -30,6 +30,8 @@ blu_spells = res.spells:type('BlueMagic')
 timer = require('timeit')
 packets = require('packets')
 bit = require('bit')
+chat = require('chat')
+chars = require('chat.chars')
 
 require 'Statics'
 require 'Gear_Processing'
@@ -49,6 +51,7 @@ defaults.player.rank = 1
 defaults.Bards = {}
 defaults.Bards["joachim"] = 0
 defaults.Bards["ulmia"] = 0
+defaults.Cors = {}
 defaults.display = {}
 defaults.display.pos = {}
 defaults.display.pos.x = 0
@@ -197,7 +200,7 @@ windower.register_event('addon command', function(command, ...)
 			else
 				log('Your current \'Unity Rank\' setting is: '..settings.player.rank..'.')
 			end
-			settings:save()
+			settings:save('all')
 		elseif command:lower() == 'stp' and type(tonumber(args[1])) == 'number' then
 			manual_stp = tonumber(args[1])
 			log('Set maunal Store TP to ' .. tostring(manual_stp))
@@ -256,19 +259,32 @@ windower.register_event('addon command', function(command, ...)
 				settings.player.update_gs = false
 			end
 			log('Auto update Gearswap = '..tostring(settings.player.update_gs))
-			settings:save()
+			settings:save('all')
 		elseif command:lower() == 'brd' then
 			if type(tonumber(args[1])) == 'number' then
 				manual_bard_duration_bonus = tonumber(args[1])
 				log('Set Brd song+ bonus to ' .. tostring(manual_bard_duration_bonus) .. '.')
 			elseif args[1]:lower() == 'add' and type(tostring(args[2])) == 'string' and type(tonumber(args[3])) == 'number' then
 				settings.Bards[args[2]:lower()] = tonumber(args[3])
-				settings:save()
+				settings:save('all')
 				log('Added ' .. tostring(args[2]:lower()) .. ' as a known bard with ' .. tonumber(args[3]) .. ' Song+ !')
 			elseif args[1]:lower() == 'delete' and type(tostring(args[2])) == 'string' then
-				settings.Bards[tostring(args[2])] = nil
-				settings:save()
+				settings.Bards[tostring(args[2]):lower()] = nil
+				settings:save('all')
 				log('Removed ' .. tostring(args[2]:lower()) .. ' as a known bard!')
+			end
+		elseif command:lower() == 'cor' then
+			if type(tonumber(args[1])) == 'number' then
+				manual_COR_bonus = tonumber(args[1])
+				log('Set hantom Roll bonus to ' .. tostring(manual_bard_duration_bonus) .. '.')
+			elseif args[1]:lower() == 'add' and type(tostring(args[2])) == 'string' and type(tonumber(args[3])) == 'number' then
+				settings.Cors[args[2]:lower()] = tonumber(args[3])
+				settings:save('all')
+				log('Added ' .. tostring(args[2]:lower()) .. ' as a known COR with +' .. tonumber(args[3]) .. ' Phantom Roll !')
+			elseif args[1]:lower() == 'delete' and type(tostring(args[2])) == 'string' then
+				settings.Cors[tostring(args[2]):lower()] = nil
+				settings:save('all')
+				log('Removed ' .. tostring(args[2]:lower()) .. ' as a known COR!')
 			end
 		elseif command:lower() == 'dnc' then
 			if dancer_main then
@@ -310,11 +326,11 @@ windower.register_event('addon command', function(command, ...)
 				-- log('Currently dissabled, in testing.')
 				log('Show Total Acc = '..tostring(settings.player.show_acc_Stuff))
 			end
-			settings:save()
+			settings:save('all')
 		elseif command:lower() == 'test' then
 			--check_equipped()
-
-			--table.vprint( determine_Weapon_Delay())
+			settings.Cors['ewellina'] = nil
+			table.vprint(settings)
 			-- local stat_table = get_equip_stats(check_equipped())
 			-- local player_Acc = get_player_acc(stat_table)
 			-- table.vprint(stat_table.range)
@@ -369,6 +385,10 @@ windower.register_event('addon command', function(command, ...)
 			windower.add_to_chat(6, chat_l_blue..	'          add \'name\' \'bonus\'' .. chat_white .. '  --  Save the bard with name and Bonus for future use.')
 			windower.add_to_chat(6, chat_yellow..	'eg. \/\/gi brd add bob 7' .. chat_white .. '  --  This will add bob to the list with +7 March Bonus.')
 			windower.add_to_chat(6, chat_l_blue..	'          delete \'name\'' .. chat_white .. '  --  Delete a bard from the list.')
+			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi cor #\'' .. chat_white .. '  --  Change # to equal your parties COR "Phantom Roll +#" bonus.')
+			windower.add_to_chat(6, chat_l_blue..	'          add \'name\' \'bonus\'' .. chat_white .. '  --  Save the COR with name and Bonus for future use.')
+			windower.add_to_chat(6, chat_yellow..	'eg. \/\/gi cor add bob 3' .. chat_white .. '  --  This will add bob to the list with Phantom Roll +3. eg "Merirosvo Ring"')
+			windower.add_to_chat(6, chat_l_blue..	'          delete \'name\'' .. chat_white .. '  --  Delete a COR from the list.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi dnc\'' .. chat_white .. '  --  Toggle if your party is getting Haste Samba from a main DNC or not.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi hide\'' .. chat_white .. '  --  Toggle hide and unhide box.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi show\'' .. chat_white .. '  --  add subcommand.')
@@ -549,7 +569,6 @@ end)
 function incoming_chunk(id,data,modified,injected,blocked)
         
     if not injected and parse.i[id] then
-		update_party()
         parse.i[id](data,blocked)
     end
 end
@@ -803,12 +822,16 @@ function update()
 									
 				if Gear_info['PDT2']  < 0 then		
 					-- PDT + PDT2 + DT
-					inform.pdt2 = (	(Gear_info['PDT'] + Gear_info['PDT2'] + Gear_info['DT']) < -87.6 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..red..(Gear_info['PDT'] + Gear_info['PDT2'] + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr'
-										or (Gear_info['PDT'] + Gear_info['PDT2'] + Gear_info['DT']) ~= 0 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info['PDT'] + Gear_info['PDT2'] + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr' 
+					local combined_pdt = Gear_info['PDT'] + Gear_info['DT']
+					if combined_pdt < -50 then 
+						combined_pdt = -50 
+					end
+					inform.pdt2 = (	(combined_pdt + Gear_info['PDT2']) < -87.6 and
+										'\\cs'..blue..'[PDT:\\cr\\cs'..red..(combined_pdt + Gear_info['PDT2'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr'
+										or (combined_pdt + Gear_info['PDT2']) ~= 0 and
+										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(combined_pdt + Gear_info['PDT2'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr' 
 										or (Gear_info['PDT'] + Gear_info['PDT2'] + Gear_info['DT']) == 0 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info['PDT'] + Gear_info['PDT2'] + Gear_info['DT'])..'\\cr\\cs'..blue..'/87.5] \\cr' )		
+										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(combined_pdt + Gear_info['PDT2'])..'\\cr\\cs'..blue..'/87.5] \\cr' )		
 				else				
 					-- PDT + DT
 					inform.pdt2 = (	(Gear_info['PDT']+ Gear_info['DT']) < -51 and
@@ -820,12 +843,16 @@ function update()
 				end					
 				if Gear_info['MDT2']  < 0 then
 					-- MDT + MDT2 + DT
-					inform.mdt2 = (	(Gear_info['MDT'] + Gear_info['MDT2'] + Gear_info['DT']) < -87.6 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..(Gear_info['MDT'] + Gear_info['MDT2'] + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr'
+					local combined_mdt = Gear_info['MDT'] + Gear_info['DT']
+					if combined_mdt < -50 then 
+						combined_mdt = -50 
+					end
+					inform.mdt2 = (	(combined_mdt + Gear_info['MDT2']) < -87.6 and
+										'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..(combined_mdt + Gear_info['MDT2'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr'
 										or (Gear_info['MDT'] + Gear_info['MDT2'] + Gear_info['DT']) ~= 0 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info['MDT'] + Gear_info['MDT2'] + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr' 
+										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(combined_mdt + Gear_info['MDT2'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr' 
 										or (Gear_info['MDT'] + Gear_info['MDT2'] + Gear_info['DT']) == 0 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info['MDT'] + Gear_info['MDT2'] + Gear_info['DT'])..'\\cr\\cs'..blue..'/87.5] \\cr' )
+										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(combined_mdt + Gear_info['MDT2'])..'\\cr\\cs'..blue..'/87.5] \\cr' )
 										
 				else
 					-- MDT + DT
@@ -896,6 +923,7 @@ windower.register_event('prerender',function()
         player.stats = temp_stats
 		player.position = temp_pos
 		player.is_moving = check_player_movement(player)
+		update_party()
 		calculate_total_haste()
         update()
 		loop_count = loop_count + 1
@@ -905,6 +933,25 @@ end)
 
 windower.register_event('incoming chunk',incoming_chunk)
 windower.register_event('outgoing chunk',outgoing_chunk)
+
+windower.register_event('incoming text', function(old, new, color)
+    --Hides Battlemod
+    if old:match("Roll.* The total.*") or old:match('.*Roll.*' .. string.char(0x81, 0xA8)) or old:match('.*uses Double.*The total') and color ~= 123 then
+        return true
+    end
+
+    --Hides normal
+    if old:match('.* receives the effect of .* Roll.') ~= nil then
+        return true
+    end
+
+    --Hides Older Battlemod versions --Antiquated
+    if old:match('%('..'%w+'..'%).* Roll ') then
+        new = old
+    end
+
+    return new, color
+end)
 
 function update_gs(DW, Total_DW_needed, haste)
 	if DW == true then

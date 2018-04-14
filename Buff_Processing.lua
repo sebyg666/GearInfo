@@ -42,6 +42,8 @@ function check_buffs()
 			end
 		elseif buff.id == 227 then
 			this_buff['STP'] = 10
+		elseif buff.id == 321 then
+			this_buff['STP'] = this_buff.value[1] or 0
 		end
 		
 		local caster = 'Unknown'
@@ -153,8 +155,16 @@ function calculate_total_haste()
 	Buffs_inform.STP = 0
 	local hasso_bonus = 0
 	
+	local DNC_main_in_party = false
+	
+	for k, v in pairs(member_table) do
+		if v['Main job'] == 'DNC' then DNC_main_in_party = true end
+	end
+	
 	if buff_info.h_spikes and windower.ffxi.get_player().status == 1 then
 		if dancer_main then
+			Buffs_inform.ja_haste = Buffs_inform.ja_haste + 101
+		elseif DNC_main_in_party then
 			Buffs_inform.ja_haste = Buffs_inform.ja_haste + 101
 		else
 			Buffs_inform.ja_haste = Buffs_inform.ja_haste + 51
