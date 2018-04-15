@@ -160,6 +160,8 @@ function desypher_description(discription_string, item_t)
 	discription_string = string.gsub(discription_string, 'Magic dmg. taken', 'MDT' )
 	discription_string = string.gsub(discription_string, 'Damage taken', 'D_T' )
 	
+	discription_string = string.gsub(discription_string, 'Weapon skill DEX', 'WS_dex' )
+	
 	discription_string = string.gsub(discription_string,  "Great Axe skill",  "Great axe skill")
 	discription_string = string.gsub(discription_string,  "Great Katana skill",  "Great katana skill")
 	discription_string = string.gsub(discription_string,  "Great Sword skill",  "Great sword skill")
@@ -217,6 +219,7 @@ function desypher_description(discription_string, item_t)
 		['MDT_2'] = 'MDT2',
 		['PDT_2'] = 'PDT2',
 		['\"Martial Arts\"'] = 'Martial Arts',
+		['WS_dex'] = 'Weapon skill DEX',
 	}
 	
 	for k, v in pairs(valid_strings) do
@@ -247,8 +250,8 @@ function get_equip_stats(equipment_table)
 							 
 									["MND"]=0, ["AGI"]=0, ["DEX"]=0, ["VIT"]=0, ["STR"]=0, ["INT"]=0,  ["CHR"]=0, 
 							 
-									["Hand-to-Hand skill"]=0, ["Dagger skill"]=0, ["Sword skill"]=0, ["Great sword skill"]=0, ["Axe skill"]=0, ["Great axe skill"]=0, ["Scythe skill"]=0, ["Polearm skill"]=0, 
-									["Katana skill"]=0, ["Great katana skill"]=0,["Club skill"]=0,["Staff skill"]=0,["Archery skill"]=0,["Marksmanship skill"]=0,["Throwing skill"]=0,['Combat skills']=0,
+									["Hand-to-Hand skill"]=0, ["Dagger skill"]=0, ["Sword skill"]=0, ["Great Sword skill"]=0, ["Axe skill"]=0, ["Great Axe skill"]=0, ["Scythe skill"]=0, ["Polearm skill"]=0, 
+									["Katana skill"]=0, ["Great Katana skill"]=0,["Club skill"]=0,["Staff skill"]=0,["Archery skill"]=0,["Marksmanship skill"]=0,["Throwing skill"]=0,['Combat skills']=0,
 									
 									['main'] = {['skill'] = '', value = 0}, ['sub'] = {['skill'] = '', value = 0}, ['range'] = {['skill'] = '', value = 0}, ['ammo'] = {['skill'] = '', value = 0},
 								}
@@ -346,7 +349,7 @@ function get_player_acc(stat_table)
 		if skill_name == string.gsub(stat_table['main'].skill:lower(), ' ', '_') then
 			--log(stat_table['main'].value..'  ' ..value.. '  '..stat_table[stat_table['main'].skill .. ' skill'])
 			
-			stat_table['main'].value = stat_table['main'].value + value + stat_table[stat_table['main'].skill .. ' skill']
+			stat_table['main'].value = stat_table['main'].value + value  + stat_table[stat_table['main'].skill .. ' skill']
 		end
 		if skill_name == string.gsub(stat_table['sub'].skill:lower(), ' ', '_') then
 			stat_table['sub'].value = stat_table['sub'].value + value + stat_table[stat_table['sub'].skill .. ' skill']

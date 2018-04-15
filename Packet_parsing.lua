@@ -347,7 +347,6 @@ parse.i[0x063] = function (data)
 								newbuffs[n].effect = Character_table.effect
 								newbuffs[n].value = Character_table.value
 								member_table[Character_name].Last_Spell = ''
-								member_table[Character_name].Last_Spell = ''
 								member_table[Character_name].effect = ''
 								member_table[Character_name].value = 0
 							end
