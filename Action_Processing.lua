@@ -31,7 +31,21 @@ function on_action(action)
 	end
 	if actor == nil then return end
 	
-	local spells_to_watch = S{'Marcato', 'Soul Voice', 'Haste', 'Haste II', 'Hastega', 'Hastega II', "Erratic Flutter", 'Refueling', 'Honor March', 'Victory March', 'Advancing March'}
+	local spells_to_watch = S{'Marcato', 'Soul Voice', 
+											'Bolster','Ecliptic Attrition','Blaze of Glory',
+											'Haste', 'Haste II', 'Hastega', 'Hastega II', "Erratic Flutter", 'Refueling', 
+											'Honor March', 'Victory March', 'Advancing March',
+											"Mage's Ballad", "Mage's Ballad II", "Mage's Ballad III",
+											'Valor Minuet', 'Valor Minuet I', 'Valor Minuet II', 'Valor Minuet IV', 'Valor Minuet V',
+											'Sword Madrigal', 'Blade Madrigal',
+											"Army's Paeon", "Army's Paeon II", "Army's Paeon III", "Army's Paeon IV", "Army's Paeon V",
+											"Knight's Minne", "Knight's Minne II", "Knight's Minne III", "Knight's Minne IV", "Knight's Minne V",
+											"Hunter's Prelude", "Archer's Prelude",
+											'Sheepfoe Mambo', 'Dragonfoe Mambo',
+											'Sinewy Etude', 'Dextrous Etude', 'Vivacious Etude', 'Quick Etude', 'Learned Etude', 'Spirited Etude', 'Enchanting Etude', 
+											'Herculean Etude', 'Uncanny Etude', 'Vital Etude', 'Swift Etude', 'Sage Etude', 'Logical Etude', 'Bewitching Etude', 
+											--'Slow','Slow II','Slowga','Slowga II',
+											}
 	
 	-- check for haste spikes from haste samba
 	if action.actor_id == player.id and action.category == 1 then
@@ -171,6 +185,9 @@ function on_action(action)
 	
 	--for index, buff in pairs(_ExtraData.player.buff_details) do
 	-- elseif table.containskey(buff, 'STP') then
+	
+	-- master has ['pet_index'] in mob structure and the masters pet has the same index
+	
 	
 	if action.category == 7 and ((actor.is_npc and actor.charmed) or not actor.is_npc) then
 		for index, target in pairs(action.targets) do

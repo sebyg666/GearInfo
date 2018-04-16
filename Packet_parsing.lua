@@ -303,18 +303,19 @@ parse.i[0x063] = function (data)
 			local Buff_association = {
 					Haste = {'Haste', 'Haste II', 'Hastega', 'Hastega II', "Erratic Flutter", 'Refueling'},
 					March = {'Honor March', 'Victory March', 'Advancing March'},
-					-- Ballad = {"Mage's Ballad", "Mage's Ballad II", "Mage's Ballad III",},
-					-- Minuet = {'Valor Minuet', 'Valor Minuet I', 'Valor Minuet II', 'Valor Minuet IV', 'Valor Minuet V',},
-					-- Madrigal = {'Sword Madrigal', 'Blade Madrigal',},
-					-- Paeon = {"Army's Paeon", "Army's Paeon II", "Army's Paeon III", "Army's Paeon IV", "Army's Paeon V",},
-					-- Minne = {"Knight's Minne", "Knight's Minne II", "Knight's Minne III", "Knight's Minne IV", "Knight's Minne V",},
-					-- Prelude = {"Hunter's Prelude", "Archer's Prelude",},
-					-- Mambo = {'Sheepfoe Mambo', 'Dragonfoe Mambo',},
-					-- Mazurka = {'Raptor Mazurka', 'Chocobo Mazurka',},
-					-- Etude = {'Sinewy Etude', 'Dextrous Etude', 'Vivacious Etude', 'Quick Etude', 'Learned Etude', 'Spirited Etude', 'Enchanting Etude', 
-							-- 'Herculean Etude', 'Uncanny Etude', 'Vital Etude', 'Swift Etude', 'Sage Etude', 'Logical Etude', 'Bewitching Etude', },
-					-- Carol = {'Fire Carol', 'Ice Carol', 'Wind Carol', 'Earth Carol', 'Lightning Carol', 'Water Carol', 'Light Carol', 'Dark Carol',
-							-- 'Fire Carol II', 'Ice Carol II', 'Wind Carol II', 'Earth Carol II', 'Lightning Carol II', 'Water Carol II', 'Light Carol II', 'Dark Carol II',},
+					Ballad = {"Mage's Ballad", "Mage's Ballad II", "Mage's Ballad III",},
+					Minuet = {'Valor Minuet', 'Valor Minuet I', 'Valor Minuet II', 'Valor Minuet IV', 'Valor Minuet V',},
+					Madrigal = {'Sword Madrigal', 'Blade Madrigal',},
+					Paeon = {"Army's Paeon", "Army's Paeon II", "Army's Paeon III", "Army's Paeon IV", "Army's Paeon V",},
+					Minne = {"Knight's Minne", "Knight's Minne II", "Knight's Minne III", "Knight's Minne IV", "Knight's Minne V",},
+					Prelude = {"Hunter's Prelude", "Archer's Prelude",},
+					Mambo = {'Sheepfoe Mambo', 'Dragonfoe Mambo',},
+					Mazurka = {'Raptor Mazurka', 'Chocobo Mazurka',},
+					Etude = {'Sinewy Etude', 'Dextrous Etude', 'Vivacious Etude', 'Quick Etude', 'Learned Etude', 'Spirited Etude', 'Enchanting Etude', 
+									'Herculean Etude', 'Uncanny Etude', 'Vital Etude', 'Swift Etude', 'Sage Etude', 'Logical Etude', 'Bewitching Etude', },
+					Carol = {'Fire Carol', 'Ice Carol', 'Wind Carol', 'Earth Carol', 'Lightning Carol', 'Water Carol', 'Light Carol', 'Dark Carol',
+									'Fire Carol II', 'Ice Carol II', 'Wind Carol II', 'Earth Carol II', 'Lightning Carol II', 'Water Carol II', 'Light Carol II', 'Dark Carol II',},
+					--Slow = {'Slow','Slow II','Slowga','Slowga II',},
 				}
 			
 			for n,new in pairs(newbuffs) do
@@ -437,7 +438,7 @@ parse.i[0x063] = function (data)
         -- Cannot reliably recall this packet using last_incoming on load because there
         -- are 9 version of it and you only get the last one. Hence, this flag:
 		seen_0x063_type9 = true
-		check_buffs()
+		--check_buffs()
     end
 end
 
@@ -473,7 +474,7 @@ function update_party()
 		for old_name, old_member in pairs(old) do
 			if old_name == new_name then
 				new[old_name] = {id = old_member.id , name = old_member.name, Last_Spell = old_member.Last_Spell , effect = old_member.effect, value = old_member.value, 
-												mob = old_member.mob, ['Main job'] = old_member['Main job'], ['Sub job'] = old_member['Sub job'],}
+												mob = new_member.mob, ['Main job'] = old_member['Main job'], ['Sub job'] = old_member['Sub job'],}
 			end
 		end
 	end
@@ -517,6 +518,7 @@ parse.i[0x0DD] = function (data)
 	
 	local packet = packets.parse('incoming', data)
 	party_from_packet[packet['ID']] = {id = packet['ID'] , name = packet['Name'], ['Main job'] = packet['Main job'], ['Sub job'] = packet['Sub job'],} 
+	--table.vprint(packet)
 	-- ['Main job level'] = packet['Main job level'], ['Sub job level'] = packet['Sub job level']}
 end
 

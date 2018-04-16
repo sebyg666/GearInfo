@@ -4,7 +4,7 @@ function get_tp_per_hit()
 	local tp_per_hit_zanshin = 0
 	local Job_STP = determine_stp()
 	local Return_table = T{}
-	local buff = Buffs_inform.STP
+	local buff = Buffs_inform['Store TP']
 	
 	local jp_tp_bonus = 0
 	local jp = player.job_points[player.main_job:lower()]['jp_spent']
@@ -392,10 +392,10 @@ function get_total_haste()
 	else
 		gear_haste = Gear_info['Haste'] + manual_ghaste
 	end
-	if (Buffs_inform.magic_haste + manual_mhaste) > 448 then
+	if (Buffs_inform.ma_haste + manual_mhaste) > 448 then
 		magic_haste = 448
 	else
-		magic_haste = Buffs_inform.magic_haste + manual_mhaste
+		magic_haste = Buffs_inform.ma_haste + manual_mhaste
 	end
 	if (Buffs_inform.ja_haste + manual_jahaste)> 256 then
 		ja_haste = 256

@@ -149,7 +149,11 @@ function desypher_description(discription_string, item_t)
 	discription_string = string.gsub(discription_string, '\"Mag.%s?Atk.%s?Bns.\"', 'Magic Atk. Bonus' ) 
 	
 	discription_string = string.gsub(discription_string, 'Magic Evasion', 'Magic_evasion' )
+	discription_string = string.gsub(discription_string, '\"Magic Def. Bonus\"', 'Magic Def. Bonus' )
 	
+	discription_string = string.gsub(discription_string, 'Crit. hit damage', 'Critical hit damage' )
+	discription_string = string.gsub(discription_string, 'Crit. hit rate', 'Critical hit rate' )
+
 	discription_string = string.gsub(discription_string, 'Physical damage taken II', 'PDT_2' )
 	discription_string = string.gsub(discription_string, 'Physical damage taken', 'PDT' )
 	discription_string = string.gsub(discription_string, 'Breath damage taken', 'BDT' )
@@ -191,6 +195,7 @@ function desypher_description(discription_string, item_t)
 								'Magic_accuracy', 'Magic Atk. Bonus',
 								'Haste','\"Slow\"','\"Store TP\"','\"Dual Wield\"','\"Fast Cast\"','\"Martial Arts\"',
 								'DMG','PDT','MDT','BDT','D_T','MDT_2','PDT_2',
+								'Critical hit damage' ,'Critical hit rate', 
 								"Hand%-to%-Hand skill", "Dagger skill", "Sword skill", "Great sword skill", "Axe skill", "Great axe skill",  "Scythe skill", "Polearm skill", 
 								"Katana skill", "Great katana skill", "Club skill",  "Staff skill", "Archery skill", "Marksmanship skill" , "Throwing skill","Guarding skill","Evasion skill","Shield skill","Parrying skill",
 								"Divine Magic skill","Healing Magic skill","Enhancing Magic skill","Enfeebling Magic skill","Elemental Magic skill","Dark Magic skill","Summoning Magic skill","Ninjutsu skill","Singing skill",
@@ -220,6 +225,9 @@ function desypher_description(discription_string, item_t)
 		['PDT_2'] = 'PDT2',
 		['\"Martial Arts\"'] = 'Martial Arts',
 		['WS_dex'] = 'Weapon skill DEX',
+		['\"Quadruple Attack\"'] = 'Quadruple Attack',
+		['\"Triple Attack\"'] = 'Triple Attack',
+		['\"Double Attack\"'] = 'Double Attack',
 	}
 	
 	for k, v in pairs(valid_strings) do
@@ -381,20 +389,20 @@ function get_player_acc(stat_table)
 	Total_acc.dex = math.floor(stat_table['DEX'] * 0.75)
 	Total_acc.agi = math.floor(stat_table['AGI'] * 0.75)
 	
-	Total_acc.main = main_acc_skill + (math.floor(stat_table['DEX'] * 0.75)) + stat_table['Accuracy'] + get_player_acc_from_job()
+	Total_acc.main = main_acc_skill + math.floor((stat_table['DEX']+ Buffs_inform['DEX']) * 0.75) + stat_table['Accuracy'] + get_player_acc_from_job() + Buffs_inform['Accuracy']
 
 	if player.equipment.sub.id ~= 0 and player.equipment.sub.category == 'Weapon' and player.equipment.sub.damage then
-		Total_acc.sub = sub_acc_skill + (math.floor(stat_table['DEX'] * 0.75)) + stat_table['Accuracy'] + get_player_acc_from_job()
+		Total_acc.sub = sub_acc_skill + math.floor((stat_table['DEX']+ Buffs_inform['DEX']) * 0.75) + stat_table['Accuracy'] + get_player_acc_from_job() + Buffs_inform['Accuracy']
 	else
 		Total_acc.sub = 0
 	end
 	if player.equipment.range.id ~= 0 and player.equipment.range.category == 'Weapon' then
-		Total_acc.range = ranged_acc_skill + math.floor(stat_table['AGI'] * 0.75) + stat_table['Ranged Accuracy'] + get_player_acc_from_job()
+		Total_acc.range = ranged_acc_skill + math.floor((stat_table['AGI']+ Buffs_inform['AGI']) * 0.75) + stat_table['Ranged Accuracy'] + get_player_acc_from_job() + Buffs_inform['Ranged Accuracy']
 	else
 		Total_acc.range = 0
 	end
 	if player.equipment.ammo.id ~= 0 and player.equipment.ammo.category == 'Weapon' and player.equipment.ammo.damage then
-		Total_acc.ammo = ammo_acc_skill + math.floor(stat_table['AGI'] * 0.75) + stat_table['Ranged Accuracy'] + get_player_acc_from_job()
+		Total_acc.ammo = ammo_acc_skill + math.floor((stat_table['AGI']+ Buffs_inform['AGI']) * 0.75) + stat_table['Ranged Accuracy'] + get_player_acc_from_job() + Buffs_inform['Ranged Accuracy']
 	else
 		Total_acc.ammo = 0
 	end
@@ -575,7 +583,7 @@ function get_player_acc_from_job()
 		local spells_set = T(windower.ffxi.get_mjob_data().spells):filter(function(id) return id ~= 512 end):map(function(id) return id end)
 		local spell_value = 0
 		for key, spell_id in pairs(spells_set) do
-			if Blu_spells[spell_id].trait == 'Accuracy Bonus' then
+			if Blu_spells[spell_id].trait == 'Accuracy' then
 				spell_value = spell_value + Blu_spells[spell_id]['points']
 			end
 		end

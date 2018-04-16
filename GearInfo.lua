@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.6.6.5'
+_addon.version = '1.6.7.1'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -19,6 +19,7 @@ Set_bonus_by_item_id = require('res/Set_bonus_by_item_id')
 Blu_spells = require('res/Blue_Mage_Spells')
 Gifts = require('res/Gifts')
 Cor_Rolls = require('res/Cor_Rolls')
+Bard_Songs = require('res/Bard_Songs')
 
 res = require('resources')
 skills_from_resources = res.skills
@@ -329,8 +330,8 @@ windower.register_event('addon command', function(command, ...)
 			settings:save('all')
 		elseif command:lower() == 'test' then
 			--check_equipped()
-			settings.Cors['ewellina'] = nil
-			table.vprint(settings)
+			--settings.Cors['ewellina'] = nil
+			table.vprint(_ExtraData.player.buff_details)
 			-- local stat_table = get_equip_stats(check_equipped())
 			-- local player_Acc = get_player_acc(stat_table)
 			-- table.vprint(stat_table.range)
@@ -669,8 +670,8 @@ function update()
 		inform.stp = ' \\cs'..blue..'[STP:\\cr\\cs'..white..Gear_info['Store TP'].. '\\cr\\cs'..blue..']\\cr'
 		inform.dw = ' \\cs'..blue..'[DW:\\cr\\cs'..white..Gear_info['Dual Wield'].. '\\cr\\cs'..blue..'] \n\\cr'
 		
-		if Buffs_inform.STP > 0 then
-			inform.bstp = ' \\cs'..blue..'[Buff STP:\\cr\\cs'..white..Buffs_inform.STP.. '\\cr\\cs'..blue..'] \n\\cr'
+		if Buffs_inform['Store TP'] > 0 then
+			inform.bstp = ' \\cs'..blue..'[Buff STP:\\cr\\cs'..white..Buffs_inform['Store TP'].. '\\cr\\cs'..blue..'] \n\\cr'
 		else
 			inform.bstp = ''
 		end
@@ -680,11 +681,11 @@ function update()
 						or Gear_info['Haste'] > 256 and
 							' \\cs'..blue..'[G.Haste:\\cr\\cs'..white..Gear_info['Haste'].. '\\cr\\cs'..blue..'/256] \\cr')
 		
-		if (Buffs_inform.magic_haste + manual_mhaste) > 0 then
-			inform.mhaste = ( (Buffs_inform.magic_haste + manual_mhaste) < 449 and
-							'\n \\cs'..blue..'[M.Haste:\\cr\\cs'..white..(Buffs_inform.magic_haste + manual_mhaste).. '\\cr\\cs'..blue..'/448] \\cr'
-						or (Buffs_inform.magic_haste + manual_mhaste) > 448 and
-							'\n \\cs'..blue..'[M.Haste:\\cr\\cs'..red..(Buffs_inform.magic_haste + manual_mhaste).. '\\cr\\cs'..blue..'/448] \\cr')
+		if (Buffs_inform.ma_haste + manual_mhaste) > 0 then
+			inform.mhaste = ( (Buffs_inform.ma_haste + manual_mhaste) < 449 and
+							'\n \\cs'..blue..'[M.Haste:\\cr\\cs'..white..(Buffs_inform.ma_haste + manual_mhaste).. '\\cr\\cs'..blue..'/448] \\cr'
+						or (Buffs_inform.ma_haste + manual_mhaste) > 448 and
+							'\n \\cs'..blue..'[M.Haste:\\cr\\cs'..red..(Buffs_inform.ma_haste + manual_mhaste).. '\\cr\\cs'..blue..'/448] \\cr')
 		else
 			inform.mhaste = ''
 		end
@@ -923,6 +924,7 @@ windower.register_event('prerender',function()
         player.stats = temp_stats
 		player.position = temp_pos
 		player.is_moving = check_player_movement(player)
+		check_buffs()
 		update_party()
 		calculate_total_haste()
         update()
