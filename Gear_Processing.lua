@@ -362,10 +362,10 @@ function get_player_acc(stat_table)
 		if skill_name == string.gsub(stat_table['sub'].skill:lower(), ' ', '_') then
 			stat_table['sub'].value = stat_table['sub'].value + value + stat_table[stat_table['sub'].skill .. ' skill']
 		end
-		if skill_name == string.gsub(stat_table['range'].skill:lower(), ' ', '_') then
+		if skill_name == string.gsub(stat_table['range'].skill:lower(), ' ', '_') and player.equipment.range['damage'] then
 			stat_table['range'].value = stat_table['range'].value + value + stat_table[stat_table['range'].skill .. ' skill']
 		end
-		if skill_name == string.gsub(stat_table['ammo'].skill:lower(), ' ', '_') then
+		if skill_name == string.gsub(stat_table['ammo'].skill:lower(), ' ', '_') and player.equipment.ammo['damage'] then
 			stat_table['ammo'].value = stat_table['ammo'].value + value + stat_table[stat_table['ammo'].skill .. ' skill']
 		end
 	end
@@ -396,12 +396,12 @@ function get_player_acc(stat_table)
 	else
 		Total_acc.sub = 0
 	end
-	if player.equipment.range.id ~= 0 and player.equipment.range.category == 'Weapon' then
+	if player.equipment.range.id ~= 0 and player.equipment.range.category == 'Weapon' and player.equipment.range['damage'] then
 		Total_acc.range = ranged_acc_skill + math.floor((stat_table['AGI']+ Buffs_inform['AGI']) * 0.75) + stat_table['Ranged Accuracy'] + get_player_acc_from_job() + Buffs_inform['Ranged Accuracy']
 	else
 		Total_acc.range = 0
 	end
-	if player.equipment.ammo.id ~= 0 and player.equipment.ammo.category == 'Weapon' and player.equipment.ammo.damage then
+	if player.equipment.ammo.id ~= 0 and player.equipment.ammo.category == 'Weapon' and player.equipment.ammo['damage'] then
 		Total_acc.ammo = ammo_acc_skill + math.floor((stat_table['AGI']+ Buffs_inform['AGI']) * 0.75) + stat_table['Ranged Accuracy'] + get_player_acc_from_job() + Buffs_inform['Ranged Accuracy']
 	else
 		Total_acc.ammo = 0

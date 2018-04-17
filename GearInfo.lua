@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.6.7.1'
+_addon.version = '1.7.1.1'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -20,6 +20,7 @@ Blu_spells = require('res/Blue_Mage_Spells')
 Gifts = require('res/Gifts')
 Cor_Rolls = require('res/Cor_Rolls')
 Bard_Songs = require('res/Bard_Songs')
+Geo_Spells = require('res/Geo_Spells')
 
 res = require('resources')
 skills_from_resources = res.skills
@@ -53,6 +54,9 @@ defaults.Bards = {}
 defaults.Bards["joachim"] = 0
 defaults.Bards["ulmia"] = 0
 defaults.Cors = {}
+defaults.Cors['qultada'] = 0
+defaults.Geos = {}
+defaults.Geos['Sylvie(UC)'] = 0
 defaults.display = {}
 defaults.display.pos = {}
 defaults.display.pos.x = 0
@@ -132,6 +136,28 @@ windower.register_event('load', function()
 		options_load()
 		text_box:show()
 		doloop = true
+		
+		if files.exists('data\\'..player.name..'_temp_party.lua') then
+			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_party.lua','r')
+			local t = f:read("*all")
+			t = assert(loadstring(t))()
+			f:close()
+			member_table = t
+			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_party.lua','w+')
+			f:write('return {}')
+			f:close()
+		end
+		if files.exists('data\\'..player.name..'_temp_buffs.lua') then
+			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_buffs.lua','r')
+			local t = f:read("*all")
+			t = assert(loadstring(t))()
+			f:close()
+			_ExtraData.player.buff_details = t
+			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_buffs.lua','w+')
+			f:write('return {}')
+			f:close()
+		end
+		
 		--loop()
 	end
 end)
@@ -176,6 +202,7 @@ function options_load()
 		else
 			full_gear_table_from_file = get_equipment_from_file()
 		end
+		
 		manual_stp = 0
 		manual_dw = 0
 		manual_ghaste = 0
@@ -221,7 +248,18 @@ windower.register_event('addon command', function(command, ...)
 			manual_dw_needed = tonumber(args[1])
 			log('Set maunal DW needed to ' .. tostring(manual_dw_needed))
 		elseif command:lower() == 'r' or command:lower() == 'reload' then
-			log('Reloading')
+			
+			local new_item = member_table
+			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_party.lua','w+')
+			f:write('return ' .. T(new_item):tovstring())
+			f:close()
+			
+			local new_item = _ExtraData.player.buff_details
+			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_buffs.lua','w+')
+			f:write('return ' .. T(new_item):tovstring())
+			f:close()
+			notice('Buffs and party saved to temp file. Reloading GI.')
+
 			windower.send_command('lua r gearinfo;')
 		elseif command:lower() == 'save' or command:lower() == 's' then
 			if args[1]:lower() == 'wstp' then
@@ -277,7 +315,7 @@ windower.register_event('addon command', function(command, ...)
 		elseif command:lower() == 'cor' then
 			if type(tonumber(args[1])) == 'number' then
 				manual_COR_bonus = tonumber(args[1])
-				log('Set hantom Roll bonus to ' .. tostring(manual_bard_duration_bonus) .. '.')
+				log('Set Phantom Roll bonus to ' .. tostring(manual_COR_bonus) .. '.')
 			elseif args[1]:lower() == 'add' and type(tostring(args[2])) == 'string' and type(tonumber(args[3])) == 'number' then
 				settings.Cors[args[2]:lower()] = tonumber(args[3])
 				settings:save('all')
@@ -286,6 +324,19 @@ windower.register_event('addon command', function(command, ...)
 				settings.Cors[tostring(args[2]):lower()] = nil
 				settings:save('all')
 				log('Removed ' .. tostring(args[2]:lower()) .. ' as a known COR!')
+			end
+		elseif command:lower() == 'geo' then
+			if type(tonumber(args[1])) == 'number' then
+				manual_GEO_bonus = tonumber(args[1])
+				log('Set Geomancy bonus to ' .. tostring(manual_GEO_bonus) .. '.')
+			elseif args[1]:lower() == 'add' and type(tostring(args[2])) == 'string' and type(tonumber(args[3])) == 'number' then
+				settings.Geos[args[2]:lower()] = args[3]
+				settings:save('all')
+				log('Added ' .. tostring(args[2]:lower()) .. ' as a known GEO with +' .. tonumber(args[3]) .. ' Geomancy!')
+			elseif args[1]:lower() == 'delete' and type(tostring(args[2])) == 'string' then
+				settings.Geos[tostring(args[2]):lower()] = nil
+				settings:save('all')
+				log('Removed ' .. tostring(args[2]:lower()) .. ' as a known GEO!')
 			end
 		elseif command:lower() == 'dnc' then
 			if dancer_main then
@@ -331,7 +382,10 @@ windower.register_event('addon command', function(command, ...)
 		elseif command:lower() == 'test' then
 			--check_equipped()
 			--settings.Cors['ewellina'] = nil
-			table.vprint(_ExtraData.player.buff_details)
+			-- table.vprint(_ExtraData.player.buff_details)
+			table.vprint(windower.ffxi.get_mob_by_target('t'))
+			--table.vprint(member_table)
+			
 			-- local stat_table = get_equip_stats(check_equipped())
 			-- local player_Acc = get_player_acc(stat_table)
 			-- table.vprint(stat_table.range)
@@ -390,6 +444,10 @@ windower.register_event('addon command', function(command, ...)
 			windower.add_to_chat(6, chat_l_blue..	'          add \'name\' \'bonus\'' .. chat_white .. '  --  Save the COR with name and Bonus for future use.')
 			windower.add_to_chat(6, chat_yellow..	'eg. \/\/gi cor add bob 3' .. chat_white .. '  --  This will add bob to the list with Phantom Roll +3. eg "Merirosvo Ring"')
 			windower.add_to_chat(6, chat_l_blue..	'          delete \'name\'' .. chat_white .. '  --  Delete a COR from the list.')
+			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi geo #\'' .. chat_white .. '  --  Change # to equal your parties GEO "Geomancy +#" bonus.')
+			windower.add_to_chat(6, chat_l_blue..	'          add \'name\' \'bonus\'' .. chat_white .. '  --  Save the GEO with name and Bonus for future use.')
+			windower.add_to_chat(6, chat_yellow..	'eg. \/\/gi geo add bob 5' .. chat_white .. '  --  This will add bob to the list with Geomancy +5. eg "Duna"')
+			windower.add_to_chat(6, chat_l_blue..	'          delete \'name\'' .. chat_white .. '  --  Delete a GEO from the list.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi dnc\'' .. chat_white .. '  --  Toggle if your party is getting Haste Samba from a main DNC or not.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi hide\'' .. chat_white .. '  --  Toggle hide and unhide box.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi show\'' .. chat_white .. '  --  add subcommand.')
@@ -667,33 +725,33 @@ function update()
 		----------------------------------------------------- Haste Stuff ------------------------------------------
 		
 		inform.title2 = ' \\cs'..blue..'[\\cr\\cs'..white..'Gear Info\\cr\\cs'..blue..'] \n\\cr'
-		inform.stp = ' \\cs'..blue..'[STP:\\cr\\cs'..white..Gear_info['Store TP'].. '\\cr\\cs'..blue..']\\cr'
+		inform.stp = ' \\cs'..blue..'[STP:\\cr\\cs'..white..Gear_info['Store TP'] + Buffs_inform['Store TP'].. '\\cr\\cs'..blue..']\\cr'
 		inform.dw = ' \\cs'..blue..'[DW:\\cr\\cs'..white..Gear_info['Dual Wield'].. '\\cr\\cs'..blue..'] \n\\cr'
 		
-		if Buffs_inform['Store TP'] > 0 then
-			inform.bstp = ' \\cs'..blue..'[Buff STP:\\cr\\cs'..white..Buffs_inform['Store TP'].. '\\cr\\cs'..blue..'] \n\\cr'
-		else
-			inform.bstp = ''
-		end
+		-- if Buffs_inform['Store TP'] > 0 then
+			-- inform.bstp = ' \\cs'..blue..'[Buff STP:\\cr\\cs'..white..Buffs_inform['Store TP'].. '\\cr\\cs'..blue..'] \n\\cr'
+		-- else
+			-- inform.bstp = ''
+		-- end
 		
-		inform.ghaste = ( Gear_info['Haste'] < 257 and
-							' \\cs'..blue..'[G.Haste:\\cr\\cs'..red..Gear_info['Haste'].. '\\cr\\cs'..blue..'/256] \\cr'
-						or Gear_info['Haste'] > 256 and
-							' \\cs'..blue..'[G.Haste:\\cr\\cs'..white..Gear_info['Haste'].. '\\cr\\cs'..blue..'/256] \\cr')
+		inform.ghaste = ( (Gear_info['Haste'] + Buffs_inform['g_haste'] ) < 257 and
+							' \\cs'..blue..'[G.Haste:\\cr\\cs'..white..(Gear_info['Haste'] + Buffs_inform['g_haste'] ).. '\\cr\\cs'..blue..'/256] \\cr'
+						or (Gear_info['Haste'] + Buffs_inform['g_haste'] ) > 256 and
+							' \\cs'..blue..'[G.Haste:\\cr\\cs'..red..(Gear_info['Haste'] + Buffs_inform['g_haste'] ).. '\\cr\\cs'..blue..'/256] \\cr')
 		
-		if (Buffs_inform.ma_haste + manual_mhaste) > 0 then
-			inform.mhaste = ( (Buffs_inform.ma_haste + manual_mhaste) < 449 and
-							'\n \\cs'..blue..'[M.Haste:\\cr\\cs'..white..(Buffs_inform.ma_haste + manual_mhaste).. '\\cr\\cs'..blue..'/448] \\cr'
-						or (Buffs_inform.ma_haste + manual_mhaste) > 448 and
-							'\n \\cs'..blue..'[M.Haste:\\cr\\cs'..red..(Buffs_inform.ma_haste + manual_mhaste).. '\\cr\\cs'..blue..'/448] \\cr')
+		if (Buffs_inform['ma_haste'] + manual_mhaste) > 0 then
+			inform.mhaste = ( (Buffs_inform['ma_haste'] + manual_mhaste) < 449 and
+							'\n \\cs'..blue..'[M.Haste:\\cr\\cs'..white..(Buffs_inform['ma_haste'] + manual_mhaste).. '\\cr\\cs'..blue..'/448] \\cr'
+						or (Buffs_inform['ma_haste'] + manual_mhaste) > 448 and
+							'\n \\cs'..blue..'[M.Haste:\\cr\\cs'..red..(Buffs_inform['ma_haste'] + manual_mhaste).. '\\cr\\cs'..blue..'/448] \\cr')
 		else
 			inform.mhaste = ''
 		end
-		if (Buffs_inform.ja_haste + manual_jahaste) > 0 then
-			inform.jhaste = ( (Buffs_inform.ja_haste + manual_jahaste) < 257 and
-							'\n \\cs'..blue..'[J.Haste:\\cr\\cs'..white..(Buffs_inform.ja_haste + manual_jahaste).. '\\cr\\cs'..blue..'/256] \\cr'
-						or (Buffs_inform.ja_haste + manual_jahaste) > 256 and
-							'\n \\cs'..blue..'[J.Haste:\\cr\\cs'..red..(Buffs_inform.ja_haste + manual_jahaste).. '\\cr\\cs'..blue..'/256] \\cr')
+		if (Buffs_inform['ja_haste'] + manual_jahaste) > 0 then
+			inform.jhaste = ( (Buffs_inform['ja_haste'] + manual_jahaste) < 257 and
+							'\n \\cs'..blue..'[J.Haste:\\cr\\cs'..white..(Buffs_inform['ja_haste'] + manual_jahaste).. '\\cr\\cs'..blue..'/256] \\cr'
+						or (Buffs_inform['ja_haste'] + manual_jahaste) > 256 and
+							'\n \\cs'..blue..'[J.Haste:\\cr\\cs'..red..(Buffs_inform['ja_haste'] + manual_jahaste).. '\\cr\\cs'..blue..'/256] \\cr')
 		else
 			inform.jhaste = ''
 		end

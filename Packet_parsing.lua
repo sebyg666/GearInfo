@@ -272,9 +272,9 @@ parse.i[0x063] = function (data)
 									member_table[Character_name].Last_Spell = ''
 									member_table[Character_name].effect = ''
 									member_table[Character_name].value = 0
+									break
 								end
 							end
-						
 						end
                         break
                     end
@@ -389,6 +389,12 @@ parse.i[0x063] = function (data)
 					if newbuffs[n].name == "Soul Voice" then
 						member_table[player.name].SV = true
 					end
+					if newbuffs[n].name == "Blaze of Glory" then
+						member_table[player.name].BoG = true
+					end
+					if newbuffs[n].name == "Bolster" then
+						member_table[player.name].Bolster = true
+					end
                 end
             end
             
@@ -396,22 +402,28 @@ parse.i[0x063] = function (data)
 				if not table.containskey(newbuffs[n], "full_name") then
 					newbuffs[n].full_name = newbuffs[n].name
 				end
-			end
-            
+			end	
+			
             for i,old in pairs(_ExtraData.player.buff_details) do
                 if not (old.matched_exactly or old.matched_imprecisely) then
                     -- Old status was not matched to any new status, so it's assumed it was lost
-					if old.full_name == "Honor March" then 
-						notice('Lost Honor March') 
-					end
-					if old.full_name == "Victory March" then 
-						notice('Lost Victory March (March 2)') 
-					end
-					if old.full_name == "Advancing March" then 
-						notice('Lost Advancing March (March 1)') 
+					local spell = res.spells:with('en', old.full_name)
+					-- for k, v in pairs(member_table) do
+						-- if v.geo and v.geo.id and Geo_Spells[v.geo.id].buff.id == old.id and not v.mob.pet_index then
+							-- member_table[k].geo = {}
+							-- --notice('wipped geo')
+						-- end
+					-- end
+					
+					if spell then
+						if spell.type == 'BardSong' then
+							notice('Lost '..spell.en)
+						end
 					end
 					if old.full_name == 'Marcato' then member_table[windower.ffxi.get_mob_by_id(player.id).name].Marcato = false end
 					if old.full_name == 'Soul Voice' then member_table[windower.ffxi.get_mob_by_id(player.id).name].SV = false end
+					if old.full_name == "Blaze of Glory" then member_table[windower.ffxi.get_mob_by_id(player.id).name].BoG = nil end
+					if old.full_name == "Bolster" then member_table[windower.ffxi.get_mob_by_id(player.id).name].Bolster = nil end
 					if not res.buffs[old.id] then
                         error('GearInfo: No known status for buff id #'..tostring(old.id))
                     end
@@ -435,6 +447,7 @@ parse.i[0x063] = function (data)
 			end
 		end
 		--table.vprint(_ExtraData.player.buff_details)
+		--table.vprint(member_table[player.name])
         -- Cannot reliably recall this packet using last_incoming on load because there
         -- are 9 version of it and you only get the last one. Hence, this flag:
 		seen_0x063_type9 = true
@@ -466,7 +479,7 @@ function update_party()
     for k = 1, 6 do
         local member = party[key_indices[k]]
         if member and member.mob then
-			new[member.mob.name] = {id = member.mob.id , name = member.mob.name, Last_Spell = '' , effect ='', value = 0, mob = member.mob, ['Main job']=0,['Sub job']=0}
+			new[member.mob.name] = {id = member.mob.id , name = member.mob.name, Last_Spell = '' , effect ='', value = 0, mob = member.mob, ['Main job']=0,['Sub job']=0,buffs={}, indi={}, geo={}, pet={incoming = false,}}
         end
 	end
 	
@@ -474,7 +487,26 @@ function update_party()
 		for old_name, old_member in pairs(old) do
 			if old_name == new_name then
 				new[old_name] = {id = old_member.id , name = old_member.name, Last_Spell = old_member.Last_Spell , effect = old_member.effect, value = old_member.value, 
-												mob = new_member.mob, ['Main job'] = old_member['Main job'], ['Sub job'] = old_member['Sub job'],}
+												mob = new_member.mob, ['Main job'] = old_member['Main job'], ['Sub job'] = old_member['Sub job'], buffs=old_member.buffs, indi=old_member.indi, geo=old_member.geo, pet=old_member.pet}
+				if old[old_name].Marcato then new[old_name].Marcato = true end
+				if old[old_name].SV then new[old_name].SV = true end
+				if old[old_name].BoG then new[old_name].BoG = true end	
+				if old[old_name].bolster then new[old_name].bolster = true end
+				if old_name == 'Cornelia' and old[old_name]['mob'] and old[old_name]['mob']['charmed'] then
+					new[old_name].indi = {id=817, caster=party[key_indices[1]].mob.name, boost = 1}
+				elseif old_name == 'Kupofried' and old[old_name]['mob'] and old[old_name]['mob']['charmed'] then
+					new[old_name].indi = {id=818, caster=party[key_indices[1]].mob.name, boost = 1}
+				elseif old_name == 'Brygid' and old[old_name]['mob'] and old[old_name]['mob']['charmed'] then
+					new[old_name].indi = {id=819, caster=party[key_indices[1]].mob.name, boost = 1}
+				elseif old_name == 'KuyinHathdenna' and old[old_name]['mob'] and old[old_name]['mob']['charmed'] then
+					new[old_name].indi = {id=820, caster=party[key_indices[1]].mob.name, boost = 1}
+				elseif old_name == 'Moogle' and old[old_name]['mob'] and old[old_name]['mob']['charmed'] then
+					new[old_name].indi = {id=821, caster=party[key_indices[1]].mob.name, boost = 1}
+				elseif old_name == 'Sakura' and old[old_name]['mob'] and old[old_name]['mob']['charmed'] then
+					new[old_name].indi = {id=822, caster=party[key_indices[1]].mob.name, boost = 1}
+				elseif old_name == 'StarSibyl' and old[old_name]['mob'] and old[old_name]['mob']['charmed'] then
+					new[old_name].indi = {id=823, caster=party[key_indices[1]].mob.name, boost = 1}
+				end
 			end
 		end
 	end
@@ -486,6 +518,21 @@ function update_party()
 		elseif party_from_packet[new_member.id] and new_member.id ~= player.id then
 			new[new_name]['Main job'] = res.jobs:with('id', party_from_packet[new_member.id]['Main job']).ens
 			new[new_name]['Sub job'] = res.jobs:with('id', party_from_packet[new_member.id]['Sub job']).ens
+			if new_name == 'Cornelia' and new[new_name]['mob'] and new[new_name]['mob']['charmed'] then
+				new[new_name].indi = {id=817, caster=party[key_indices[1]].mob.name, boost = 1}
+			elseif new_name == 'Kupofried' and new[new_name]['mob'] and new[new_name]['mob']['charmed'] then
+				new[new_name].indi = {id=818, caster=party[key_indices[1]].mob.name, boost = 1}
+			elseif new_name == 'Brygid' and new[new_name]['mob'] and new[new_name]['mob']['charmed'] then
+				new[new_name].indi = {id=819, caster=party[key_indices[1]].mob.name, boost = 1}
+			elseif new_name == 'KuyinHathdenna' and new[new_name]['mob'] and new[new_name]['mob']['charmed'] then
+				new[new_name].indi = {id=820, caster=party[key_indices[1]].mob.name, boost = 1}
+			elseif new_name == 'Moogle' and new[new_name]['mob'] and new[new_name]['mob']['charmed'] then
+				new[new_name].indi = {id=821, caster=party[key_indices[1]].mob.name, boost = 1}
+			elseif new_name == 'Sakura' and new[new_name]['mob'] and new[new_name]['mob']['charmed'] then
+				new[new_name].indi = {id=822, caster=party[key_indices[1]].mob.name, boost = 1}
+			elseif new_name== 'StarSibyl' and new[new_name]['mob'] and new[new_name]['mob']['charmed'] then
+				new[new_name].indi = {id=823, caster=party[key_indices[1]].mob.name, boost = 1}
+			end
 		end
 	end
 	
@@ -525,12 +572,14 @@ end
 parse.i[0x076] = function (data)
     -- buff marcato = 231, soul voice = 52 , "Troubadour" = 348 
 	local SV = false
-	
+	local bolster = false
+	local party_buffs = {}
 	for  k = 0, 4 do
 		if data:unpack('I',k*48+5) == 0 then
             break
         else
 			local member_id = data:unpack('I', k*48+5+0)
+			party_buffs[member_id] ={}
 			local mem_t = {}
 			for index, m_table in pairs(member_table) do
 				if member_table[index].id == member_id then
@@ -539,24 +588,114 @@ parse.i[0x076] = function (data)
 				end
 			end
 			
-			for i = 1, 32 do
-				local _buff_id = data:byte(k*48+5+16+i-1) + 256*( math.floor( data:byte(k*48+5+8+ math.floor((i-1)/4)) / 4^((i-1)%4) )%4)
-				if _buff_id == 231 then 
-					mem_t.Marcato = true
+			if member_id ~= 0 then
+			
+				for i = 1, 32 do
+					local _buff_id = data:byte(k*48+5+16+i-1) + 256*( math.floor( data:byte(k*48+5+8+ math.floor((i-1)/4)) / 4^((i-1)%4) )%4)
+					if _buff_id ~= 255 then
+						party_buffs[member_id][i] = _buff_id
+					end
+					if _buff_id == 231 then 
+						mem_t.Marcato = true
+					end
+					if _buff_id == 569 then 
+						mem_t.BoG = true
+					end
+					if _buff_id == 513 then 
+						mem_t.Bolster = true
+						bolster = true
+					end
+					if _buff_id == 52 then 
+						mem_t.SV = true
+						SV = true
+					end
 				end
-				if _buff_id == 52 then 
-					mem_t.SV = true
-					SV = true
+				
+				if SV == false then
+					mem_t.SV = nil
+				end
+				if bolster == false then
+					mem_t.bolster = nil
+				end
+			end
+			mem_t['buffs'] = {}
+			for mem_id, v in pairs(party_buffs) do
+				if mem_id == mem_t.id then
+					for i = 1, 32 do
+						if v[i] then
+							mem_t['buffs'][v[i]] = {id = v[i], en = res.buffs:with('id', v[i]).en} --en = res.buffs:with('id', v[i]).en}
+						end
+					end
 				end
 			end
 			
-			if SV == false then
-				mem_t.SV = false
+			-- check if memebr still has colore active, if not delete it
+			if mem_t.indi and party_buffs[member_id] then
+				if not table.contains(party_buffs[member_id], 612)then
+					mem_t.indi = {}
+				end
 			end
+			-- if mem_t.geo and party_buffs[member_id] then
+				-- if not mem_t.mob.pet_index then
+					-- mem_t.geo = {}
+				-- end
+			-- end
+			
 		end
 	end
+	
 	--table.vprint(member_table)
 end
+
+-- parse.i[0x067] = function (data)
+	-- local packet = packets.parse('incoming', data)
+	-- --table.vprint(packet)
+	-- for k, v in pairs(member_table) do
+		-- if v.mob and v.mob.pet_index then
+			-- notice(packet['Pet Index'] .. ' '..v.mob.pet_index.. ' '..v.mob.name)
+		-- end
+	-- end
+	-- if packet['Owner Index'] ~= 0 then
+	-- --table.vprint(packet)
+		-- if member_table[windower.ffxi.get_mob_by_index(packet['Owner Index']).name] then
+			-- --notice(windower.ffxi.get_mob_by_index(packet['Owner Index']).name )
+			-- if packet['Current HP%'] == 0 and packet['Pet Index'] == 0 and member_table[windower.ffxi.get_mob_by_index(packet['Owner Index']).name].geo then
+				-- member_table[windower.ffxi.get_mob_by_index(packet['Owner Index']).name].geo = {}
+				-- notice(windower.ffxi.get_mob_by_index(packet['Owner Index']).name .. '\'s pet died')
+			-- end
+		-- end
+	-- end
+-- end
+
+-- pet tracking packet, only works for the player, not party members
+-- parse.i[0x068] = function (data)
+	-- local packet = packets.parse('incoming', data)
+	-- -- table.vprint(packet)
+	-- if member_table[windower.ffxi.get_mob_by_id(packet['Owner ID']).name] then
+		-- if packet['Current HP%'] == 0 and packet['Pet Index'] == 0 and member_table[windower.ffxi.get_mob_by_id(packet['Owner ID']).name].geo then
+			-- if member_table[windower.ffxi.get_mob_by_id(packet['Owner ID']).name].geo.caster == windower.ffxi.get_mob_by_id(packet['Owner ID']).name then
+				-- member_table[windower.ffxi.get_mob_by_id(packet['Owner ID']).name].geo = {}
+				-- --notice(windower.ffxi.get_mob_by_id(packet['Owner ID']).name .. '\'s pet died')
+			-- end
+		-- end
+	-- end
+-- end
+
+-- parse.i[0x05B] = function (data)
+	-- local packet = packets.parse('incoming', data)
+	-- table.vprint(packet)
+-- end
+
+-- parse.i[0x038] = function (data)
+	-- local packet = packets.parse('incoming', data)
+	-- if packet.Type == 'deru' then
+		-- notice(packet['Mob Index'])
+	-- end
+	-- if packet.Type == 'kesu' then
+		-- notice(packet['Mob Index'])
+	-- end
+-- end
+
 
 -- Party list request (4 byte packet)
 -- fields.outgoing[0x078] = L{

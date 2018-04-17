@@ -44,9 +44,12 @@ function on_action(action)
 											'Sheepfoe Mambo', 'Dragonfoe Mambo',
 											'Sinewy Etude', 'Dextrous Etude', 'Vivacious Etude', 'Quick Etude', 'Learned Etude', 'Spirited Etude', 'Enchanting Etude', 
 											'Herculean Etude', 'Uncanny Etude', 'Vital Etude', 'Swift Etude', 'Sage Etude', 'Logical Etude', 'Bewitching Etude', 
+											"Indi-Regen","Indi-Refresh", "Indi-Haste", "Indi-STR", "Indi-DEX", "Indi-VIT","Indi-AGI", "Indi-INT", "Indi-MND", "Indi-CHR", "Indi-Fury", "Indi-Barrier", "Indi-Acumen", 
+											"Indi-Fend", "Indi-Precision", "Indi-Voidance",	"Indi-Focus", "Indi-Attunement",
+											"Geo-Regen", "Geo-Refresh", "Geo-Haste", "Geo-STR", "Geo-DEX", "Geo-VIT", "Geo-AGI", "Geo-INT", "Geo-MND", "Geo-CHR", "Geo-Fury", "Geo-Barrier", "Geo-Acumen",	
+											"Geo-Fend", "Geo-Precision","Geo-Voidance","Geo-Focus", "Geo-Attunement",
 											--'Slow','Slow II','Slowga','Slowga II',
 											}
-	
 	-- check for haste spikes from haste samba
 	if action.actor_id == player.id and action.category == 1 then
 		if action.targets[1].actions[1].reaction == 8 then
@@ -85,7 +88,7 @@ function on_action(action)
 								Roll_bonus = manual_COR_bonus
 							end
 							if rollNum == 12 and Cor_Rolls[rollID].bust  ~= "?" then
-								buff_potency = Cor_Rolls[rollID].bust 
+								buff_potency[1] = Cor_Rolls[rollID].bust 
 							elseif Cor_Rolls[rollID].roll[rollNum] ~= "?" then
 								if rollID == 304 then
 									local hpval = Cor_Rolls[rollID].roll[rollNum][1] + (Cor_Rolls[rollID]["roll+1"][1] * Roll_bonus)
@@ -122,17 +125,15 @@ function on_action(action)
 									--end
 								end
 							end
-							member_table[index] = {id = member_table[index].id, name = member_table[index].name, mob = member_table[index].mob,  Last_Spell = Cor_Rolls[rollID].en, effect = Cor_Rolls[rollID].effect, value = buff_potency}
-							--windower.add_to_chat(1, Cor_Rolls[rollID].en..' '..chars['circle' .. rollNum] ..' '..chars.implies..' '..Cor_Rolls[rollID].effect..' +'..buff_potency )
+							member_table[index] = {id = member_table[index].id, name = member_table[index].name, mob = member_table[index].mob,  Last_Spell = Cor_Rolls[rollID].en, 
+																	effect = Cor_Rolls[rollID].effect, value = buff_potency}
+																	
 							for i, buff in pairs(_ExtraData.player.buff_details) do
 								-- need to update buff list if its a double up and force a check_buffs() as the buff table does not change with a double up neither does the buff duration
 								if buff.id == res.buffs:with('english', Cor_Rolls[rollID].en).id then
 									_ExtraData.player.buff_details[i].value = buff_potency
 									_ExtraData.player.buff_details[i].Last_Spell = Cor_Rolls[rollID].en
-									_ExtraData.player.buff_details[i].effect = Cor_Rolls[rollID].bonus
-									--member_table[index] = {id = member_table[index].id, name = member_table[index].name, mob = member_table[index].mob,  Last_Spell = '', effect = '', value = 0}
-									--notice('Updated player info')
-									--table.vprint(_ExtraData.player.buff_details[index])
+									_ExtraData.player.buff_details[i].effect = Cor_Rolls[rollID].effect
 									check_buffs()
 									break
 								end
@@ -181,6 +182,22 @@ function on_action(action)
 				end
 			end
 		end
+	elseif action.category == 6 and ((actor.is_npc and actor.charmed) or not actor.is_npc) then
+		--notice('Step 1: ' .. action.param .. ' ' .. res.job_abilities:with('id', action.param).en)
+		for index, target in pairs(action.targets) do
+			if type(target) == "table" then
+	
+				if action.param == 347 then -- ecliptic atrition
+					for index, m_table in pairs(member_table) do
+						if m_table.mob.pet_index and windower.ffxi.get_mob_by_index(m_table.mob.pet_index).name == 'Luopan' and m_table.id == action.actor_id then
+							if member_table[index].geo.boost ~= 2 then
+								member_table[index].geo = {id = member_table[index].geo.id, caster = member_table[index].geo.caster, boost = (member_table[index].geo.boost + 0.25) }
+							end
+						end
+					end
+				end
+			end
+		end
 	end
 	
 	--for index, buff in pairs(_ExtraData.player.buff_details) do
@@ -224,16 +241,51 @@ function on_action(action)
 		local spell = res.spells:with('id', action.param)
 		for index, target in pairs(action.targets) do
 			if type(target) == "table" then
-				if target.id == player.id then
+				--if target.id == player.id then
 					if spells_to_watch:contains(spell.en) then
 						for index, m_table in pairs(member_table) do
 							if member_table[index].id == action.actor_id then
 								member_table[index].Last_Spell = spell.en
+							end
+							--Indi spells, must associate person with indi
+							if table.containskey(Geo_Spells, spell.id) and member_table[index].id == action.actor_id and spell.en:contains('Indi-') then
+								-- check for indi enhancing buffs if the caster is also the recipient
+								local boost = 1
+								if target.id == action.actor_id then
+									-- if caster has buff then add bonus
+									if member_table[index].bolster then
+										notice('Bolster detected, Boosting '..spell.en)
+										boost = 2
+									end
+									member_table[index].indi = {id = spell.id, caster = windower.ffxi.get_mob_by_id(action.actor_id).name, boost = boost}
+									break
+								else
+									member_table[index].indi = {id = spell.id, caster = windower.ffxi.get_mob_by_id(action.actor_id).name, boost = boost}
+									break
+								end			
+							end
+							--Geo spells, must associate person with geo
+							if table.containskey(Geo_Spells, spell.id) and member_table[index].id == action.actor_id and spell.en:contains('Geo-') then
+								local boost = 1
+									-- if caster has buff then add bonus
+								if member_table[index].BoG then -- blaze of glory
+									--notice('BoG detected, Boosting '..spell.en)
+									boost = boost + 0.5
+									member_table[index].BoG = nil
+								end
+								if member_table[index].bolster then
+									--notice('Bolster detected, Boosting '..spell.en)
+									boost = 2
+								end
+								member_table[index].geo = {id = spell.id, caster = windower.ffxi.get_mob_by_id(action.actor_id).name, boost = boost}
+								member_table[index].pet = {incoming = true, }
+								--table.vprint(member_table[index].geo)
+								--notice(index .. '  ' .. member_table[index].geo.id)
 								break
 							end
 						end
 					end
-				end
+				--end
 			end
 		end
 	end

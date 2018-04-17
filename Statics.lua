@@ -21,6 +21,26 @@ Buffs_inform = {['delay'] = 0,['DEF'] = 0,['HP'] = 0,['MP'] = 0,['STR'] = 0,['DE
 								['Store TP'] = 0,['Dual Wield'] = 0 ,['Fast Cast'] = 0 ,['Martial Arts'] = 0,['damage'] = 0,
 								["Double Attack"] = 0,["Tripple Attack"] = 0,['Quadruple Attack'] = 0,["Critical hit rate"] = 0,["Critical hit damage"] = 0,["Subtle Blow"] = 0,
 								}
+Geo_buffs = {
+	{id=539,en="Regen",							},
+	{id=541,en="Refresh",						},
+	{id=580,en="Haste",							},
+	{id=542,en="STR Boost",					},
+	{id=543,en="DEX Boost",					},
+	{id=544,en="VIT Boost",					},
+	{id=545,en="AGI Boost",					},
+	{id=546,en="INT Boost",					},
+	{id=547,en="MND Boost",					},
+	{id=548,en="CHR Boost",					},
+	{id=549,en="Attack Boost",				},
+	{id=550,en="Defense Boost",				},
+	{id=551,en="Magic Atk. Boost",			},
+	{id=552,en="Magic Def. Boost",			},
+	{id=553,en="Accuracy Boost",			},
+	{id=554,en="Evasion Boost",				},
+	{id=555,en="Magic Acc. Boost",			},
+	{id=556,en="Magic Evasion Boost",	},
+}
 ele_to_stat = {
 	[0] = {id=0,en="STR"},
 	[1] = {id=1,en="INT"},
@@ -53,6 +73,7 @@ manual_jahaste = 0
 manual_dw_needed = 0
 manual_bard_duration_bonus = 7
 manual_COR_bonus = 0
+manual_GEO_bonus  = 0
 manual_hide = false
 WSTP = 0
 loged_in_bool = false
