@@ -9,7 +9,6 @@ require('lists')
 require('strings')
 require('logger')
 require('pack')
-require('luau')
 
 DW_Gear = require('res/DW_Gear')
 Unity_rank = require('res/Unity_Gear')
@@ -56,7 +55,7 @@ defaults.Bards["ulmia"] = 0
 defaults.Cors = {}
 defaults.Cors['qultada'] = 0
 defaults.Geos = {}
-defaults.Geos['Sylvie(UC)'] = 0
+defaults.Geos['Sylvie'] = 0
 defaults.display = {}
 defaults.display.pos = {}
 defaults.display.pos.x = 0
@@ -383,7 +382,7 @@ windower.register_event('addon command', function(command, ...)
 			--check_equipped()
 			--settings.Cors['ewellina'] = nil
 			-- table.vprint(_ExtraData.player.buff_details)
-			table.vprint(windower.ffxi.get_mob_by_target('t'))
+			--table.vprint(windower.ffxi.get_mob_by_target('t'))
 			--table.vprint(member_table)
 			
 			-- local stat_table = get_equip_stats(check_equipped())
