@@ -79,7 +79,7 @@ function on_action(action)
 							--notice('Step 4')
 							local rollID = action.param
 							local rollNum = action.targets[1].actions[1].param
-							local buff_potency = 0
+							local buff_potency = {}
 							local Roll_bonus = 0
 							-- check if we know the COR from the settings file for boost to phantom roll
 							if table.containskey(settings.Cors, member_table[index].name:lower()) then
