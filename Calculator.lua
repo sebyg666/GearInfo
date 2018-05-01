@@ -9,7 +9,7 @@ function get_tp_per_hit()
 	local jp_tp_bonus = 0
 	local jp = player.job_points[player.main_job:lower()]['jp_spent']
 		
-	for k, v in pairs(Gifts[player.main_job:upper()]['Gifts']) do
+	for k, v in pairs(Gifts[player.main_job]['Gifts']) do
 		if k <= jp then
 			for i, j in pairs(v) do
 				if i == 'Store TP Effect' then
@@ -20,7 +20,7 @@ function get_tp_per_hit()
 	end
 	
 	--log("base delay =" ..base_delay.. ' | tp_per_hit :' .. tp_per_hit .. ' | Job_traits :'.. Job_STP )
-	if player.main_job:upper() == 'SAM' then
+	if player.main_job == 'SAM' then
 		
 		--log('Main job is SAM Job points TP bonus value:' .. jp_tp_bonus)
 		if Gear_info['Store TP'] ~= nil then
@@ -96,23 +96,23 @@ function determine_stp()
 	local main_job_tp = 0
 	local player_has_sj = false
 	
-	if player.sub_job ~= NON then
+	if player.sub_job then
 		player_has_sj = true
 	end
 	
 	--log('player_has_sj ' .. tostring(player_has_sj))
 	if player_has_sj == true then
-		if player.sub_job:upper() == 'SAM' and player.sub_job_level < 10  then 
+		if player.sub_job == 'SAM' and player.sub_job_level < 10  then 
 			sub_job_tp = 0
-		elseif player.sub_job:upper() == 'SAM' and player.sub_job_level < 30 and  player.sub_job_level > 9 then 
+		elseif player.sub_job == 'SAM' and player.sub_job_level < 30 and  player.sub_job_level > 9 then 
 			sub_job_tp = 10
-		elseif player.sub_job:upper() == 'SAM' and player.sub_job_level < 50 and  player.sub_job_level > 31 then 
+		elseif player.sub_job == 'SAM' and player.sub_job_level < 50 and  player.sub_job_level > 31 then 
 			sub_job_tp = 15
 			--log('sub_job_tp = 15')
 		end
 	end
 	
-	if player.main_job:upper() == 'BLU' then
+	if player.main_job == 'BLU' then
 		-- here we look up job points spent on blue for the DW bonus
 		local jp_boost = 0
 		local jp = player.job_points['blu']['jp_spent']
@@ -149,7 +149,7 @@ function determine_stp()
 		elseif spell_value== 5 then main_job_tp = 30
 		end
 		--add_to_chat(122, '[Sub dw: ' .. sub_job_dw .. '] [Main dw: ' .. main_job_dw .. ']')
-	elseif player.main_job:upper() == 'SAM' then
+	elseif player.main_job == 'SAM' then
 		--log('entered job traits function')
 		main_job_tp = 0
 		if player.main_job_level < 10  then main_job_tp = 0
@@ -182,7 +182,7 @@ function determine_Weapon_Delay()
 		local MainJ_Base_Delay = 480
 		local SubJ_Base_Delay = 480
 		
-		if player.main_job:upper() == 'MNK'  then
+		if player.main_job == 'MNK'  then
 			if player.main_job_level == 1 then  MainJ_Base_Delay = 400
 			elseif player.main_job_level  > 1 and player.main_job_level  < 31 then MainJ_Base_Delay = 380
 			elseif player.main_job_level  > 30 and player.main_job_level  < 46 then MainJ_Base_Delay = 360
@@ -193,7 +193,7 @@ function determine_Weapon_Delay()
 			end
 		end
 		
-		if player.main_job:upper() == 'PUP'  then
+		if player.main_job == 'PUP'  then
 			if player.main_job_level > 24  and player.main_job_level  < 50 then  MainJ_Base_Delay = 400
 			elseif player.main_job_level  > 49 and player.main_job_level  < 75 then MainJ_Base_Delay = 380
 			elseif player.main_job_level  > 74 and player.main_job_level  < 87 then MainJ_Base_Delay = 360
@@ -202,7 +202,7 @@ function determine_Weapon_Delay()
 			end
 		end
 		
-		if player.sub_job:upper() == 'MNK'  then
+		if player.sub_job and player.sub_job == 'MNK'  then
 			if player.sub_job_level  == 1 then  SubJ_Base_Delay = 400
 			elseif player.sub_job_level   > 1 and player.sub_job_level   < 31 then SubJ_Base_Delay = 380
 			elseif player.sub_job_level   > 30 and player.sub_job_level   < 46 then SubJ_Base_Delay = 360
@@ -210,14 +210,14 @@ function determine_Weapon_Delay()
 			end
 		end
 		
-		if player.sub_job:upper() == 'PUP'  then
+		if player.sub_job and player.sub_job == 'PUP'  then
 			if player.sub_job_level  > 24 then  SubJ_Base_Delay = 400
 			end
 		end
 		
 		local jp = player.job_points[player.main_job:lower()]['jp_spent']
 		
-		for k, v in pairs(Gifts[player.main_job:upper()]['Gifts']) do
+		for k, v in pairs(Gifts[player.main_job]['Gifts']) do
 			if k <= jp then
 				for i, j in pairs(v) do
 					if i == 'Martial Arts Effect' then
@@ -234,7 +234,7 @@ function determine_Weapon_Delay()
 		end
 		for equip_slot,item in pairs(player.equipment) do
 			-- Wrestler's Mantle	Latent Effect (Monk sub job): Hand-to-Hand Delay -10
-			if item.id == 13660 and player.sub_job:upper() == 'MNK' then Base_Delay = Base_Delay - 10 end
+			if item.id == 13660 and player.sub_job and player.sub_job == 'MNK' then Base_Delay = Base_Delay - 10 end
 			-- check all other gear with martial arts
 			for MA_id, MA_item in pairs(Martial_Arts_Gear)do
 				if item.id == MA_id then
@@ -287,21 +287,15 @@ function determine_DW()
 	local player_has_sj = false
 	local jp_dw_bonus = 0
 	
-	for k,v in pairs(player) do
-		if v == 'sub_job' then
-			player_has_sj = true
-		end
-	end
-	
-	if player_has_sj == true then
-		if player.sub_job:upper() == 'DNC' then sub_job_dw = 15
-		elseif player.sub_job:upper() == 'NIN' then sub_job_dw = 25
+	if player.sub_job then
+		if player.sub_job == 'DNC' then sub_job_dw = 15
+		elseif player.sub_job == 'NIN' then sub_job_dw = 25
 		end
 	end
 	
 	local jp = player.job_points[player.main_job:lower()]['jp_spent']
 		
-	for k, v in pairs(Gifts[player.main_job:upper()]['Gifts']) do
+	for k, v in pairs(Gifts[player.main_job]['Gifts']) do
 		if k <= jp then
 			for i, j in pairs(v) do
 				if i == 'Dual Wield Effect' then
@@ -311,7 +305,7 @@ function determine_DW()
 		end
 	end
 	
-	if player.main_job:upper() == 'BLU' then
+	if player.main_job == 'BLU' then
 		-- here we look up job points spent on blue for the DW bonus
 		local jp_boost = 0
 		if jp < 100 then
@@ -346,7 +340,7 @@ function determine_DW()
 		elseif spell_value == 6 then main_job_dw = 40
 		end
 		
-	elseif player.main_job:upper() == 'NIN' then
+	elseif player.main_job == 'NIN' then
 		if player.main_job_level < 10 and  player.main_job_level > 0 then main_job_dw = 0
 		elseif player.main_job_level < 25 and  player.main_job_level > 9 then main_job_dw = 10
 		elseif player.main_job_level < 45 and  player.main_job_level > 24 then main_job_dw = 15
@@ -355,7 +349,7 @@ function determine_DW()
 		elseif player.main_job_level < 100 and  player.main_job_level > 84 then main_job_dw = 35
 		end
 		
-	elseif player.main_job:upper() == 'DNC' then
+	elseif player.main_job == 'DNC' then
 		if 	   player.main_job_level < 20 and  player.main_job_level > 0 then main_job_dw = 0
 		elseif player.main_job_level < 40 and  player.main_job_level > 19 then main_job_dw = 10
 		elseif player.main_job_level < 60 and  player.main_job_level > 39 then main_job_dw = 15
@@ -363,7 +357,7 @@ function determine_DW()
 		elseif player.main_job_level < 100 and  player.main_job_level > 79 then main_job_dw = 30
 		end
 		
-	elseif player.main_job:upper() == 'THF' then
+	elseif player.main_job == 'THF' then
 		if 	   player.main_job_level < 83 and  player.main_job_level > 0 then main_job_dw = 0
 		elseif player.main_job_level < 90 and  player.main_job_level > 82 then main_job_dw = 10
 		elseif player.main_job_level < 98 and  player.main_job_level > 89 then main_job_dw = 15

@@ -33,6 +33,7 @@ parse = {
     i={}, -- Incoming packets
     o={}  -- Outgoing packets, currently none are really parsed for information
     }
+	
 parse.i[0x00A] = function (data)
 	-- player.stats = {
 		-- STR = data:unpack('H',0xCD), 
@@ -513,8 +514,12 @@ function update_party()
 	
 	for new_name, new_member in pairs(new) do
 		if new_member.id == player.id then
-			new[new_name]['Main job'] = player.main_job:upper()
-			new[new_name]['Sub job'] = player.sub_job:upper()
+			new[new_name]['Main job'] = player.main_job
+			if new[new_name]['Sub job'] then
+				new[new_name]['Sub job'] = player.sub_job
+			else
+				new[new_name]['Sub job'] ='NON'
+			end
 		elseif party_from_packet[new_member.id] and new_member.id ~= player.id then
 			new[new_name]['Main job'] = res.jobs:with('id', party_from_packet[new_member.id]['Main job']).ens
 			new[new_name]['Sub job'] = res.jobs:with('id', party_from_packet[new_member.id]['Sub job']).ens
@@ -647,6 +652,7 @@ parse.i[0x076] = function (data)
 	--table.vprint(member_table)
 end
 
+-- pet tracking packet, doesnt work for my use
 -- parse.i[0x067] = function (data)
 	-- local packet = packets.parse('incoming', data)
 	-- --table.vprint(packet)
@@ -686,6 +692,7 @@ end
 	-- table.vprint(packet)
 -- end
 
+-- spawn / despawn packet (not usefull for pet tracking)
 -- parse.i[0x038] = function (data)
 	-- local packet = packets.parse('incoming', data)
 	-- if packet.Type == 'deru' then

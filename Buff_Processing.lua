@@ -55,7 +55,7 @@ function check_buffs()
 				this_buff['ja_haste'] = math.ceil(((player.merits.desperate_blows * 2) + 5)/100*1024)
 			elseif player.main_job:upper() == 'DRK' and player.main_job_level < 75 then
 				this_buff['ja_haste'] = 52
-			elseif player.sub_job:upper() == 'DRK' then
+			elseif player.sub_job and player.sub_job == 'DRK' then
 				this_buff['ja_haste'] = 52
 			end
 		elseif buff.id == 353 then -- Hasso

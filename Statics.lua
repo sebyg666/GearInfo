@@ -76,8 +76,6 @@ manual_COR_bonus = 0
 manual_GEO_bonus  = 0
 manual_hide = false
 WSTP = 0
-loged_in_bool = false
-loged_out_bool = false
 update_gs = true
 show_total_haste = true
 show_tp_Stuff = true
@@ -102,3 +100,52 @@ stat_names = L{'delay','DEF','HP','MP','STR','DEX','VIT','AGI','INT','MND','CHR'
 								'Store TP','Dual Wield' ,'Fast Cast' ,'Martial Arts','damage',
 								"Double Attack","Tripple Attack",'Quadruple Attack',"Critical hit rate","Critical hit damage","Subtle Blow",
 								}
+							
+defaults = {}
+defaults.player = {}
+defaults.player.show_total_haste = true
+defaults.player.show_tp_Stuff = true
+defaults.player.show_acc_Stuff = false
+defaults.player.show_dt_Stuff = false
+defaults.player.update_gs = true
+defaults.player.rank = 1
+defaults.Bards = {}
+defaults.Bards["joachim"] = 0
+defaults.Bards["ulmia"] = 0
+defaults.Cors = {}
+defaults.Cors['qultada'] = 0
+defaults.Geos = {}
+defaults.Geos['Sylvie'] = 0
+defaults.display = {}
+defaults.display.padding = 0
+defaults.display.pos = {}
+defaults.display.pos.x = 0
+defaults.display.pos.y = 0
+defaults.display.bg = {}
+defaults.display.bg.red = 0
+defaults.display.bg.green = 0
+defaults.display.bg.blue = 0
+defaults.display.bg.alpha = 150
+defaults.display.bg.visible = true
+defaults.display.flags = {}
+defaults.display.flags.right = false
+defaults.display.flags.bottom = false
+defaults.display.flags.italic = false
+defaults.display.flags.draggable = true
+defaults.display.flags.bold = false
+defaults.display.text = {}
+defaults.display.text.font = 'Ubuntu'
+defaults.display.text.fonts = {'Ubuntu', 'Arial'}
+defaults.display.text.red = 255
+defaults.display.text.green = 255
+defaults.display.text.blue = 255
+defaults.display.text.alpha = 255
+defaults.display.text.size = 12
+defaults.display.text.stroke = {}
+defaults.display.text.stroke.width = 2
+defaults.display.text.stroke.alpha = 255
+defaults.display.text.stroke.red = 0
+defaults.display.text.stroke.green = 0
+defaults.display.text.stroke.blue = 0
+
+

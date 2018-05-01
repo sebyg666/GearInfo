@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.7.1.1'
+_addon.version = '1.7.1.2'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -41,55 +41,10 @@ require 'Action_Processing'
 require 'Buff_Processing'
 require 'Packet_parsing'
 
-defaults = {}
-defaults.player = {}
-defaults.player.show_total_haste = true
-defaults.player.show_tp_Stuff = true
-defaults.player.show_acc_Stuff = false
-defaults.player.show_dt_Stuff = false
-defaults.player.update_gs = true
-defaults.player.rank = 1
-defaults.Bards = {}
-defaults.Bards["joachim"] = 0
-defaults.Bards["ulmia"] = 0
-defaults.Cors = {}
-defaults.Cors['qultada'] = 0
-defaults.Geos = {}
-defaults.Geos['Sylvie'] = 0
-defaults.display = {}
-defaults.display.pos = {}
-defaults.display.pos.x = 0
-defaults.display.pos.y = 0
-defaults.display.bg = {}
-defaults.display.bg.red = 0
-defaults.display.bg.green = 0
-defaults.display.bg.blue = 0
-defaults.display.bg.alpha = 150
-defaults.display.bg.visible = true
-defaults.display.flags = {}
-defaults.display.flags.draggable = true
-defaults.display.flags.bold = false
-defaults.display.text = {}
-defaults.display.text.font = 'Consolas'
-defaults.display.text.red = 255
-defaults.display.text.green = 255
-defaults.display.text.blue = 255
-defaults.display.text.alpha = 255
-defaults.display.text.size = 12
-defaults.display.text.stroke = {}
-defaults.display.text.stroke.width = 2
-defaults.display.text.stroke.alpha = 255
-defaults.display.text.stroke.red = 0
-defaults.display.text.stroke.green = 0
-defaults.display.text.stroke.blue = 0
-
 settings = config.load('data\\'..windower.ffxi.get_player().name..'_settings.xml',defaults)
-
 text_box = texts.new(settings.display, settings)
 
-text_box:register_event('reload', initialize)
-
-initialize = function(text, t)
+initialize = function(text, settings)
     local properties = L{}
 	
 	properties:append('${title}')
@@ -99,10 +54,9 @@ initialize = function(text, t)
 	properties:append('${wstp}')
 	properties:append('${tp_to_100}')
 	properties:append('${Rtp_to_100}')
-	properties:append('${title2}')
+	--properties:append('${title2}')
 	properties:append('${stp}')
 	properties:append('${dw}')
-	properties:append('${bstp}')
 	properties:append('${dw_needed}')
 	properties:append('${ghaste}')
 	properties:append('${mhaste}')
@@ -110,14 +64,14 @@ initialize = function(text, t)
 	properties:append('${thaste}')
 	properties:append('${T_acc}')
 	properties:append('${T_racc}')
-	properties:append('${title3}')
-	properties:append('${dt}')
-	properties:append('${pdt}')
-	properties:append('${mdt}')
-	properties:append('${bdt}')
-	properties:append('${pdtii}')
-	properties:append('${mdtii}')
-	properties:append('${title4}')
+	--properties:append('${title3}')
+	-- properties:append('${dt}')
+	-- properties:append('${pdt}')
+	-- properties:append('${mdt}')
+	-- properties:append('${bdt}')
+	-- properties:append('${pdtii}')
+	-- properties:append('${mdtii}')
+	--properties:append('${title4}')
 	properties:append('${dt2}')
 	properties:append('${pdt2}')
 	properties:append('${mdt2}')
@@ -128,13 +82,11 @@ initialize = function(text, t)
     text:append(properties:concat(''))
 end
 
-initialize(text_box)
 
 windower.register_event('load', function()
-	if player ~= nil then
+	if windower.ffxi.get_player() then
 		options_load()
 		text_box:show()
-		doloop = true
 		
 		if files.exists('data\\'..player.name..'_temp_party.lua') then
 			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_party.lua','r')
@@ -142,7 +94,7 @@ windower.register_event('load', function()
 			t = assert(loadstring(t))()
 			f:close()
 			member_table = t
-			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_party.lua','w+')
+			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_party.lua','w')
 			f:write('return {}')
 			f:close()
 		end
@@ -152,18 +104,17 @@ windower.register_event('load', function()
 			t = assert(loadstring(t))()
 			f:close()
 			_ExtraData.player.buff_details = t
-			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_buffs.lua','w+')
+			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_buffs.lua','w')
 			f:write('return {}')
 			f:close()
 		end
 		
-		--loop()
 	end
 end)
 
 windower.register_event('logout', function()
-	loged_out_bool = true
-
+	text_box:hide()
+	
 	player = {}
 	player.equipment = T{}
 	buff = 0
@@ -178,20 +129,21 @@ windower.register_event('logout', function()
 end)
 
 windower.register_event('login',function ()
-	timer:start()
-	loged_in_bool = true
-	-- print('Gearinfo detected login')   
+	windower.send_command('lua r gearinfo;')
 end)
 
 function options_load()
+	
 	if windower.ffxi.get_player() then
+		initialize(text_box)
+
 		player = windower.ffxi.get_player()
 		update_party()
 		local this_file = files.new('data\\'..player.name..'_data.lua',true)
 		
 		if not files.exists('data\\'..player.name..'_data.lua') then
 			this_file:create()
-			local f = io.open(windower.addon_path..'data/'..player.name..'_data.lua','w+')
+			local f = io.open(windower.addon_path..'data/'..player.name..'_data.lua','w')
 			--f:write(temp)
 			-- Quick method
 			f:write('return {\n}')
@@ -223,7 +175,7 @@ windower.register_event('addon command', function(command, ...)
 			if type(tonumber(args[1])) == 'number'  then
 				settings.player.rank = tonumber(args[1])
 				log('Changed \'Unity Rank\' to '..tonumber(args[1])..'. Don\'t forget to \"//gi parse\" to apply new values to your gear.')
-				config.save(settings)
+				settings:save('all')
 			else
 				log('Your current \'Unity Rank\' setting is: '..settings.player.rank..'.')
 			end
@@ -249,12 +201,12 @@ windower.register_event('addon command', function(command, ...)
 		elseif command:lower() == 'r' or command:lower() == 'reload' then
 			
 			local new_item = member_table
-			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_party.lua','w+')
+			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_party.lua','w')
 			f:write('return ' .. T(new_item):tovstring())
 			f:close()
 			
 			local new_item = _ExtraData.player.buff_details
-			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_buffs.lua','w+')
+			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_buffs.lua','w')
 			f:write('return ' .. T(new_item):tovstring())
 			f:close()
 			notice('Buffs and party saved to temp file. Reloading GI.')
@@ -379,12 +331,13 @@ windower.register_event('addon command', function(command, ...)
 			end
 			settings:save('all')
 		elseif command:lower() == 'test' then
+			--table.vprint(settings)
 			--check_equipped()
 			--settings.Cors['ewellina'] = nil
 			-- table.vprint(_ExtraData.player.buff_details)
 			--table.vprint(windower.ffxi.get_mob_by_target('t'))
 			--table.vprint(member_table)
-			
+			--table.vprint(player)
 			-- local stat_table = get_equip_stats(check_equipped())
 			-- local player_Acc = get_player_acc(stat_table)
 			-- table.vprint(stat_table.range)
@@ -475,9 +428,7 @@ function save_table_to_file(item_table)
 
 	local new_item = item_table
 	
-	local f = io.open(windower.addon_path..'data/'..player.name..'_data.lua','w+')
-	--f:write(temp)
-	-- Quick method
+	local f = io.open(windower.addon_path..'data/'..player.name..'_data.lua','w')
 	f:write('return ' .. T(new_item):tovstring())
     f:close()
 	notice('File Saved')
@@ -615,7 +566,7 @@ function check_equipped()
 	return sloted_items
 end
 
-options_load()
+--options_load()
 			
 windower.register_event('job change',function()
 	player = windower.ffxi.get_player()
@@ -641,29 +592,18 @@ end
 function update()
 	local inform = {}
 						
-	if loged_out_bool == true then
-		if text_box:visible() then
-			text_box:hide()
-		end
-	end
-	if loged_in_bool == true then
-		loged_out_bool = false
-		if timer:check() > 10 then
-			options_load()
-			loged_in_bool = false
-			timer:stop()
-			text_box:show()
-		end
-	elseif loged_in_bool == false and loged_out_bool == false then
+	if windower.ffxi.get_info().logged_in == false then
+		return
+	else
 		
 		if manual_hide == true then
 			text_box:hide()
 		else
-			if zoning_bool == true then
-				text_box:hide()
-			else
-				text_box:show()
-			end
+			-- if windower.ffxi.get_info().zone == 0 then
+				-- text_box:hide()
+			-- else
+				-- text_box:show()
+			-- end
 		end
 	
 		local white = '(220,220,220)'
@@ -677,8 +617,9 @@ function update()
 		if settings.player.show_tp_Stuff == true then 
 		
 			Gear_TP = get_tp_per_hit()
-			
-			inform.title = ' \\cs'..blue..'[\\cr\\cs'..white..'TP Calculator\\cr\\cs'..blue..'] \n\\cr'
+			 
+			inform.title = ' \\cs'..blue..'[\\cr\\cs'..white..'Gear Info\\cr\\cs'..blue..'] \n\\cr'
+			--inform.title = ' \\cs'..blue..'[\\cr\\cs'..white..'TP Calculator\\cr\\cs'..blue..'] \n\\cr'
 			inform.tp_per__hit = ' \\cs'..blue..'[Tp/hit:\\cr\\cs'..white..Gear_TP.tp_per_hit_melee.. '\\cr\\cs'..blue..'] \n\\cr'
 			if Gear_TP.tp_per_hit_range > 0 then
 				inform.tp_per__hit_range = ' \\cs'..blue..'[R.Tp/hit:\\cr\\cs'..white..Gear_TP.tp_per_hit_range.. '\\cr\\cs'..blue..'] \n\\cr'
@@ -971,7 +912,7 @@ end
 loop_count = 0
 frame_count = 0
 windower.register_event('prerender',function()
-    if frame_count%15 == 0 then
+    if frame_count%15 == 0 and windower.ffxi.get_info().logged_in then
         local temp_equip = player.equipment
         local temp_stats = player.stats
 		local temp_pos = player.position
@@ -1021,5 +962,5 @@ function update_gs(DW, Total_DW_needed, haste)
 end
 
 windower.register_event('unload', function()
-	doloop = false
+
 end)

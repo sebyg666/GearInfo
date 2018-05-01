@@ -533,13 +533,8 @@ function get_player_acc_from_job()
 	local sub_job_acc = 0
 	local main_job_acc = 0
 	local player_has_sj = false
-	for k,v in pairs(player) do
-		if v == 'sub_job' then
-			player_has_sj = true
-		end
-	end
 	
-	if player_has_sj == true then
+	if player.sub_job then
 		if player.sub_job:upper() == 'RNG' then
 			if player.sub_job_level < 10  then sub_job_acc = 0
 			elseif player.sub_job_level < 30 and  player.sub_job_level > 9 then sub_job_acc = 10
@@ -559,7 +554,7 @@ function get_player_acc_from_job()
 	local jp = player.job_points[player.main_job:lower()]['jp_spent']
 		
 	local jp_acc = 0
-	for k, v in pairs(Gifts[player.main_job:upper()]['Gifts']) do
+	for k, v in pairs(Gifts[player.main_job]['Gifts']) do
 		if k <= jp then
 			for i, j in pairs(v) do
 				if i == 'Physical Accuracy Bonus' then
@@ -569,7 +564,7 @@ function get_player_acc_from_job()
 		end
 	end
 	
-	if player.main_job:upper() == 'BLU' then
+	if player.main_job == 'BLU' then
 		-- here we look up job points spent on blue for the DW bonus
 		local jp_boost = 0
 		if jp < 100 then
@@ -603,7 +598,7 @@ function get_player_acc_from_job()
 		elseif spell_value == 6 then main_job_acc = 73
 		end
 		
-	elseif player.main_job:upper() == 'RNG' then
+	elseif player.main_job == 'RNG' then
 		if player.main_job_level < 10  then main_job_acc = 0
 		elseif player.main_job_level < 30 and  player.main_job_level > 9 then main_job_acc = 10
 		elseif player.main_job_level < 50 and  player.main_job_level > 29 then main_job_acc = 22
@@ -613,21 +608,21 @@ function get_player_acc_from_job()
 		elseif player.main_job_level < 100 and  player.main_job_level > 95 then main_job_acc = 73
 		end
 	
-	elseif player.main_job:upper() == 'DRG' then
+	elseif player.main_job == 'DRG' then
 		if player.main_job_level < 30  then main_job_acc = 0
 		elseif player.main_job_level > 29 and player.main_job_level < 60 then main_job_acc = 10
 		elseif player.main_job_level > 59 and player.main_job_level < 76 then main_job_acc = 22
 		elseif player.main_job_level > 75  then main_job_acc = 35
 		end
 		
-	elseif player.main_job:upper() == 'DNC' then
+	elseif player.main_job == 'DNC' then
 		if player.main_job_level < 30  then main_job_acc = 0
 		elseif player.main_job_level > 29 and player.main_job_level < 60 then main_job_acc = 10
 		elseif player.main_job_level > 59 and player.main_job_level < 76 then main_job_acc = 22
 		elseif player.main_job_level > 75  then main_job_acc = 35
 		end
 		
-	elseif player.main_job:upper() == 'RUN' then
+	elseif player.main_job == 'RUN' then
 		if player.main_job_level < 50  then main_job_acc = 0
 		elseif player.main_job_level > 49 and player.main_job_level < 70 then main_job_acc = 10
 		elseif player.main_job_level > 69 and player.main_job_level < 90 then main_job_acc = 22
