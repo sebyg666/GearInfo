@@ -327,7 +327,7 @@ windower.register_event('addon command', function(command, ...)
 					settings.player.show_dt_Stuff = false
 				end
 				-- log('Currently dissabled, in testing.')
-				log('Show Total Acc = '..tostring(settings.player.show_acc_Stuff))
+				log('Show Defence = '..tostring(settings.player.show_dt_Stuff))
 			end
 			settings:save('all')
 		elseif command:lower() == 'test' then
