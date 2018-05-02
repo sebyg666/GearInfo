@@ -200,11 +200,6 @@ function on_action(action)
 		end
 	end
 	
-	--for index, buff in pairs(_ExtraData.player.buff_details) do
-	-- elseif table.containskey(buff, 'STP') then
-	
-	-- master has ['pet_index'] in mob structure and the masters pet has the same index
-	
 	
 	if action.category == 7 and ((actor.is_npc and actor.charmed) or not actor.is_npc) then
 		for index, target in pairs(action.targets) do
@@ -292,7 +287,7 @@ function on_action(action)
 end
 
 windower.register_event('action', function(act)
-	if loged_in_bool == false and loged_out_bool == false then
+	if windower.ffxi.get_info().logged_in then
 		on_action(act)
 	end
 end)

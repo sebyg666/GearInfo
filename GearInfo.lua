@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.7.1.2'
+_addon.version = '1.7.1.3'
 _addon.commands = {'gi','gearinfo'}
 
 
