@@ -41,8 +41,6 @@ require 'Buff_Processing'
 require 'Packet_parsing'
 require 'Image_processing'
 
-settings = config.load('data\\'..windower.ffxi.get_player().name..'_settings.xml',defaults)
-
 windower.register_event('load', function()
 	if windower.ffxi.get_player() then
 		options_load()
@@ -93,6 +91,7 @@ end)
 function options_load()
 	
 	if windower.ffxi.get_player() then
+		settings = config.load('data\\'..windower.ffxi.get_player().name..'_settings.xml',defaults)
 		sections.background = ImageBlock.New(0,'background','')
 		sections.logo = ImageBlock.New(1,'logo','')
 		player = windower.ffxi.get_player()
@@ -568,6 +567,8 @@ function outgoing_chunk(id,original,data,injected,blocked)
     end
 end
 
+--table.vprint(windower.get_windower_settings())
+
 function update()
 	local inform = {}
 						
@@ -595,19 +596,14 @@ function update()
 		
 		if settings.player.show_tp_Stuff == true then 
 			Gear_TP = get_tp_per_hit()
-			if not sections.block[1] and not sections.block[2]  then
-				sections.block[1] = ImageBlock.New(2,'block','yellow', 'TP/h', 00)
-				sections.block[2] = ImageBlock.New(3,'block','yellow', 'to WS', 00)
-			end
-			
+			if not sections.block[1] then sections.block[1] = ImageBlock.New(2,'block','yellow', 'TP/h', 00) end
+			if not sections.block[2]  then sections.block[2] = ImageBlock.New(3,'block','yellow', 'to WS', 00) end
 			windower.text.set_text(sections.block[1].text[2].name, Gear_TP.tp_per_hit_melee)
 			windower.text.set_text(sections.block[2].text[2].name, (math.ceil(10000/Gear_TP.tp_per_hit_melee)/10))
 			
 			if Gear_TP.tp_per_hit_range > 0 then
-				if not sections.block[6] and not sections.block[7] then
-					sections.block[6] = ImageBlock.New(7,'block','green', 'R.TP/h', 00)
-					sections.block[7] = ImageBlock.New(8,'block','green', 'R.to WS', 00)
-				end
+				if not sections.block[6] then sections.block[6] = ImageBlock.New(7,'block','green', 'R.TP/h', 00) end
+				if not sections.block[7] then sections.block[7] = ImageBlock.New(8,'block','green', 'R.to WS', 00) end
 				windower.text.set_text(sections.block[6].text[2].name,  Gear_TP.tp_per_hit_range )
 				windower.text.set_text(sections.block[7].text[2].name,  (math.ceil(10000/Gear_TP.tp_per_hit_range)/10) )
 			else
@@ -616,16 +612,12 @@ function update()
 			end
 			
 			if WSTP > 0 then
-				if not sections.block[3] then
-					sections.block[3] = ImageBlock.New(4,'block','yellow', 'aft WS', 00)
-				end
+				if not sections.block[3] then sections.block[3] = ImageBlock.New(4,'block','yellow', 'aft WS', 00) end
 				windower.text.set_text(sections.block[2].text[1].name, 'for WS' )
 				windower.text.set_text(sections.block[2].text[2].name, WSTP)
 				windower.text.set_text(sections.block[3].text[2].name, (math.ceil((10000 - (WSTP *10))/Gear_TP.tp_per_hit_melee)/10) )
 				if Gear_TP.tp_per_hit_range > 0 then
-					if not sections.block[8] then
-						sections.block[8] = ImageBlock.New(9,'block','green', 'R.Aft WS', 00)
-					end
+					if not sections.block[8] then sections.block[8] = ImageBlock.New(9,'block','green', 'R.Aft WS', 00) end
 					windower.text.set_text(sections.block[7].text[1].name, 'R.for WS' )
 					windower.text.set_text(sections.block[7].text[2].name, WSTP)
 					windower.text.set_text(sections.block[8].text[2].name, (math.ceil((10000 - (WSTP *10))/Gear_TP.tp_per_hit_range)/10) )
@@ -649,8 +641,10 @@ function update()
 		if settings.player.show_acc_Stuff == true then
 			Total_acc = get_player_acc(Gear_info)
 			if Total_acc.sub > 0 then
-				if not sections.block[4] and not sections.block[5]  then
+				if not sections.block[4] then
 					sections.block[4] = ImageBlock.New(5,'block','yellow', 'Acc.1', 00)
+				end
+				if not sections.block[5] then
 					sections.block[5] = ImageBlock.New(6,'block','yellow', 'Acc.2', 00)
 				end
 				windower.text.set_text(sections.block[4].text[2].name, Total_acc.main)
@@ -678,12 +672,10 @@ function update()
 		----------------------------------------------------- Haste Stuff ------------------------------------------
 		
 		if settings.player.show_total_haste ==  true then
-			if not sections.block[10] and not sections.block[11] and not sections.block[12] and not sections.block[13]  then
-				sections.block[10] = ImageBlock.New(11,'block','red', 'Gear.H', 00)
-				sections.block[11] = ImageBlock.New(12,'block','red', 'Magic.H', 00)
-				sections.block[12] = ImageBlock.New(13,'block','red', 'JA.H', 00)
-				sections.block[13] = ImageBlock.New(14,'block','red', 'Total.H', 00)
-			end
+			if not sections.block[10] then sections.block[10] = ImageBlock.New(11,'block','red', 'Gear.H', 00) end
+			if not sections.block[11] then sections.block[11] = ImageBlock.New(12,'block','red', 'Magic.H', 00) end
+			if not sections.block[12] then sections.block[12] = ImageBlock.New(13,'block','red', 'JA.H', 00) end
+			if not sections.block[13] then sections.block[13] = ImageBlock.New(14,'block','red', 'Total.H', 00) end
 			
 			windower.text.set_text(sections.block[10].text[2].name, (Gear_info['Haste'] + Buffs_inform['g_haste'] ))
 			if (Gear_info['Haste'] + Buffs_inform['g_haste'] ) > 256 then
@@ -729,10 +721,8 @@ function update()
 				if player.equipment.sub.damage then
 					DW = true
 					
-					if not sections.block[14] and not sections.block[15]  then
-						sections.block[14] = ImageBlock.New(15,'block','blue', 'DW', 00)
-						sections.block[15] = ImageBlock.New(16,'block','blue', 'Needed', 00)
-					end
+					if not sections.block[14] then sections.block[14] = ImageBlock.New(15,'block','blue', 'DW', 00) end
+					if not sections.block[15] then sections.block[15] = ImageBlock.New(16,'block','blue', 'Needed', 00) end
 					
 					windower.text.set_text(sections.block[14].text[2].name, Gear_info['Dual Wield'])
 					windower.text.set_text(sections.block[15].text[2].name, (DW_needed + manual_dw_needed))
@@ -757,10 +747,8 @@ function update()
 			
 			if player.equipment.main.skill == "Hand-to-Hand" or player.equipment.main.en == '' then
 			
-				if not sections.block[16] and not sections.block[17]  then
-					sections.block[16] = ImageBlock.New(17,'block','pink', 'MA', 00)
-					sections.block[17] = ImageBlock.New(18,'block','pink', 'Needed', 00)
-				end
+				if not sections.block[16] then sections.block[16] = ImageBlock.New(17,'block','pink', 'MA', 00) end
+				if not sections.block[17] then sections.block[17] = ImageBlock.New(18,'block','pink', 'Needed', 00) end
 				
 				windower.text.set_text(sections.block[16].text[2].name, total_ma)
 				windower.text.set_text(sections.block[17].text[2].name, MA_needed)
@@ -780,9 +768,7 @@ function update()
 			
 		----------------------------------------------------------- Store TP stuff ----------------------------------------------
 		if settings.player.show_STP == true then
-			if not sections.block[18] then
-				sections.block[18] = ImageBlock.New(19,'block','orange', 'STP', 00)
-			end
+			if not sections.block[18] then sections.block[18] = ImageBlock.New(19,'block','orange', 'STP', 00) end
 			windower.text.set_text(sections.block[18].text[2].name, Gear_info['Store TP'] + Buffs_inform['Store TP'])
 		else
 			if sections.block[18] then sections.block[18]:delete() end
@@ -791,13 +777,11 @@ function update()
 		-------------------------------------------------------------- DT stuff ---------------------------------------------------------------
 		
 		if settings.player.show_dt_Stuff == true then
+			if not sections.block[19]  then sections.block[19] = ImageBlock.New(20,'block','purple', 'DT', 00) end
+			if not sections.block[20]  then sections.block[20] = ImageBlock.New(21,'block','purple', 'PDT', 00) end
+			if not sections.block[21]  then sections.block[21] = ImageBlock.New(22,'block','purple', 'MDT', 00) end
+			if not sections.block[22]  then sections.block[22] = ImageBlock.New(23,'block','purple', 'BDT', 00) end
 			
-			if not sections.block[19] and not sections.block[20] and not sections.block[21] and not sections.block[22]  then
-				sections.block[19] = ImageBlock.New(20,'block','purple', 'DT', 00)
-				sections.block[20] = ImageBlock.New(21,'block','purple', 'PDT', 00)
-				sections.block[21] = ImageBlock.New(22,'block','purple', 'MDT', 00)
-				sections.block[22] = ImageBlock.New(23,'block','purple', 'BDT', 00)
-			end
 			local dt = (Gear_info['DT']*(-1))
 			if dt == -0 then dt = 0 end
 			windower.text.set_text(sections.block[19].text[2].name, dt)
@@ -874,9 +858,7 @@ function update()
 		end
 
 		-------------------------------------------------------------- update GS ---------------------------------------------------------------
-		if not sections.block[23] then
-			sections.block[23] = ImageBlock.New(24,'block','grey', 'UGS', '')
-		end
+		if not sections.block[23] then sections.block[23] = ImageBlock.New(24,'block','grey', 'UGS', '') end
 		if settings.player.update_gs == true then
 			windower.text.set_text(sections.block[23].text[2].name, tostring(settings.player.update_gs))
 			windower.text.set_color(sections.block[23].text[2].name, 255, 255, 255, 255)

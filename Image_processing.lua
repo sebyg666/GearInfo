@@ -4,6 +4,14 @@ math.randomseed(os.clock())
 
 imageColors = L{'red','blue','green','dark-blue','grey','light-green','orange','pink','purple','yellow'}
 
+--[[ui scaling shrinks display 
+	x_res = 1920
+	y_res = 1080
+	ui_x_res = 1476
+	ui_y_res = 830
+	settings = ui scale 1.3
+	ui_x_res = x_res / ui scale 
+]]--
 -- image / icon Block Class
 ImageBlock = {
 	x = 0,
