@@ -88,17 +88,20 @@ ImageBlock = {
 				o.text = {}
 				
 	
-				o.text[1] = {name = 'text1'..o.name, text = text1, offset_x = 3 , offset_y = 2}
+				o.text[1] = {name = 'text1'..o.name, text = text1, offset_x = 3 , offset_y = 3}
 				
 				windower.text.create(o.text[1].name)
 				windower.text.set_text(o.text[1].name, o.text[1].text)
-				windower.text.set_color(o.text[1].name, 255, 0, 0, 0)
-				windower.text.set_font_size(o.text[1].name, 10)
+				--windower.text.set_color(o.text[1].name, 255, 0, 0, 0)
+				windower.text.set_color(o.text[1].name, 255, 150,150,235)
+				windower.text.set_font_size(o.text[1].name, 9)
 				windower.text.set_visibility(o.text[1].name, true)
 				windower.text.set_font(o.text[1].name,'Tahoma') --'Verdana'
-				windower.text.set_stroke_width(o.text[1].name, 1)
-				windower.text.set_stroke_color(o.text[1].name, 255, 247,243,195)
+				windower.text.set_stroke_width(o.text[1].name, 0)
+				windower.text.set_stroke_color(o.text[1].name, 255, 0, 0, 0)
+				--windower.text.set_stroke_color(o.text[1].name, 255, 247,243,195)
 				windower.text.set_location(o.text[1].name, o.text[1].offset_x + o.x, o.text[1].offset_y + o.y)
+				windower.text.set_bold(o.text[1].name, true)
 				
 				--print(windower.text.get_extents(o.text[1].name))
 				
@@ -111,7 +114,7 @@ ImageBlock = {
 				windower.text.set_font_size(o.text[2].name, 12)
 				windower.text.set_visibility(o.text[2].name, true)
 				windower.text.set_font(o.text[2].name,'Tahoma') --'Verdana'
-				windower.text.set_stroke_width(o.text[2].name, 1)
+				windower.text.set_stroke_width(o.text[2].name, 0)
 				windower.text.set_stroke_color(o.text[2].name, 255, 0, 0, 0)
 				windower.text.set_location(o.text[2].name, o.text[2].offset_x + o.x, o.text[2].offset_y + o.y)
 				

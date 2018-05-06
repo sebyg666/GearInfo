@@ -686,21 +686,21 @@ function update()
 			end
 			
 			windower.text.set_text(sections.block[10].text[2].name, (Gear_info['Haste'] + Buffs_inform['g_haste'] ))
-			if (Gear_info['Haste'] + Buffs_inform['g_haste'] ) > 257 then
+			if (Gear_info['Haste'] + Buffs_inform['g_haste'] ) > 256 then
 				windower.text.set_color(sections.block[10].text[2].name, 255, 255, 0, 0)
 			else
 				windower.text.set_color(sections.block[10].text[2].name, 255, 255, 255, 255)
 			end
 			
 			windower.text.set_text(sections.block[11].text[2].name,  (Buffs_inform['ma_haste'] + manual_mhaste))
-			if (Buffs_inform['ma_haste'] + manual_mhaste) > 449 then
+			if (Buffs_inform['ma_haste'] + manual_mhaste) > 448 then
 				windower.text.set_color(sections.block[11].text[2].name, 255, 255, 0, 0)
 			else
 				windower.text.set_color(sections.block[11].text[2].name, 255, 255, 255, 255)
 			end
 			
 			windower.text.set_text(sections.block[12].text[2].name,  (Buffs_inform['ja_haste'] + manual_jahaste))
-			if (Buffs_inform['ja_haste'] + manual_jahaste) > 257 then
+			if (Buffs_inform['ja_haste'] + manual_jahaste) > 256 then
 				windower.text.set_color(sections.block[12].text[2].name, 255, 255, 0, 0)
 			else
 				windower.text.set_color(sections.block[12].text[2].name, 255, 255, 255, 255)
