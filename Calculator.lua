@@ -232,6 +232,7 @@ function determine_Weapon_Delay()
 		else
 			Base_Delay = MainJ_Base_Delay
 		end
+		Weapon_Delay.job_MA = 480 - Base_Delay
 		for equip_slot,item in pairs(player.equipment) do
 			-- Wrestler's Mantle	Latent Effect (Monk sub job): Hand-to-Hand Delay -10
 			if item.id == 13660 and player.sub_job and player.sub_job == 'MNK' then Base_Delay = Base_Delay - 10 end
@@ -239,6 +240,7 @@ function determine_Weapon_Delay()
 			for MA_id, MA_item in pairs(Martial_Arts_Gear)do
 				if item.id == MA_id then
 					Base_Delay = Base_Delay - MA_item.delay
+					Weapon_Delay.gear_MA = Weapon_Delay.gear_MA + MA_item.delay
 				end
 			end
 		end
@@ -414,5 +416,35 @@ function dual_wield_needed()
 	end
 	
 	return DW_needed
+end
+
+function martial_arts_needed()
+	local MA_needed = 0
+	local WD = determine_Weapon_Delay()
+	local Weapon_Delay = player.equipment.main.delay
+	local total_delay = WD.melee_delay
+	local total_haste = get_total_haste()
+	local job_MA = WD.job_MA or 0
+	local total_gear_MA = WD.gear_MA or 0
+	local total_MA = job_MA + total_gear_MA
+	
+	if total_haste > 819 then total_haste = 819 end
+		
+	if player.equipment.main.skill == "Hand-to-Hand" or player.equipment.main.en == '' then
+		local minimum_delay = (480 + Weapon_Delay ) * 0.2
+		--(480 (Base Delay) +xx (+Weapon Delay) -xx(MA Delay Reduction))×(1024 - xx Equipment Haste - xx Magic Haste - xx Job Ability Haste)÷1024 =xx
+		local delay = ((480 + Weapon_Delay - total_MA) * (1024 - 256)) / 1024
+		--print(delay, minimum_delay)
+		
+		-- (Bd + Wd - Ma) x (1024 - total_haste ) = 96
+		-- (Bd + Wd - Ma) = (96 / (1024 - total_haste )) 
+		-- Ma = ((96 / (1024 - total_haste )) - bd - Wd) * (-1) - total_MA
+		-- (480 Base Delay + 86 Weapon Delay - 200 Martial Arts Delay)×(1024 - 256 Equipment Haste - 448 Magic Haste)=114.3 
+		MA_needed = math.floor((((minimum_delay * 1024) / (1024 - total_haste )) - 480 - Weapon_Delay) * (-1) - job_MA)
+		local lowest_delay = ((480 + Weapon_Delay - MA_needed) * (1024 - 256)) / 1024
+		--print(delay, minimum_delay, lowest_delay)
+	end
+	
+	return total_gear_MA, MA_needed
 end
 

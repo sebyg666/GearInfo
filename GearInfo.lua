@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.7.1.3'
+_addon.version = '1.7.2.1'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -24,7 +24,6 @@ Geo_Spells = require('res/Geo_Spells')
 res = require('resources')
 skills_from_resources = res.skills
 Extdata = require("extdata")
-texts = require('texts')
 config = require('config')
 files = require('files')
 blu_spells = res.spells:type('BlueMagic')
@@ -40,53 +39,14 @@ require 'Calculator'
 require 'Action_Processing'
 require 'Buff_Processing'
 require 'Packet_parsing'
+require 'Image_processing'
 
 settings = config.load('data\\'..windower.ffxi.get_player().name..'_settings.xml',defaults)
-text_box = texts.new(settings.display, settings)
-
-initialize = function(text, settings)
-    local properties = L{}
-	
-	properties:append('${title}')
-	properties:append('${tp_per__hit}')
-	properties:append('${tp_per__hit_range}')
-	properties:append('${zanshin}')
-	properties:append('${wstp}')
-	properties:append('${tp_to_100}')
-	properties:append('${Rtp_to_100}')
-	--properties:append('${title2}')
-	properties:append('${stp}')
-	properties:append('${dw}')
-	properties:append('${dw_needed}')
-	properties:append('${ghaste}')
-	properties:append('${mhaste}')
-	properties:append('${jhaste}')
-	properties:append('${thaste}')
-	properties:append('${T_acc}')
-	properties:append('${T_racc}')
-	--properties:append('${title3}')
-	-- properties:append('${dt}')
-	-- properties:append('${pdt}')
-	-- properties:append('${mdt}')
-	-- properties:append('${bdt}')
-	-- properties:append('${pdtii}')
-	-- properties:append('${mdtii}')
-	--properties:append('${title4}')
-	properties:append('${dt2}')
-	properties:append('${pdt2}')
-	properties:append('${mdt2}')
-	properties:append('${bdt2}')
-	properties:append('${ugs}')
-	
-    text:clear()
-    text:append(properties:concat(''))
-end
-
 
 windower.register_event('load', function()
 	if windower.ffxi.get_player() then
 		options_load()
-		text_box:show()
+		--text_box:show()
 		
 		if files.exists('data\\'..player.name..'_temp_party.lua') then
 			local f = io.open(windower.addon_path..'data/'..player.name..'_temp_party.lua','r')
@@ -113,7 +73,6 @@ windower.register_event('load', function()
 end)
 
 windower.register_event('logout', function()
-	text_box:hide()
 	
 	player = {}
 	player.equipment = T{}
@@ -125,7 +84,6 @@ windower.register_event('logout', function()
 	manual_ghaste = 0
 	WSTP = 0
 	
-	-- print('Gearinfo detected logout')
 end)
 
 windower.register_event('login',function ()
@@ -135,8 +93,8 @@ end)
 function options_load()
 	
 	if windower.ffxi.get_player() then
-		initialize(text_box)
-
+		sections.background = ImageBlock.New(0,'background','')
+		sections.logo = ImageBlock.New(1,'logo','')
 		player = windower.ffxi.get_player()
 		update_party()
 		local this_file = files.new('data\\'..player.name..'_data.lua',true)
@@ -144,8 +102,6 @@ function options_load()
 		if not files.exists('data\\'..player.name..'_data.lua') then
 			this_file:create()
 			local f = io.open(windower.addon_path..'data/'..player.name..'_data.lua','w')
-			--f:write(temp)
-			-- Quick method
 			f:write('return {\n}')
 			f:close()
 			print(player.name..'_data.lua created by GearInfo')
@@ -158,7 +114,6 @@ function options_load()
 		manual_dw = 0
 		manual_ghaste = 0
 		initialize_packet_parsing()
-		-- get_player_skill_in_gear(check_equipped())
 	end
 	
 end
@@ -224,16 +179,16 @@ windower.register_event('addon command', function(command, ...)
 			else
 				log('Misstype: use //gi delete wstp')
 			end	
-		elseif command:lower() == 'hide' then
-			if text_box:visible() then
-				manual_hide = true
-				text_box:hide()
-				log('Hiding Display')
-			else
-				manual_hide = false
-				text_box:show()
-				log('Showing Display')
-			end
+		-- elseif command:lower() == 'hide' then
+			-- if text_box:visible() then
+				-- manual_hide = true
+				-- text_box:hide()
+				-- log('Hiding Display')
+			-- else
+				-- manual_hide = false
+				-- text_box:show()
+				-- log('Showing Display')
+			-- end
 		elseif command:lower() == 'update' then
 			update_gs(DW, (DW_needed + manual_dw_needed), get_total_haste())
 		elseif command:lower() == 'updategs' or command:lower() == 'ugs' then
@@ -304,7 +259,7 @@ windower.register_event('addon command', function(command, ...)
 				elseif settings.player.show_total_haste then
 					settings.player.show_total_haste = false
 				end
-				log('Show Total Haste = '..tostring(settings.player.show_total_haste))
+				log('Show Haste = '..tostring(settings.player.show_total_haste))
 			elseif args[1]:lower() == 'tp' then
 				if settings.player.show_tp_Stuff == false then
 					settings.player.show_tp_Stuff = true
@@ -312,6 +267,27 @@ windower.register_event('addon command', function(command, ...)
 					settings.player.show_tp_Stuff = false
 				end
 				log('Show Tp calculations = '..tostring(settings.player.show_tp_Stuff))
+			elseif args[1]:lower() == 'stp' then
+				if settings.player.show_STP== false then
+					settings.player.show_STP = true
+				elseif settings.player.show_STP then
+					settings.player.show_STP = false
+				end
+				log('Show Store TP = '..tostring(settings.player.show_STP))
+			elseif args[1]:lower() == 'dw' then
+				if settings.player.show_DW_Stuff == false then
+					settings.player.show_DW_Stuff = true
+				elseif settings.player.show_DW_Stuff then
+					settings.player.show_DW_Stuff = false
+				end
+				log('Show Duel Wield calculations = '..tostring(settings.player.show_DW_Stuff))
+			elseif args[1]:lower() == 'ma' then
+				if settings.player.show_MA_Stuff == false then
+					settings.player.show_MA_Stuff = true
+				elseif settings.player.show_MA_Stuff then
+					settings.player.show_MA_Stuff = false
+				end
+				log('Show Martial Arts calculations = '..tostring(settings.player.show_MA_Stuff))
 			elseif args[1]:lower() == 'acc' then
 				if settings.player.show_acc_Stuff == false then
 					settings.player.show_acc_Stuff = true
@@ -406,6 +382,9 @@ windower.register_event('addon command', function(command, ...)
 			windower.add_to_chat(6, chat_l_blue..	'              \'haste\'' .. chat_white .. '  --  Toggle hide Total haste.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'tp\'' .. chat_white .. '  --  Toggle hide TP Calculator.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'acc\'' .. chat_white .. '  --  Toggle hide Acc Calculations.')
+			windower.add_to_chat(6, chat_l_blue..	'              \'stp\'' .. chat_white .. '  --  Toggle hide Store TP.')
+			windower.add_to_chat(6, chat_l_blue..	'              \'dw\'' .. chat_white .. '  --  Toggle hide DW Calculations.')
+			windower.add_to_chat(6, chat_l_blue..	'              \'ma\'' .. chat_white .. '  --  Toggle hide MA Calculations.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'dt\'' .. chat_white .. '  --  Toggle hide DT Calculations.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi help\'' .. chat_white .. '  --  This command or any mistakes will show this menu.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi updategs'.. chat_white ..' or ' .. chat_l_blue .. 'ugs\'' .. chat_white .. '  --  toggle Send info to GearSwap for use, Can add true / false')
@@ -572,7 +551,7 @@ windower.register_event('job change',function()
 	player = windower.ffxi.get_player()
 	-- get_player_skill_in_gear(check_equipped())
 	-- player.stats = get_packet_data_base_stats()
-    initialize(text_box,settings)
+    --initialize(text_box,settings)
 end)
 
 function incoming_chunk(id,data,modified,injected,blocked)
@@ -597,7 +576,7 @@ function update()
 	else
 		
 		if manual_hide == true then
-			text_box:hide()
+			--text_box:hide()
 		else
 			-- if windower.ffxi.get_info().zone == 0 then
 				-- text_box:hide()
@@ -615,287 +594,301 @@ function update()
 		Gear_info = get_equip_stats(current_equip)
 		
 		if settings.player.show_tp_Stuff == true then 
-		
 			Gear_TP = get_tp_per_hit()
-			 
-			inform.title = ' \\cs'..blue..'[\\cr\\cs'..white..'Gear Info\\cr\\cs'..blue..'] \n\\cr'
-			--inform.title = ' \\cs'..blue..'[\\cr\\cs'..white..'TP Calculator\\cr\\cs'..blue..'] \n\\cr'
-			inform.tp_per__hit = ' \\cs'..blue..'[Tp/hit:\\cr\\cs'..white..Gear_TP.tp_per_hit_melee.. '\\cr\\cs'..blue..'] \n\\cr'
-			if Gear_TP.tp_per_hit_range > 0 then
-				inform.tp_per__hit_range = ' \\cs'..blue..'[R.Tp/hit:\\cr\\cs'..white..Gear_TP.tp_per_hit_range.. '\\cr\\cs'..blue..'] \n\\cr'
-			else
-				inform.tp_per__hit_range = ''
+			if not sections.block[1] and not sections.block[2]  then
+				sections.block[1] = ImageBlock.New(2,'block','yellow', 'TP/h', 00)
+				sections.block[2] = ImageBlock.New(3,'block','yellow', 'to WS', 00)
 			end
-			if player.main_job:upper() == 'SAM' then
-				inform.zanshin = ' \\cs'..blue..'[Zanshin Tp/hit:\\cr\\cs'..white..Gear_TP.tp_per_hit_zanshin.. '\\cr\\cs'..blue..'] \n\\cr'
+			
+			windower.text.set_text(sections.block[1].text[2].name, Gear_TP.tp_per_hit_melee)
+			windower.text.set_text(sections.block[2].text[2].name, (math.ceil(10000/Gear_TP.tp_per_hit_melee)/10))
+			
+			if Gear_TP.tp_per_hit_range > 0 then
+				if not sections.block[6] and not sections.block[7] then
+					sections.block[6] = ImageBlock.New(7,'block','green', 'R.TP/h', 00)
+					sections.block[7] = ImageBlock.New(8,'block','green', 'R.to WS', 00)
+				end
+				windower.text.set_text(sections.block[6].text[2].name,  Gear_TP.tp_per_hit_range )
+				windower.text.set_text(sections.block[7].text[2].name,  (math.ceil(10000/Gear_TP.tp_per_hit_range)/10) )
 			else
-				inform.zanshin = ('')
+				if sections.block[6] then sections.block[6]:delete() end
+				if sections.block[7] then sections.block[7]:delete() end
 			end
 			
 			if WSTP > 0 then
-				inform.tp_to_100 = ' \\cs'..blue..'[hits after WS:\\cr\\cs'..white..(math.ceil((10000 - (WSTP *10))/Gear_TP.tp_per_hit_melee)/10).. '\\cr\\cs'..blue..'] \n\\cr'
-				inform.wstp = ' \\cs'..blue..'[tp for WS:\\cr\\cs'..white..WSTP.. '\\cr\\cs'..blue..'] \n\\cr'
+				if not sections.block[3] then
+					sections.block[3] = ImageBlock.New(4,'block','yellow', 'aft WS', 00)
+				end
+				windower.text.set_text(sections.block[2].text[1].name, 'for WS' )
+				windower.text.set_text(sections.block[2].text[2].name, WSTP)
+				windower.text.set_text(sections.block[3].text[2].name, (math.ceil((10000 - (WSTP *10))/Gear_TP.tp_per_hit_melee)/10) )
 				if Gear_TP.tp_per_hit_range > 0 then
-					inform.Rtp_to_100 = ' \\cs'..blue..'[R.hits after WS:\\cr\\cs'..white..(math.ceil(10000/Gear_TP.tp_per_hit_range)/10).. '\\cr\\cs'..blue..'] \n\\cr'
-				else
-					inform.Rtp_to_100 = ''
+					if not sections.block[8] then
+						sections.block[8] = ImageBlock.New(9,'block','green', 'R.Aft WS', 00)
+					end
+					windower.text.set_text(sections.block[7].text[1].name, 'R.for WS' )
+					windower.text.set_text(sections.block[7].text[2].name, WSTP)
+					windower.text.set_text(sections.block[8].text[2].name, (math.ceil((10000 - (WSTP *10))/Gear_TP.tp_per_hit_range)/10) )
 				end
 			else
-				inform.tp_to_100 = (Gear_TP.tp_per_hit_melee > 0 and
-										' \\cs'..blue..'[hits to WS:\\cr\\cs'..white..(math.ceil(10000/Gear_TP.tp_per_hit_melee)/10).. '\\cr\\cs'..blue..'] \n\\cr'
-									or	
-										' \\cs'..blue..'[hits to WS:\\cr\\cs'..white..'N/A'.. '\\cr\\cs'..blue..'] \n\\cr')
-				inform.wstp = ('')
-				if Gear_TP.tp_per_hit_range > 0 then
-					inform.Rtp_to_100 = ' \\cs'..blue..'[R.hits to WS:\\cr\\cs'..white..(math.ceil(10000/Gear_TP.tp_per_hit_range)/10).. '\\cr\\cs'..blue..'] \n\\cr'
-				else
-					inform.Rtp_to_100 = ''
-				end
+				windower.text.set_text(sections.block[2].text[1].name, 'to WS' )
+				if sections.block[3] then sections.block[3]:delete() end
+				if sections.block[8] then sections.block[8]:delete() end
 			end
 		else
-			inform.title = ''
-			inform.tp_per__hit = ''
-			inform.tp_per__hit_range = ''
-			inform.zanshin = ''
-			inform.tp_to_100 = ''
-			inform.wstp = ''
-			inform.Rtp_to_100 = ''
+			if sections.block[1] then sections.block[1]:delete() end
+			if sections.block[2] then sections.block[2]:delete() end
+			if sections.block[3] then sections.block[3]:delete() end
+			if sections.block[6] then sections.block[6]:delete() end
+			if sections.block[7] then sections.block[7]:delete() end
+			if sections.block[8] then sections.block[8]:delete() end
+		end
+		
+		----------------------------------------------------- ACC Stuff ------------------------------------------
+		
+		if settings.player.show_acc_Stuff == true then
+			Total_acc = get_player_acc(Gear_info)
+			if Total_acc.sub > 0 then
+				if not sections.block[4] and not sections.block[5]  then
+					sections.block[4] = ImageBlock.New(5,'block','yellow', 'Acc.1', 00)
+					sections.block[5] = ImageBlock.New(6,'block','yellow', 'Acc.2', 00)
+				end
+				windower.text.set_text(sections.block[4].text[2].name, Total_acc.main)
+				windower.text.set_text(sections.block[5].text[2].name, Total_acc.sub)
+			else
+				if not sections.block[4] then
+					sections.block[4] = ImageBlock.New(5,'block','yellow', 'Acc.', 00)
+				end
+				windower.text.set_text(sections.block[4].text[2].name, Total_acc.main)
+			end
+			if Total_acc.range > 0 then
+				if not sections.block[9] then
+					sections.block[9] = ImageBlock.New(10,'block','green', 'R.Acc.', 00)
+				end
+				windower.text.set_text(sections.block[9].text[2].name, Total_acc.range)
+			else
+				if sections.block[9] then sections.block[9]:delete() end
+			end
+		else
+			if sections.block[4] then sections.block[4]:delete() end
+			if sections.block[5] then sections.block[5]:delete() end
+			if sections.block[9] then sections.block[9]:delete() end
 		end
 		
 		----------------------------------------------------- Haste Stuff ------------------------------------------
 		
-		inform.title2 = ' \\cs'..blue..'[\\cr\\cs'..white..'Gear Info\\cr\\cs'..blue..'] \n\\cr'
-		inform.stp = ' \\cs'..blue..'[STP:\\cr\\cs'..white..Gear_info['Store TP'] + Buffs_inform['Store TP'].. '\\cr\\cs'..blue..']\\cr'
-		inform.dw = ' \\cs'..blue..'[DW:\\cr\\cs'..white..Gear_info['Dual Wield'].. '\\cr\\cs'..blue..'] \n\\cr'
-		
-		-- if Buffs_inform['Store TP'] > 0 then
-			-- inform.bstp = ' \\cs'..blue..'[Buff STP:\\cr\\cs'..white..Buffs_inform['Store TP'].. '\\cr\\cs'..blue..'] \n\\cr'
-		-- else
-			-- inform.bstp = ''
-		-- end
-		
-		inform.ghaste = ( (Gear_info['Haste'] + Buffs_inform['g_haste'] ) < 257 and
-							' \\cs'..blue..'[G.Haste:\\cr\\cs'..white..(Gear_info['Haste'] + Buffs_inform['g_haste'] ).. '\\cr\\cs'..blue..'/256] \\cr'
-						or (Gear_info['Haste'] + Buffs_inform['g_haste'] ) > 256 and
-							' \\cs'..blue..'[G.Haste:\\cr\\cs'..red..(Gear_info['Haste'] + Buffs_inform['g_haste'] ).. '\\cr\\cs'..blue..'/256] \\cr')
-		
-		if (Buffs_inform['ma_haste'] + manual_mhaste) > 0 then
-			inform.mhaste = ( (Buffs_inform['ma_haste'] + manual_mhaste) < 449 and
-							'\n \\cs'..blue..'[M.Haste:\\cr\\cs'..white..(Buffs_inform['ma_haste'] + manual_mhaste).. '\\cr\\cs'..blue..'/448] \\cr'
-						or (Buffs_inform['ma_haste'] + manual_mhaste) > 448 and
-							'\n \\cs'..blue..'[M.Haste:\\cr\\cs'..red..(Buffs_inform['ma_haste'] + manual_mhaste).. '\\cr\\cs'..blue..'/448] \\cr')
+		if settings.player.show_total_haste ==  true then
+			if not sections.block[10] and not sections.block[11] and not sections.block[12] and not sections.block[13]  then
+				sections.block[10] = ImageBlock.New(11,'block','red', 'Gear.H', 00)
+				sections.block[11] = ImageBlock.New(12,'block','red', 'Magic.H', 00)
+				sections.block[12] = ImageBlock.New(13,'block','red', 'JA.H', 00)
+				sections.block[13] = ImageBlock.New(14,'block','red', 'Total.H', 00)
+			end
+			
+			windower.text.set_text(sections.block[10].text[2].name, (Gear_info['Haste'] + Buffs_inform['g_haste'] ))
+			if (Gear_info['Haste'] + Buffs_inform['g_haste'] ) > 257 then
+				windower.text.set_color(sections.block[10].text[2].name, 255, 255, 0, 0)
+			else
+				windower.text.set_color(sections.block[10].text[2].name, 255, 255, 255, 255)
+			end
+			
+			windower.text.set_text(sections.block[11].text[2].name,  (Buffs_inform['ma_haste'] + manual_mhaste))
+			if (Buffs_inform['ma_haste'] + manual_mhaste) > 449 then
+				windower.text.set_color(sections.block[11].text[2].name, 255, 255, 0, 0)
+			else
+				windower.text.set_color(sections.block[11].text[2].name, 255, 255, 255, 255)
+			end
+			
+			windower.text.set_text(sections.block[12].text[2].name,  (Buffs_inform['ja_haste'] + manual_jahaste))
+			if (Buffs_inform['ja_haste'] + manual_jahaste) > 257 then
+				windower.text.set_color(sections.block[12].text[2].name, 255, 255, 0, 0)
+			else
+				windower.text.set_color(sections.block[12].text[2].name, 255, 255, 255, 255)
+			end
+			
+			Total_haste = get_total_haste()
+			
+			windower.text.set_text(sections.block[13].text[2].name,  Total_haste)
+			if Total_haste > 820 then
+				windower.text.set_color(sections.block[13].text[2].name, 255, 255, 0, 0)
+			else
+				windower.text.set_color(sections.block[13].text[2].name, 255, 255, 255, 255)
+			end
 		else
-			inform.mhaste = ''
-		end
-		if (Buffs_inform['ja_haste'] + manual_jahaste) > 0 then
-			inform.jhaste = ( (Buffs_inform['ja_haste'] + manual_jahaste) < 257 and
-							'\n \\cs'..blue..'[J.Haste:\\cr\\cs'..white..(Buffs_inform['ja_haste'] + manual_jahaste).. '\\cr\\cs'..blue..'/256] \\cr'
-						or (Buffs_inform['ja_haste'] + manual_jahaste) > 256 and
-							'\n \\cs'..blue..'[J.Haste:\\cr\\cs'..red..(Buffs_inform['ja_haste'] + manual_jahaste).. '\\cr\\cs'..blue..'/256] \\cr')
-		else
-			inform.jhaste = ''
-		end
-		
-		------------------------------------------------ Total Haste --------------------------------------------------
-		
-		Total_haste = get_total_haste()
-		
-		if settings.player.show_total_haste == true then
-			inform.thaste = (Total_haste > 820 and
-								'\n \\cs'..blue..'[T.Haste:\\cr\\cs'..red..Total_haste.. '\\cr\\cs'..blue..'/820] \\cr'
-								or 
-								'\n \\cs'..blue..'[T.Haste:\\cr\\cs'..white..Total_haste.. '\\cr\\cs'..blue..'/820] \\cr')
-		else
-			inform.thaste = ('')
+			if sections.block[10] then sections.block[10]:delete() end
+			if sections.block[11] then sections.block[11]:delete() end
+			if sections.block[12] then sections.block[12]:delete() end
+			if sections.block[13] then sections.block[13]:delete() end
 		end
 		
 		----------------------------------------------------------- DW stuff ----------------------------------------------
-		
 		DW_needed = dual_wield_needed()
-		
-		if player.equipment.sub.category == 'Weapon' then 
-			if player.equipment.sub.damage then
-				if player.equipment.sub.damage > 0 then
+		if settings.player.show_DW_Stuff == true then
+			
+			if player.equipment.sub.category == 'Weapon' then 
+				if player.equipment.sub.damage then
 					DW = true
-					inform.dw_needed = ( (DW_needed + manual_dw_needed) >= 0 and
-											' \\cs'..blue..'[DW Needed:\\cr\\cs'..white..(DW_needed + manual_dw_needed).. '\\cr\\cs'..blue..'] \n\\cr'
-										or (DW_needed + manual_dw_needed) < 0  and
-											' \\cs'..blue..'[DW Needed:\\cr\\cs'..red..(DW_needed + manual_dw_needed).. '\\cr\\cs'..blue..'] \n\\cr')
-				else
-					DW = false
-					inform.dw_needed = ('')
+					
+					if not sections.block[14] and not sections.block[15]  then
+						sections.block[14] = ImageBlock.New(15,'block','blue', 'DW', 00)
+						sections.block[15] = ImageBlock.New(16,'block','blue', 'Needed', 00)
+					end
+					
+					windower.text.set_text(sections.block[14].text[2].name, Gear_info['Dual Wield'])
+					windower.text.set_text(sections.block[15].text[2].name, (DW_needed + manual_dw_needed))
+					if (DW_needed + manual_dw_needed) < 0 then
+						windower.text.set_color(sections.block[15].text[2].name, 255, 255, 0, 0)
+					else
+						windower.text.set_color(sections.block[15].text[2].name, 255, 255, 255, 255)
+					end
 				end
+			else
+				if sections.block[14] then sections.block[14]:delete() end
+				if sections.block[15] then sections.block[15]:delete() end
 			end
 		else
-			DW = false
-			inform.dw_needed = ('')
+			if sections.block[14] then sections.block[14]:delete() end
+			if sections.block[15] then sections.block[15]:delete() end
 		end
 		
-		if settings.player.update_gs == true then
-			inform.ugs = '\n \\cs'..blue..'[\\cr\\cs'..white..'Updating GearSwap\\cr\\cs'..blue..'] \\cr'
-		else
-			inform.ugs = ('')
-		end
-		
-		----------------------------------------------------------------- ACC Stuff ---------------------------------------------------
-		
-		if settings.player.show_acc_Stuff == true then
-			Total_acc = get_player_acc(Gear_info)
+		----------------------------------------------------------- DW stuff ----------------------------------------------
+		if settings.player.show_MA_Stuff == true then
+			local total_ma , MA_needed = martial_arts_needed()
 			
-			inform.T_acc = (Total_acc.sub > 0 and
-							'\n \\cs'..blue..'[Acc:\\cr\\cs'..white..Total_acc.main..','..Total_acc.sub ..'\\cr\\cs'..blue..'] \\cr'
-							or Total_acc.sub == 0 and
-							'\n \\cs'..blue..'[Acc:\\cr\\cs'..white..Total_acc.main..'\\cr\\cs'..blue..'] \\cr' )
-							
-			inform.T_racc = ( Total_acc.range > 0 and
-							'\n \\cs'..blue..'[RAcc:\\cr\\cs'..white..(Total_acc.range)..'\\cr\\cs'..blue..'] \\cr'
-							or Total_acc.range == 0 and
-							'')
+			if player.equipment.main.skill == "Hand-to-Hand" or player.equipment.main.en == '' then
+			
+				if not sections.block[16] and not sections.block[17]  then
+					sections.block[16] = ImageBlock.New(17,'block','pink', 'MA', 00)
+					sections.block[17] = ImageBlock.New(18,'block','pink', 'Needed', 00)
+				end
+				
+				windower.text.set_text(sections.block[16].text[2].name, total_ma)
+				windower.text.set_text(sections.block[17].text[2].name, MA_needed)
+				if (MA_needed) < 0 then
+					windower.text.set_color(sections.block[17].text[2].name, 255, 255, 0, 0)
+				else
+					windower.text.set_color(sections.block[17].text[2].name, 255, 255, 255, 255)
+				end
+			else
+				if sections.block[16] then sections.block[16]:delete() end
+				if sections.block[17] then sections.block[17]:delete() end
+			end
 		else
-			inform.T_acc = ''
-			inform.T_racc = ''
+			if sections.block[16] then sections.block[16]:delete() end
+			if sections.block[17] then sections.block[17]:delete() end
+		end
+			
+		----------------------------------------------------------- Store TP stuff ----------------------------------------------
+		if settings.player.show_STP == true then
+			if not sections.block[18] then
+				sections.block[18] = ImageBlock.New(19,'block','orange', 'STP', 00)
+			end
+			windower.text.set_text(sections.block[18].text[2].name, Gear_info['Store TP'] + Buffs_inform['Store TP'])
+		else
+			if sections.block[18] then sections.block[18]:delete() end
 		end
 		
 		-------------------------------------------------------------- DT stuff ---------------------------------------------------------------
 		
 		if settings.player.show_dt_Stuff == true then
-			inform.title3 = ('\n \\cs'..blue..'[\\cr\\cs'..white..'Defence Info\\cr\\cs'..blue..'] \\cr' )
-			-- DT
-			inform.dt = (	Gear_info['DT'] < (-51) and
-								'\n \\cs'..blue..'[DT:\\cr\\cs'..red..Gear_info['DT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-								or Gear_info['DT'] ~= 0 and
-								'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info['DT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-								or Gear_info['DT'] == 0 and
-								'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info['DT']..'\\cr\\cs'..blue..'/50] \\cr' )
-			-- PDT
-			inform.pdt = (	Gear_info['PDT'] < -51 and
-								'\\cs'..blue..'[PDT:\\cr\\cs'..red..Gear_info['PDT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-								or Gear_info['PDT'] ~= 0 and
-								'\\cs'..blue..'[PDT:\\cr\\cs'..white..Gear_info['PDT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-								or Gear_info['PDT'] == 0 and
-								'\\cs'..blue..'[PDT:\\cr\\cs'..white..Gear_info['PDT']..'\\cr\\cs'..blue..'/50] \\cr')
-			-- MDT			
-			inform.mdt = (	Gear_info['MDT'] < -51 and
-								'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..Gear_info['MDT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-								or Gear_info['MDT'] ~= 0 and
-								'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..Gear_info['MDT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-								or Gear_info['MDT'] == 0 and
-								'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..Gear_info['MDT']..'\\cr\\cs'..blue..'/50] \\cr' )
-			-- BDT
-			inform.bdt = (	Gear_info['BDT'] < -51 and
-								'\\cs'..blue..'[BDT:\\cr\\cs'..red..Gear_info['BDT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-								or Gear_info['BDT'] ~= 0 and
-								'\\cs'..blue..'[BDT:\\cr\\cs'..white..Gear_info['BDT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-								or Gear_info['BDT'] == 0 and
-								'\\cs'..blue..'[BDT:\\cr\\cs'..white..Gear_info['BDT']..'\\cr\\cs'..blue..'/50] \\cr')			
-			-- PDT2					
-			if Gear_info['PDT2']  < 0 then
-				inform.pdtii = (	Gear_info['PDT'] < -51 and
-									'\n \\cs'..blue..'[PDT2:\\cr\\cs'..red..Gear_info['PDT2']*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-									or 
-									'\n \\cs'..blue..'[PDT2:\\cr\\cs'..white..Gear_info['PDT2']*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
-			else 
-				inform.pdtii = ''
+			
+			if not sections.block[19] and not sections.block[20] and not sections.block[21] and not sections.block[22]  then
+				sections.block[19] = ImageBlock.New(20,'block','purple', 'DT', 00)
+				sections.block[20] = ImageBlock.New(21,'block','purple', 'PDT', 00)
+				sections.block[21] = ImageBlock.New(22,'block','purple', 'MDT', 00)
+				sections.block[22] = ImageBlock.New(23,'block','purple', 'BDT', 00)
 			end
-			-- MDT2
-			if Gear_info['MDT2']  < 0 then
-				if Gear_info['PDT2']  == 0 then inform.bdt = inform.bdt .. '\n ' end
-				inform.mdtii = (	Gear_info['MDT2'] < -51 and
-									'\\cs'..blue..'[MDT2:\\cr\\cs'..red..Gear_info['MDT2']*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-									or 
-									'\\cs'..blue..'[MDT2:\\cr\\cs'..white..Gear_info['MDT2']*(-1)..'\\cr\\cs'..blue..'/50] \\cr' )
-			else 
-				inform.mdtii = ''
+			local dt = (Gear_info['DT']*(-1))
+			if dt == -0 then dt = 0 end
+			windower.text.set_text(sections.block[19].text[2].name, dt)
+			if Gear_info['DT'] < (-51) then
+				windower.text.set_color(sections.block[19].text[2].name, 255, 255, 0, 0)
+			else
+				windower.text.set_color(sections.block[19].text[2].name, 255, 255, 255, 255)
 			end
 			
-			--  Combined values
-			if Gear_info['DT'] < 0 or Gear_info['PDT2']  < 0 or Gear_info['MDT2']  < 0 then
-				inform.title4 = ('\n \\cs'..blue..'[\\cr\\cs'..white..'Combined Defence\\cr\\cs'..blue..'] \\cr' )
-				-- DT
-				inform.dt2 = (	Gear_info['DT'] < (-51) and
-									'\n \\cs'..blue..'[DT:\\cr\\cs'..red..Gear_info['DT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-									or Gear_info['DT'] ~= 0 and
-									'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info['DT']*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-									or Gear_info['DT'] == 0 and
-									'\n \\cs'..blue..'[DT:\\cr\\cs'..white..Gear_info['DT']..'\\cr\\cs'..blue..'/50] \\cr' )
-									
-				if Gear_info['PDT2']  < 0 then		
-					-- PDT + PDT2 + DT
-					local combined_pdt = Gear_info['PDT'] + Gear_info['DT']
-					if combined_pdt < -50 then 
-						combined_pdt = -50 
-					end
-					inform.pdt2 = (	(combined_pdt + Gear_info['PDT2']) < -87.6 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..red..(combined_pdt + Gear_info['PDT2'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr'
-										or (combined_pdt + Gear_info['PDT2']) ~= 0 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(combined_pdt + Gear_info['PDT2'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr' 
-										or (Gear_info['PDT'] + Gear_info['PDT2'] + Gear_info['DT']) == 0 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(combined_pdt + Gear_info['PDT2'])..'\\cr\\cs'..blue..'/87.5] \\cr' )		
-				else				
-					-- PDT + DT
-					inform.pdt2 = (	(Gear_info['PDT']+ Gear_info['DT']) < -51 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..red..(Gear_info['PDT']+ Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-										or (Gear_info['PDT']+ Gear_info['DT']) ~= 0 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info['PDT']+ Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-										or (Gear_info['PDT']+ Gear_info['DT']) == 0 and
-										'\\cs'..blue..'[PDT:\\cr\\cs'..white..(Gear_info['PDT']+ Gear_info['DT'])..'\\cr\\cs'..blue..'/50] \\cr' )
-				end					
-				if Gear_info['MDT2']  < 0 then
-					-- MDT + MDT2 + DT
-					local combined_mdt = Gear_info['MDT'] + Gear_info['DT']
-					if combined_mdt < -50 then 
-						combined_mdt = -50 
-					end
-					inform.mdt2 = (	(combined_mdt + Gear_info['MDT2']) < -87.6 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..(combined_mdt + Gear_info['MDT2'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr'
-										or (Gear_info['MDT'] + Gear_info['MDT2'] + Gear_info['DT']) ~= 0 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(combined_mdt + Gear_info['MDT2'])*(-1)..'\\cr\\cs'..blue..'/87.5] \\cr' 
-										or (Gear_info['MDT'] + Gear_info['MDT2'] + Gear_info['DT']) == 0 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(combined_mdt + Gear_info['MDT2'])..'\\cr\\cs'..blue..'/87.5] \\cr' )
-										
-				else
-					-- MDT + DT
-					inform.mdt2 = ((Gear_info['MDT'] + Gear_info['DT']) < -51 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..red..(Gear_info['MDT'] + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-										or (Gear_info['MDT'] + Gear_info['DT']) ~= 0 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info['MDT'] + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-										or (Gear_info['MDT'] + Gear_info['DT']) == 0 and
-										'\n \\cs'..blue..'[MDT:\\cr\\cs'..white..(Gear_info['MDT'] + Gear_info['DT'])..'\\cr\\cs'..blue..'/50] \\cr')
+			if Gear_info['PDT2'] < 0 then
+				local combined_pdt = Gear_info['PDT'] + Gear_info['DT']
+				if combined_pdt < -50 then 
+					combined_pdt = -50 
 				end
-				-- BDT + DT
-				inform.bdt2= (	(Gear_info['BDT'] + Gear_info['DT']) < -51 and
-									'\\cs'..blue..'[BDT:\\cr\\cs'..red..(Gear_info['BDT'] + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/50] \\cr'
-									or (Gear_info['BDT'] + Gear_info['DT']) ~= 0 and
-									'\\cs'..blue..'[BDT:\\cr\\cs'..white..(Gear_info['BDT'] + Gear_info['DT'])*(-1)..'\\cr\\cs'..blue..'/50] \\cr' 
-									or (Gear_info['BDT'] + Gear_info['DT']) == 0 and
-									'\\cs'..blue..'[BDT:\\cr\\cs'..white..(Gear_info['BDT'] + Gear_info['DT'])..'\\cr\\cs'..blue..'/50] \\cr' )
+				combined_pdt = (combined_pdt + Gear_info['PDT2'])*(-1)
+				if combined_pdt == -0 then combined_pdt = 0 end
+				windower.text.set_text(sections.block[20].text[2].name, combined_pdt)
+				if (combined_pdt + Gear_info['PDT2']) < -87.6 then
+					windower.text.set_color(sections.block[20].text[2].name, 255, 255, 0, 0)
 			else
-				inform.title4 = ''
-				inform.dt2 = ''
-				inform.pdt2 = ''
-				inform.mdt2 = ''
-				inform.bdt2 = ''
+				windower.text.set_color(sections.block[20].text[2].name, 255, 255, 255, 255)
+			end
+			elseif Gear_info['PDT2'] == 0 then
+				local pdt = (Gear_info['PDT'] + Gear_info['DT'])*(-1)
+				if pdt == -0 then pdt = 0 end
+				windower.text.set_text(sections.block[20].text[2].name, pdt)
+				if (Gear_info['PDT']+ Gear_info['DT']) < -51 then
+					windower.text.set_color(sections.block[20].text[2].name, 255, 255, 0, 0)
+				else
+					windower.text.set_color(sections.block[20].text[2].name, 255, 255, 255, 255)
+				end
+			end
+			
+			if Gear_info['MDT2'] < 0 then
+				local combined_mdt = Gear_info['MDT'] + Gear_info['DT']
+				if combined_mdt < -50 then 
+					combined_mdt = -50 
+				end
+				combined_mdt = (combined_mdt + Gear_info['MDT2'])*(-1)
+				if combined_mdt == -0 then combined_mdt = 0 end
+				windower.text.set_text(sections.block[21].text[2].name, combined_mdt)
+				if (combined_mdt + Gear_info['MDT2']) < -87.6 then
+					windower.text.set_color(sections.block[21].text[2].name, 255, 255, 0, 0)
+			else
+				windower.text.set_color(sections.block[21].text[2].name, 255, 255, 255, 255)
+			end
+			elseif Gear_info['MDT2'] == 0 then
+				local mdt = (Gear_info['MDT'] + Gear_info['DT'])*(-1)
+				if mdt == -0 then mdt = 0 end
+				windower.text.set_text(sections.block[21].text[2].name, mdt)
+				if (Gear_info['MDT']+ Gear_info['DT']) < -51 then
+					windower.text.set_color(sections.block[21].text[2].name, 255, 255, 0, 0)
+				else
+					windower.text.set_color(sections.block[21].text[2].name, 255, 255, 255, 255)
+				end
+			end
+			
+			local bdt = (Gear_info['BDT'] + Gear_info['DT'])*(-1)
+			if bdt == -0 then bdt = 0 end
+			windower.text.set_text(sections.block[22].text[2].name, bdt)
+			if (Gear_info['BDT'] + Gear_info['DT']) < -51 then
+				windower.text.set_color(sections.block[22].text[2].name, 255, 255, 0, 0)
+			else
+				windower.text.set_color(sections.block[22].text[2].name, 255, 255, 255, 255)
 			end
 			
 		else
-			inform.title3 = ''
-			inform.dt = ''
-			inform.pdt = ''
-			inform.mdt = ''
-			inform.mdtii = ''
-			inform.pdtii = ''
-			inform.bdt = ''
-			inform.title4 = ''
-			inform.dt2 = ''
-			inform.pdt2 = ''
-			inform.mdt2 = ''
-			inform.bdt2 = ''
-		end
 		
-		if old_inform ~= inform then
-			text_box:update(inform)
-			old_inform = inform
+			if sections.block[19] then sections.block[19]:delete() end
+			if sections.block[20] then sections.block[20]:delete() end
+			if sections.block[21] then sections.block[21]:delete() end
+			if sections.block[22] then sections.block[22]:delete() end
+			
 		end
+
+		-------------------------------------------------------------- update GS ---------------------------------------------------------------
+		if not sections.block[23] then
+			sections.block[23] = ImageBlock.New(24,'block','grey', 'UGS', '')
+		end
+		if settings.player.update_gs == true then
+			windower.text.set_text(sections.block[23].text[2].name, tostring(settings.player.update_gs))
+			windower.text.set_color(sections.block[23].text[2].name, 255, 255, 255, 255)
+		else
+			windower.text.set_text(sections.block[23].text[2].name, tostring(settings.player.update_gs))
+			windower.text.set_color(sections.block[23].text[2].name, 255, 255, 0, 0)
+		end
+			
+		-- if old_inform ~= inform then
+			-- --text_box:update(inform)
+			-- old_inform = inform
+		-- end
 		--log(DW_needed)
 		if settings.player.update_gs == true then
 			local new_dw = DW_needed + manual_dw_needed
@@ -912,6 +905,9 @@ end
 loop_count = 0
 frame_count = 0
 windower.register_event('prerender',function()
+	if frame_count%2 == 0 and windower.ffxi.get_info().logged_in then
+		centre_all_text()
+	end
     if frame_count%15 == 0 and windower.ffxi.get_info().logged_in then
         local temp_equip = player.equipment
         local temp_stats = player.stats
