@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.7.2.2'
+_addon.version = '1.7.2.3'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -184,16 +184,19 @@ windower.register_event('addon command', function(command, ...)
 			else
 				log('Misstype: use //gi delete wstp')
 			end	
-		-- elseif command:lower() == 'hide' then
-			-- if text_box:visible() then
-				-- manual_hide = true
-				-- text_box:hide()
-				-- log('Hiding Display')
-			-- else
-				-- manual_hide = false
-				-- text_box:show()
-				-- log('Showing Display')
-			-- end
+		elseif command:lower() == 'hide' then
+			settings.player.show_total_haste = false
+			settings.player.show_tp_Stuff = false
+			settings.player.show_acc_Stuff = false
+			settings.player.show_dt_Stuff = false
+			settings.player.show_att_Stuff = false
+			settings.player.show_Evasion = false
+			settings.player.show_Defence = false
+			settings.player.show_STP = false
+			settings.player.show_DW_Stuff = false
+			settings.player.show_MA_Stuff = false
+			log('All display settings set to false to hide display.')
+			settings:save('all')
 		elseif command:lower() == 'update' then
 			update_gs(DW, (DW_needed + manual_dw_needed), get_total_haste())
 		elseif command:lower() == 'updategs' or command:lower() == 'ugs' then
@@ -332,6 +335,19 @@ windower.register_event('addon command', function(command, ...)
 				end
 				-- log('Currently dissabled, in testing.')
 				log('Show Defence = '..tostring(settings.player.show_dt_Stuff))
+				
+			elseif args[1]:lower() == 'all' then
+				settings.player.show_total_haste = true
+				settings.player.show_tp_Stuff = true
+				settings.player.show_acc_Stuff = true
+				settings.player.show_dt_Stuff = true
+				settings.player.show_att_Stuff = true
+				settings.player.show_Evasion = true
+				settings.player.show_Defence = true
+				settings.player.show_STP = true
+				settings.player.show_DW_Stuff = true
+				settings.player.show_MA_Stuff = true
+				log('All display settings set to true to shall all the display.')
 			end
 			settings:save('all')
 		elseif command:lower() == 'test' then
@@ -414,7 +430,7 @@ windower.register_event('addon command', function(command, ...)
 			windower.add_to_chat(6, chat_yellow..	'eg. \/\/gi geo add bob 5' .. chat_white .. '  --  This will add bob to the list with Geomancy +5. eg "Duna"')
 			windower.add_to_chat(6, chat_l_blue..	'          delete \'name\'' .. chat_white .. '  --  Delete a GEO from the list.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi dnc\'' .. chat_white .. '  --  Toggle if your party is getting Haste Samba from a main DNC or not.')
-			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi hide\'' .. chat_white .. '  --  Toggle hide and unhide box.')
+			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi hide\'' .. chat_white .. '  --  Hide all display (not a toggle).')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi show\'' .. chat_white .. '  --  add subcommand.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'haste\'' .. chat_white .. '  --  Toggle hide Total haste.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'tp\'' .. chat_white .. '  --  Toggle hide TP Calculator.')
@@ -426,6 +442,7 @@ windower.register_event('addon command', function(command, ...)
 			windower.add_to_chat(6, chat_l_blue..	'              \'dw\'' .. chat_white .. '  --  Toggle hide DW Calculations.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'ma\'' .. chat_white .. '  --  Toggle hide MA Calculations.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'dt\'' .. chat_white .. '  --  Toggle hide DT Calculations.')
+			windower.add_to_chat(6, chat_l_blue..	'              \'all\'' .. chat_white .. '  --  Toggle all display options on.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi help\'' .. chat_white .. '  --  This command or any mistakes will show this menu.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi updategs'.. chat_white ..' or ' .. chat_l_blue .. 'ugs\'' .. chat_white .. '  --  toggle Send info to GearSwap for use, Can add true / false')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi update\'' .. chat_white .. '  --  forces 1 update to gearswap')
@@ -695,18 +712,19 @@ function update()
 			end
 			
 			if Gear_info['PDT2'] < 0 then
-				local combined_pdt = Gear_info['PDT'] + Gear_info['DT']
-				if combined_pdt < -50 then 
-					combined_pdt = -50 
+				local combined_pdt = (Gear_info['PDT'] + Gear_info['DT'] + Gear_info['PDT2']) * (-1)
+				if (-50 + Gear_info['PDT2']) < -87.6 then 
+					cap = -87.6 
+				else 
+					cap = (-50 + Gear_info['PDT2']) 
 				end
-				combined_pdt = (combined_pdt + Gear_info['PDT2'])*(-1)
 				if combined_pdt == -0 then combined_pdt = 0 end
 				windower.text.set_text(sections.block[6].text[2].name, combined_pdt)
-				if (combined_pdt + Gear_info['PDT2']) < -87.6 then
+				if (Gear_info['PDT'] + Gear_info['DT'] + Gear_info['PDT2']) < cap then
 					windower.text.set_color(sections.block[6].text[2].name, 255, 255, 0, 0)
-			else
-				windower.text.set_color(sections.block[6].text[2].name, 255, 255, 255, 255)
-			end
+				else
+					windower.text.set_color(sections.block[6].text[2].name, 255, 255, 255, 255)
+				end
 			elseif Gear_info['PDT2'] == 0 then
 				local pdt = (Gear_info['PDT'] + Gear_info['DT'])*(-1)
 				if pdt == -0 then pdt = 0 end
@@ -719,18 +737,20 @@ function update()
 			end
 			
 			if Gear_info['MDT2'] < 0 then
-				local combined_mdt = Gear_info['MDT'] + Gear_info['DT']
-				if combined_mdt < -50 then 
-					combined_mdt = -50 
+				local combined_mdt = (Gear_info['MDT'] + Gear_info['DT'] + Gear_info['MDT2'])*(-1)
+				local cap = 0
+				if (-50 + Gear_info['MDT2']) < -87.6 then 
+					cap = -87.6 
+				else 
+					cap = (-50 + Gear_info['MDT2']) 
 				end
-				combined_mdt = (combined_mdt + Gear_info['MDT2'])*(-1)
 				if combined_mdt == -0 then combined_mdt = 0 end
 				windower.text.set_text(sections.block[7].text[2].name, combined_mdt)
-				if (combined_mdt + Gear_info['MDT2']) < -87.6 then
+				if (Gear_info['MDT'] + Gear_info['DT'] + Gear_info['MDT2']) < cap then
 					windower.text.set_color(sections.block[7].text[2].name, 255, 255, 0, 0)
-			else
-				windower.text.set_color(sections.block[7].text[2].name, 255, 255, 255, 255)
-			end
+				else
+					windower.text.set_color(sections.block[7].text[2].name, 255, 255, 255, 255)
+				end
 			elseif Gear_info['MDT2'] == 0 then
 				local mdt = (Gear_info['MDT'] + Gear_info['DT'])*(-1)
 				if mdt == -0 then mdt = 0 end
