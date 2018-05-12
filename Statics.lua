@@ -107,14 +107,15 @@ defaults.player.show_total_haste = true
 defaults.player.show_tp_Stuff = true
 defaults.player.show_acc_Stuff = false
 defaults.player.show_dt_Stuff = false
+defaults.player.show_att_Stuff = false
+defaults.player.show_Evasion = false
+defaults.player.show_Defence = false
 defaults.player.show_STP = false
 defaults.player.show_DW_Stuff = false
 defaults.player.show_MA_Stuff = false
 defaults.player.update_gs = true
 defaults.player.rank = 1
 defaults.Bards = {}
-defaults.Bards["joachim"] = 0
-defaults.Bards["ulmia"] = 0
 defaults.Cors = {}
 defaults.Cors['qultada'] = 0
 defaults.Geos = {}
@@ -123,7 +124,88 @@ defaults.display = {}
 defaults.display.pos = {}
 defaults.display.pos.x = 0
 defaults.display.pos.y = 0
+defaults.Bards["joachim"] = {
+	['Gjallarhorn'] = false,
+	['Merits'] = {
+		['Minne'] = 0,
+		['Minuet'] = 0,
+		['Madrigal'] = 0,
+	},
+	['Emperean_Armor_Bonus'] = 0,
+	['Song_Bonus'] = {
+		['All_Songs'] = 0,
+		['Paeon'] = 0,
+		['Ballad'] = 0,
+		['Minne'] = 0,
+		['Minuet'] = 0,
+		['Madrigal'] = 0,
+		['Prelude'] = 0,
+		['Mambo'] = 0,
+		['March'] = 0,
+		['Etude'] = 0,
+		['Carol'] = 0,
+		['Mazurka'] = 0,
+	},
+}
+defaults.Bards["ulmia"] = {
+	['Gjallarhorn'] = false,
+	['Merits'] = {
+		['Minne'] = 0,
+		['Minuet'] = 0,
+		['Madrigal'] = 0,
+	},
+	['Emperean_Armor_Bonus'] = 0,
+	['Song_Bonus'] = {
+		['All_Songs'] = 0,
+		['Paeon'] = 0,
+		['Ballad'] = 0,
+		['Minne'] = 0,
+		['Minuet'] = 0,
+		['Madrigal'] = 0,
+		['Prelude'] = 0,
+		['Mambo'] = 0,
+		['March'] = 0,
+		['Etude'] = 0,
+		['Carol'] = 0,
+		['Mazurka'] = 0,
+	},
+}
+
+default_bard_settings = {
+	['Gjallarhorn'] = true,
+	['Merits'] = {
+		['Minne'] = 0,
+		['Minuet'] = 5,
+		['Madrigal'] = 5,
+	},
+	['Emperean_Armor_Bonus'] = 3,
+	['Song_Bonus'] = {
+		['All_Songs'] = 0,
+		['Paeon'] = 0,
+		['Ballad'] = 0,
+		['Minne'] = 0,
+		['Minuet'] = 0,
+		['Madrigal'] = 0,
+		['Prelude'] = 0,
+		['Mambo'] = 0,
+		['March'] = 0,
+		['Etude'] = 0,
+		['Carol'] = 0,
+		['Mazurka'] = 0,
+	},
+}
 
 sections = {}
 sections.block= {}
+
+
+
+
+
+
+
+
+
+
+
 

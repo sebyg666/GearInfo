@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.7.2.1'
+_addon.version = '1.7.2.2'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -91,7 +91,13 @@ end)
 function options_load()
 	
 	if windower.ffxi.get_player() then
+	
+		notice('please note since version \'1.7.2.2\' onwards the settings file structure changed in a manner user intervention is required.')
+		notice('please either delete your GearInfo Data folder or the \"player name\"_settings.xml files within it and reload the addon.')
+		notice('I apologize for the inconvenience.')
+		
 		settings = config.load('data\\'..windower.ffxi.get_player().name..'_settings.xml',defaults)
+		settings:save('all')
 		sections.background = ImageBlock.New(0,'background','')
 		sections.logo = ImageBlock.New(1,'logo','')
 		player = windower.ffxi.get_player()
@@ -209,9 +215,11 @@ windower.register_event('addon command', function(command, ...)
 				manual_bard_duration_bonus = tonumber(args[1])
 				log('Set Brd song+ bonus to ' .. tostring(manual_bard_duration_bonus) .. '.')
 			elseif args[1]:lower() == 'add' and type(tostring(args[2])) == 'string' and type(tonumber(args[3])) == 'number' then
-				settings.Bards[args[2]:lower()] = tonumber(args[3])
+				settings.Bards[args[2]:lower()] = default_bard_settings
+				settings.Bards[args[2]:lower()]['Song_Bonus']['All_Songs'] = tonumber(args[3])
 				settings:save('all')
-				log('Added ' .. tostring(args[2]:lower()) .. ' as a known bard with ' .. tonumber(args[3]) .. ' Song+ !')
+				log('Added ' .. tostring(args[2]:lower()) .. ' as a known bard with +'.. tonumber(args[3]) .. ' to all songs.')
+				notice('For advanced users: You may go into the settings file for your character and edit the bards in a more detailed manner.')
 			elseif args[1]:lower() == 'delete' and type(tostring(args[2])) == 'string' then
 				settings.Bards[tostring(args[2]):lower()] = nil
 				settings:save('all')
@@ -259,6 +267,27 @@ windower.register_event('addon command', function(command, ...)
 					settings.player.show_total_haste = false
 				end
 				log('Show Haste = '..tostring(settings.player.show_total_haste))
+			elseif args[1]:lower() == 'eva' then
+				if settings.player.show_Evasion == false then
+					settings.player.show_Evasion = true
+				elseif settings.player.show_Evasion then
+					settings.player.show_Evasion = false
+				end
+				log('Show Evasion calculations = '..tostring(settings.player.show_Evasion))	
+			elseif args[1]:lower() == 'def' then
+				if settings.player.show_Defence == false then
+					settings.player.show_Defence = true
+				elseif settings.player.show_Defence then
+					settings.player.show_Defence = false
+				end
+				log('Show Defence calculations = '..tostring(settings.player.show_Defence))		
+			elseif args[1]:lower() == 'att' then
+				if settings.player.show_att_Stuff == false then
+					settings.player.show_att_Stuff = true
+				elseif settings.player.show_att_Stuff then
+					settings.player.show_att_Stuff = false
+				end
+				log('Show Attack calculations = '..tostring(settings.player.show_att_Stuff))	
 			elseif args[1]:lower() == 'tp' then
 				if settings.player.show_tp_Stuff == false then
 					settings.player.show_tp_Stuff = true
@@ -306,13 +335,22 @@ windower.register_event('addon command', function(command, ...)
 			end
 			settings:save('all')
 		elseif command:lower() == 'test' then
-			--table.vprint(settings)
+		
+			-- for skill_name, value in pairs(player_base_skills) do
+				-- if skill_name:contains('eva') then
+					-- print(skill_name, value)
+				-- end
+			-- end
+			-- if player_base_skills['evasion'] then print(player_base_skills['evasion']) end
+			-- local current_equip = check_equipped()
+			-- local Gear_info = get_equip_stats(current_equip)
+			-- print(Gear_info['Evasion skill'])
 			--check_equipped()
 			--settings.Cors['ewellina'] = nil
 			-- table.vprint(_ExtraData.player.buff_details)
 			--table.vprint(windower.ffxi.get_mob_by_target('t'))
 			--table.vprint(member_table)
-			--table.vprint(player)
+			--table.vprint(player_base_skills)
 			-- local stat_table = get_equip_stats(check_equipped())
 			-- local player_Acc = get_player_acc(stat_table)
 			-- table.vprint(stat_table.range)
@@ -380,7 +418,10 @@ windower.register_event('addon command', function(command, ...)
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi show\'' .. chat_white .. '  --  add subcommand.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'haste\'' .. chat_white .. '  --  Toggle hide Total haste.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'tp\'' .. chat_white .. '  --  Toggle hide TP Calculator.')
-			windower.add_to_chat(6, chat_l_blue..	'              \'acc\'' .. chat_white .. '  --  Toggle hide Acc Calculations.')
+			windower.add_to_chat(6, chat_l_blue..	'              \'acc\'' .. chat_white .. '  --  Toggle hide Accuracy Calculations.')
+			windower.add_to_chat(6, chat_l_blue..	'              \'eva\'' .. chat_white .. '  --  Toggle hide Evasion Calculations.')
+			windower.add_to_chat(6, chat_l_blue..	'              \'def\'' .. chat_white .. '  --  Toggle hide Defence Calculations.')
+			windower.add_to_chat(6, chat_l_blue..	'              \'att\'' .. chat_white .. '  --  Toggle hide Attack Calculations.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'stp\'' .. chat_white .. '  --  Toggle hide Store TP.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'dw\'' .. chat_white .. '  --  Toggle hide DW Calculations.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'ma\'' .. chat_white .. '  --  Toggle hide MA Calculations.')
@@ -590,205 +631,67 @@ function update()
 		local blue = '(150,150,235)'
 		local red = '(255,0,0)'
 		
-		----------------------------------------------- TP calc Stuff ------------------------------------------
+		----------------------------------------------------- Haste Stuff ------------------------------------------
 		local current_equip = check_equipped()
 		Gear_info = get_equip_stats(current_equip)
 		
-		if settings.player.show_tp_Stuff == true then 
-			Gear_TP = get_tp_per_hit()
-			if not sections.block[1] then sections.block[1] = ImageBlock.New(2,'block','yellow', 'TP/h', 00) end
-			if not sections.block[2]  then sections.block[2] = ImageBlock.New(3,'block','yellow', 'to WS', 00) end
-			windower.text.set_text(sections.block[1].text[2].name, Gear_TP.tp_per_hit_melee)
-			windower.text.set_text(sections.block[2].text[2].name, (math.ceil(10000/Gear_TP.tp_per_hit_melee)/10))
+		if settings.player.show_total_haste ==  true then
+			if not sections.block[1] then sections.block[1] = ImageBlock.New(2,'block','red', 'Gear.H', 00) end
+			if not sections.block[2] then sections.block[2] = ImageBlock.New(3,'block','red', 'Magic.H', 00) end
+			if not sections.block[3] then sections.block[3] = ImageBlock.New(4,'block','red', 'JA.H', 00) end
+			if not sections.block[4] then sections.block[4] = ImageBlock.New(5,'block','red', 'Total.H', 00) end
 			
-			if Gear_TP.tp_per_hit_range > 0 then
-				if not sections.block[6] then sections.block[6] = ImageBlock.New(7,'block','green', 'R.TP/h', 00) end
-				if not sections.block[7] then sections.block[7] = ImageBlock.New(8,'block','green', 'R.to WS', 00) end
-				windower.text.set_text(sections.block[6].text[2].name,  Gear_TP.tp_per_hit_range )
-				windower.text.set_text(sections.block[7].text[2].name,  (math.ceil(10000/Gear_TP.tp_per_hit_range)/10) )
+			windower.text.set_text(sections.block[1].text[2].name, (Gear_info['Haste'] + Buffs_inform['g_haste'] ))
+			if (Gear_info['Haste'] + Buffs_inform['g_haste'] ) > 256 then
+				windower.text.set_color(sections.block[1].text[2].name, 255, 255, 0, 0)
 			else
-				if sections.block[6] then sections.block[6]:delete() end
-				if sections.block[7] then sections.block[7]:delete() end
+				windower.text.set_color(sections.block[1].text[2].name, 255, 255, 255, 255)
 			end
 			
-			if WSTP > 0 then
-				if not sections.block[3] then sections.block[3] = ImageBlock.New(4,'block','yellow', 'aft WS', 00) end
-				windower.text.set_text(sections.block[2].text[1].name, 'for WS' )
-				windower.text.set_text(sections.block[2].text[2].name, WSTP)
-				windower.text.set_text(sections.block[3].text[2].name, (math.ceil((10000 - (WSTP *10))/Gear_TP.tp_per_hit_melee)/10) )
-				if Gear_TP.tp_per_hit_range > 0 then
-					if not sections.block[8] then sections.block[8] = ImageBlock.New(9,'block','green', 'R.Aft WS', 00) end
-					windower.text.set_text(sections.block[7].text[1].name, 'R.for WS' )
-					windower.text.set_text(sections.block[7].text[2].name, WSTP)
-					windower.text.set_text(sections.block[8].text[2].name, (math.ceil((10000 - (WSTP *10))/Gear_TP.tp_per_hit_range)/10) )
-				end
+			windower.text.set_text(sections.block[2].text[2].name,  (Buffs_inform['ma_haste'] + manual_mhaste))
+			if (Buffs_inform['ma_haste'] + manual_mhaste) > 448 then
+				windower.text.set_color(sections.block[2].text[2].name, 255, 255, 0, 0)
 			else
-				windower.text.set_text(sections.block[2].text[1].name, 'to WS' )
-				if sections.block[3] then sections.block[3]:delete() end
-				if sections.block[8] then sections.block[8]:delete() end
+				windower.text.set_color(sections.block[2].text[2].name, 255, 255, 255, 255)
+			end
+			
+			windower.text.set_text(sections.block[3].text[2].name,  (Buffs_inform['ja_haste'] + manual_jahaste))
+			if (Buffs_inform['ja_haste'] + manual_jahaste) > 256 then
+				windower.text.set_color(sections.block[3].text[2].name, 255, 255, 0, 0)
+			else
+				windower.text.set_color(sections.block[3].text[2].name, 255, 255, 255, 255)
+			end
+			
+			Total_haste = get_total_haste()
+			
+			windower.text.set_text(sections.block[4].text[2].name,  Total_haste)
+			if Total_haste > 820 then
+				windower.text.set_color(sections.block[4].text[2].name, 255, 255, 0, 0)
+			else
+				windower.text.set_color(sections.block[4].text[2].name, 255, 255, 255, 255)
 			end
 		else
 			if sections.block[1] then sections.block[1]:delete() end
 			if sections.block[2] then sections.block[2]:delete() end
 			if sections.block[3] then sections.block[3]:delete() end
-			if sections.block[6] then sections.block[6]:delete() end
-			if sections.block[7] then sections.block[7]:delete() end
-			if sections.block[8] then sections.block[8]:delete() end
-		end
-		
-		----------------------------------------------------- ACC Stuff ------------------------------------------
-		
-		if settings.player.show_acc_Stuff == true then
-			Total_acc = get_player_acc(Gear_info)
-			if Total_acc.sub > 0 then
-				if not sections.block[4] then
-					sections.block[4] = ImageBlock.New(5,'block','yellow', 'Acc.1', 00)
-				end
-				if not sections.block[5] then
-					sections.block[5] = ImageBlock.New(6,'block','yellow', 'Acc.2', 00)
-				end
-				windower.text.set_text(sections.block[4].text[2].name, Total_acc.main)
-				windower.text.set_text(sections.block[5].text[2].name, Total_acc.sub)
-			else
-				if not sections.block[4] then
-					sections.block[4] = ImageBlock.New(5,'block','yellow', 'Acc.', 00)
-				end
-				windower.text.set_text(sections.block[4].text[2].name, Total_acc.main)
-			end
-			if Total_acc.range > 0 then
-				if not sections.block[9] then
-					sections.block[9] = ImageBlock.New(10,'block','green', 'R.Acc.', 00)
-				end
-				windower.text.set_text(sections.block[9].text[2].name, Total_acc.range)
-			else
-				if sections.block[9] then sections.block[9]:delete() end
-			end
-		else
 			if sections.block[4] then sections.block[4]:delete() end
-			if sections.block[5] then sections.block[5]:delete() end
-			if sections.block[9] then sections.block[9]:delete() end
-		end
-		
-		----------------------------------------------------- Haste Stuff ------------------------------------------
-		
-		if settings.player.show_total_haste ==  true then
-			if not sections.block[10] then sections.block[10] = ImageBlock.New(11,'block','red', 'Gear.H', 00) end
-			if not sections.block[11] then sections.block[11] = ImageBlock.New(12,'block','red', 'Magic.H', 00) end
-			if not sections.block[12] then sections.block[12] = ImageBlock.New(13,'block','red', 'JA.H', 00) end
-			if not sections.block[13] then sections.block[13] = ImageBlock.New(14,'block','red', 'Total.H', 00) end
-			
-			windower.text.set_text(sections.block[10].text[2].name, (Gear_info['Haste'] + Buffs_inform['g_haste'] ))
-			if (Gear_info['Haste'] + Buffs_inform['g_haste'] ) > 256 then
-				windower.text.set_color(sections.block[10].text[2].name, 255, 255, 0, 0)
-			else
-				windower.text.set_color(sections.block[10].text[2].name, 255, 255, 255, 255)
-			end
-			
-			windower.text.set_text(sections.block[11].text[2].name,  (Buffs_inform['ma_haste'] + manual_mhaste))
-			if (Buffs_inform['ma_haste'] + manual_mhaste) > 448 then
-				windower.text.set_color(sections.block[11].text[2].name, 255, 255, 0, 0)
-			else
-				windower.text.set_color(sections.block[11].text[2].name, 255, 255, 255, 255)
-			end
-			
-			windower.text.set_text(sections.block[12].text[2].name,  (Buffs_inform['ja_haste'] + manual_jahaste))
-			if (Buffs_inform['ja_haste'] + manual_jahaste) > 256 then
-				windower.text.set_color(sections.block[12].text[2].name, 255, 255, 0, 0)
-			else
-				windower.text.set_color(sections.block[12].text[2].name, 255, 255, 255, 255)
-			end
-			
-			Total_haste = get_total_haste()
-			
-			windower.text.set_text(sections.block[13].text[2].name,  Total_haste)
-			if Total_haste > 820 then
-				windower.text.set_color(sections.block[13].text[2].name, 255, 255, 0, 0)
-			else
-				windower.text.set_color(sections.block[13].text[2].name, 255, 255, 255, 255)
-			end
-		else
-			if sections.block[10] then sections.block[10]:delete() end
-			if sections.block[11] then sections.block[11]:delete() end
-			if sections.block[12] then sections.block[12]:delete() end
-			if sections.block[13] then sections.block[13]:delete() end
-		end
-		
-		----------------------------------------------------------- DW stuff ----------------------------------------------
-		DW_needed = dual_wield_needed()
-		if settings.player.show_DW_Stuff == true then
-			
-			if player.equipment.sub.category == 'Weapon' then 
-				if player.equipment.sub.damage then
-					DW = true
-					
-					if not sections.block[14] then sections.block[14] = ImageBlock.New(15,'block','blue', 'DW', 00) end
-					if not sections.block[15] then sections.block[15] = ImageBlock.New(16,'block','blue', 'Needed', 00) end
-					
-					windower.text.set_text(sections.block[14].text[2].name, Gear_info['Dual Wield'])
-					windower.text.set_text(sections.block[15].text[2].name, (DW_needed + manual_dw_needed))
-					if (DW_needed + manual_dw_needed) < 0 then
-						windower.text.set_color(sections.block[15].text[2].name, 255, 255, 0, 0)
-					else
-						windower.text.set_color(sections.block[15].text[2].name, 255, 255, 255, 255)
-					end
-				end
-			else
-				if sections.block[14] then sections.block[14]:delete() end
-				if sections.block[15] then sections.block[15]:delete() end
-			end
-		else
-			if sections.block[14] then sections.block[14]:delete() end
-			if sections.block[15] then sections.block[15]:delete() end
-		end
-		
-		----------------------------------------------------------- DW stuff ----------------------------------------------
-		if settings.player.show_MA_Stuff == true then
-			local total_ma , MA_needed = martial_arts_needed()
-			
-			if player.equipment.main.skill == "Hand-to-Hand" or player.equipment.main.en == '' then
-			
-				if not sections.block[16] then sections.block[16] = ImageBlock.New(17,'block','pink', 'MA', 00) end
-				if not sections.block[17] then sections.block[17] = ImageBlock.New(18,'block','pink', 'Needed', 00) end
-				
-				windower.text.set_text(sections.block[16].text[2].name, total_ma)
-				windower.text.set_text(sections.block[17].text[2].name, MA_needed)
-				if (MA_needed) < 0 then
-					windower.text.set_color(sections.block[17].text[2].name, 255, 255, 0, 0)
-				else
-					windower.text.set_color(sections.block[17].text[2].name, 255, 255, 255, 255)
-				end
-			else
-				if sections.block[16] then sections.block[16]:delete() end
-				if sections.block[17] then sections.block[17]:delete() end
-			end
-		else
-			if sections.block[16] then sections.block[16]:delete() end
-			if sections.block[17] then sections.block[17]:delete() end
-		end
-			
-		----------------------------------------------------------- Store TP stuff ----------------------------------------------
-		if settings.player.show_STP == true then
-			if not sections.block[18] then sections.block[18] = ImageBlock.New(19,'block','orange', 'STP', 00) end
-			windower.text.set_text(sections.block[18].text[2].name, Gear_info['Store TP'] + Buffs_inform['Store TP'])
-		else
-			if sections.block[18] then sections.block[18]:delete() end
 		end
 		
 		-------------------------------------------------------------- DT stuff ---------------------------------------------------------------
 		
 		if settings.player.show_dt_Stuff == true then
-			if not sections.block[19]  then sections.block[19] = ImageBlock.New(20,'block','purple', 'DT', 00) end
-			if not sections.block[20]  then sections.block[20] = ImageBlock.New(21,'block','purple', 'PDT', 00) end
-			if not sections.block[21]  then sections.block[21] = ImageBlock.New(22,'block','purple', 'MDT', 00) end
-			if not sections.block[22]  then sections.block[22] = ImageBlock.New(23,'block','purple', 'BDT', 00) end
+			if not sections.block[5]  then sections.block[5] = ImageBlock.New(6,'block','purple', 'DT', 00) end
+			if not sections.block[6]  then sections.block[6] = ImageBlock.New(7,'block','purple', 'PDT', 00) end
+			if not sections.block[7]  then sections.block[7] = ImageBlock.New(8,'block','purple', 'MDT', 00) end
+			if not sections.block[8]  then sections.block[8] = ImageBlock.New(9,'block','purple', 'BDT', 00) end
 			
 			local dt = (Gear_info['DT']*(-1))
 			if dt == -0 then dt = 0 end
-			windower.text.set_text(sections.block[19].text[2].name, dt)
+			windower.text.set_text(sections.block[5].text[2].name, dt)
 			if Gear_info['DT'] < (-51) then
-				windower.text.set_color(sections.block[19].text[2].name, 255, 255, 0, 0)
+				windower.text.set_color(sections.block[5].text[2].name, 255, 255, 0, 0)
 			else
-				windower.text.set_color(sections.block[19].text[2].name, 255, 255, 255, 255)
+				windower.text.set_color(sections.block[5].text[2].name, 255, 255, 255, 255)
 			end
 			
 			if Gear_info['PDT2'] < 0 then
@@ -798,20 +701,20 @@ function update()
 				end
 				combined_pdt = (combined_pdt + Gear_info['PDT2'])*(-1)
 				if combined_pdt == -0 then combined_pdt = 0 end
-				windower.text.set_text(sections.block[20].text[2].name, combined_pdt)
+				windower.text.set_text(sections.block[6].text[2].name, combined_pdt)
 				if (combined_pdt + Gear_info['PDT2']) < -87.6 then
-					windower.text.set_color(sections.block[20].text[2].name, 255, 255, 0, 0)
+					windower.text.set_color(sections.block[6].text[2].name, 255, 255, 0, 0)
 			else
-				windower.text.set_color(sections.block[20].text[2].name, 255, 255, 255, 255)
+				windower.text.set_color(sections.block[6].text[2].name, 255, 255, 255, 255)
 			end
 			elseif Gear_info['PDT2'] == 0 then
 				local pdt = (Gear_info['PDT'] + Gear_info['DT'])*(-1)
 				if pdt == -0 then pdt = 0 end
-				windower.text.set_text(sections.block[20].text[2].name, pdt)
+				windower.text.set_text(sections.block[6].text[2].name, pdt)
 				if (Gear_info['PDT']+ Gear_info['DT']) < -51 then
-					windower.text.set_color(sections.block[20].text[2].name, 255, 255, 0, 0)
+					windower.text.set_color(sections.block[6].text[2].name, 255, 255, 0, 0)
 				else
-					windower.text.set_color(sections.block[20].text[2].name, 255, 255, 255, 255)
+					windower.text.set_color(sections.block[6].text[2].name, 255, 255, 255, 255)
 				end
 			end
 			
@@ -822,49 +725,240 @@ function update()
 				end
 				combined_mdt = (combined_mdt + Gear_info['MDT2'])*(-1)
 				if combined_mdt == -0 then combined_mdt = 0 end
-				windower.text.set_text(sections.block[21].text[2].name, combined_mdt)
+				windower.text.set_text(sections.block[7].text[2].name, combined_mdt)
 				if (combined_mdt + Gear_info['MDT2']) < -87.6 then
-					windower.text.set_color(sections.block[21].text[2].name, 255, 255, 0, 0)
+					windower.text.set_color(sections.block[7].text[2].name, 255, 255, 0, 0)
 			else
-				windower.text.set_color(sections.block[21].text[2].name, 255, 255, 255, 255)
+				windower.text.set_color(sections.block[7].text[2].name, 255, 255, 255, 255)
 			end
 			elseif Gear_info['MDT2'] == 0 then
 				local mdt = (Gear_info['MDT'] + Gear_info['DT'])*(-1)
 				if mdt == -0 then mdt = 0 end
-				windower.text.set_text(sections.block[21].text[2].name, mdt)
+				windower.text.set_text(sections.block[7].text[2].name, mdt)
 				if (Gear_info['MDT']+ Gear_info['DT']) < -51 then
-					windower.text.set_color(sections.block[21].text[2].name, 255, 255, 0, 0)
+					windower.text.set_color(sections.block[7].text[2].name, 255, 255, 0, 0)
 				else
-					windower.text.set_color(sections.block[21].text[2].name, 255, 255, 255, 255)
+					windower.text.set_color(sections.block[7].text[2].name, 255, 255, 255, 255)
 				end
 			end
 			
 			local bdt = (Gear_info['BDT'] + Gear_info['DT'])*(-1)
 			if bdt == -0 then bdt = 0 end
-			windower.text.set_text(sections.block[22].text[2].name, bdt)
+			windower.text.set_text(sections.block[8].text[2].name, bdt)
 			if (Gear_info['BDT'] + Gear_info['DT']) < -51 then
-				windower.text.set_color(sections.block[22].text[2].name, 255, 255, 0, 0)
+				windower.text.set_color(sections.block[8].text[2].name, 255, 255, 0, 0)
 			else
-				windower.text.set_color(sections.block[22].text[2].name, 255, 255, 255, 255)
+				windower.text.set_color(sections.block[8].text[2].name, 255, 255, 255, 255)
 			end
 			
 		else
 		
-			if sections.block[19] then sections.block[19]:delete() end
-			if sections.block[20] then sections.block[20]:delete() end
-			if sections.block[21] then sections.block[21]:delete() end
-			if sections.block[22] then sections.block[22]:delete() end
+			if sections.block[5] then sections.block[5]:delete() end
+			if sections.block[6] then sections.block[6]:delete() end
+			if sections.block[7] then sections.block[7]:delete() end
+			if sections.block[8] then sections.block[8]:delete() end
 			
 		end
+		
+		----------------------------------------------- TP calc Stuff ------------------------------------------
+		
+		if settings.player.show_tp_Stuff == true then 
+			Gear_TP = get_tp_per_hit()
+			if not sections.block[9] then sections.block[9] = ImageBlock.New(10,'block','yellow', 'TP/h', 00) end
+			if not sections.block[10]  then sections.block[10] = ImageBlock.New(11,'block','yellow', 'to WS', 00) end
+			windower.text.set_text(sections.block[9].text[2].name, Gear_TP.tp_per_hit_melee)
+			windower.text.set_text(sections.block[10].text[2].name, (math.ceil(10000/Gear_TP.tp_per_hit_melee)/10))
+			
+			if Gear_TP.tp_per_hit_range > 0 then
+				if not sections.block[16] then sections.block[16] = ImageBlock.New(17,'block','green', 'R.TP/h', 00) end
+				if not sections.block[17] then sections.block[17] = ImageBlock.New(18,'block','green', 'R.to WS', 00) end
+				windower.text.set_text(sections.block[16].text[2].name,  Gear_TP.tp_per_hit_range )
+				windower.text.set_text(sections.block[17].text[2].name,  (math.ceil(10000/Gear_TP.tp_per_hit_range)/10) )
+			else
+				if sections.block[16] then sections.block[16]:delete() end
+				if sections.block[17] then sections.block[17]:delete() end
+			end
+			
+			if WSTP > 0 then
+				if not sections.block[11] then sections.block[11] = ImageBlock.New(12,'block','yellow', 'aft WS', 00) end
+				windower.text.set_text(sections.block[10].text[1].name, 'for WS' )
+				windower.text.set_text(sections.block[10].text[2].name, WSTP)
+				windower.text.set_text(sections.block[9].text[2].name, (math.ceil((10000 - (WSTP *10))/Gear_TP.tp_per_hit_melee)/10) )
+				if Gear_TP.tp_per_hit_range > 0 then
+					if not sections.block[18] then sections.block[18] = ImageBlock.New(19,'block','green', 'R.Aft WS', 00) end
+					windower.text.set_text(sections.block[17].text[1].name, 'R.for WS' )
+					windower.text.set_text(sections.block[17].text[2].name, WSTP)
+					windower.text.set_text(sections.block[16].text[2].name, (math.ceil((10000 - (WSTP *10))/Gear_TP.tp_per_hit_range)/10) )
+				end
+			else
+				windower.text.set_text(sections.block[10].text[1].name, 'to WS' )
+				if sections.block[11] then sections.block[11]:delete() end
+				if sections.block[18] then sections.block[18]:delete() end
+			end
+		else
+			if sections.block[9] then sections.block[9]:delete() end
+			if sections.block[10] then sections.block[10]:delete() end
+			if sections.block[11] then sections.block[11]:delete() end
+			if sections.block[16] then sections.block[16]:delete() end
+			if sections.block[17] then sections.block[17]:delete() end
+			if sections.block[18] then sections.block[18]:delete() end
+		end
+		
+		----------------------------------------------------- ACC Stuff ------------------------------------------
+		
+		if settings.player.show_acc_Stuff == true then
+			local Total_acc = get_player_acc(Gear_info)
+			if Total_acc.sub > 0 then
+				if not sections.block[12] then
+					sections.block[12] = ImageBlock.New(13,'block','yellow', 'Acc.1', 00)
+				end
+				if not sections.block[13] then
+					sections.block[13] = ImageBlock.New(14,'block','yellow', 'Acc.2', 00)
+				end
+				windower.text.set_text(sections.block[12].text[2].name, Total_acc.main)
+				windower.text.set_text(sections.block[13].text[2].name, Total_acc.sub)
+			else
+				if not sections.block[12] then
+					sections.block[12] = ImageBlock.New(13,'block','yellow', 'Acc.', 00)
+				end
+				windower.text.set_text(sections.block[12].text[2].name, Total_acc.main)
+			end
+			if Total_acc.range > 0 then
+				if not sections.block[19] then
+					sections.block[19] = ImageBlock.New(20,'block','green', 'R.Acc.', 00)
+				end
+				windower.text.set_text(sections.block[19].text[2].name, Total_acc.range)
+			else
+				if sections.block[19] then sections.block[19]:delete() end
+			end
+		else
+			if sections.block[12] then sections.block[12]:delete() end
+			if sections.block[13] then sections.block[13]:delete() end
+			if sections.block[20] then sections.block[20]:delete() end
+		end
+		
+		----------------------------------------------------- ATT Stuff ------------------------------------------
+		
+		if settings.player.show_att_Stuff == true then
+			local Total_att = get_player_att(Gear_info)
+			if Total_att.sub > 0 then
+				if not sections.block[14] then
+					sections.block[14] = ImageBlock.New(15,'block','yellow', 'Att.1', 00)
+				end
+				if not sections.block[15] then
+					sections.block[15] = ImageBlock.New(16,'block','yellow', 'Att.2', 00)
+				end
+				windower.text.set_text(sections.block[14].text[2].name, Total_att.main)
+				windower.text.set_text(sections.block[15].text[2].name, Total_att.sub)
+			else
+				if not sections.block[14] then
+					sections.block[14] = ImageBlock.New(15,'block','yellow', 'Att.', 00)
+				end
+				windower.text.set_text(sections.block[14].text[2].name, Total_att.main)
+			end
+			if Total_att.range > 0 then
+				if not sections.block[21] then
+					sections.block[21] = ImageBlock.New(22,'block','green', 'R.Att.', 00)
+				end
+				windower.text.set_text(sections.block[21].text[2].name, Total_att.range)
+			else
+				if sections.block[21] then sections.block[21]:delete() end
+			end
+		else
+			if sections.block[14] then sections.block[14]:delete() end
+			if sections.block[15] then sections.block[15]:delete() end
+			if sections.block[21] then sections.block[21]:delete() end
+		end
+		
+		------------------------------------------- Evasion ------------------------------------------------------
+		
+		local Total_eva = get_player_evasion(Gear_info)
+		if settings.player.show_Evasion == true then
+			if not sections.block[22] then sections.block[22] = ImageBlock.New(23,'block','yellow', 'Eva.', '') end
+			windower.text.set_text(sections.block[22].text[2].name, tostring(Total_eva))
+		else
+			if sections.block[22] then sections.block[22]:delete() end
+		end
+		
+		------------------------------------------- Defence ------------------------------------------------------
+		
+		local Total_def = get_player_defence(Gear_info)
+		if settings.player.show_Defence == true then
+			if not sections.block[23] then sections.block[23] = ImageBlock.New(24,'block','yellow', 'Def.', '') end
+			windower.text.set_text(sections.block[23].text[2].name, tostring(Total_def))
+		else
+			if sections.block[23] then sections.block[23]:delete() end
+		end
+		
+		----------------------------------------------------------- DW stuff ----------------------------------------------
+		DW_needed = dual_wield_needed()
+		if settings.player.show_DW_Stuff == true then
+			
+			if player.equipment.sub.category == 'Weapon' then 
+				if player.equipment.sub.damage then
+					DW = true
+					
+					if not sections.block[24] then sections.block[24] = ImageBlock.New(25,'block','blue', 'DW', 00) end
+					if not sections.block[25] then sections.block[25] = ImageBlock.New(26,'block','blue', 'Needed', 00) end
+					
+					windower.text.set_text(sections.block[24].text[2].name, Gear_info['Dual Wield'])
+					windower.text.set_text(sections.block[25].text[2].name, (DW_needed + manual_dw_needed))
+					if (DW_needed + manual_dw_needed) < 0 then
+						windower.text.set_color(sections.block[25].text[2].name, 255, 255, 0, 0)
+					else
+						windower.text.set_color(sections.block[25].text[2].name, 255, 255, 255, 255)
+					end
+				end
+			else
+				if sections.block[24] then sections.block[24]:delete() end
+				if sections.block[25] then sections.block[25]:delete() end
+			end
+		else
+			if sections.block[24] then sections.block[24]:delete() end
+			if sections.block[25] then sections.block[25]:delete() end
+		end
+		
+		----------------------------------------------------------- MA stuff ----------------------------------------------
+		if settings.player.show_MA_Stuff == true then
+			local total_ma , MA_needed = martial_arts_needed()
+			
+			if player.equipment.main.skill == "Hand-to-Hand" or player.equipment.main.en == '' then
+			
+				if not sections.block[26] then sections.block[26] = ImageBlock.New(27,'block','pink', 'MA', 00) end
+				if not sections.block[27] then sections.block[27] = ImageBlock.New(28,'block','pink', 'Needed', 00) end
+				
+				windower.text.set_text(sections.block[26].text[2].name, total_ma)
+				windower.text.set_text(sections.block[27].text[2].name, MA_needed)
+				if (MA_needed) < 0 then
+					windower.text.set_color(sections.block[27].text[2].name, 255, 255, 0, 0)
+				else
+					windower.text.set_color(sections.block[27].text[2].name, 255, 255, 255, 255)
+				end
+			else
+				if sections.block[26] then sections.block[26]:delete() end
+				if sections.block[27] then sections.block[27]:delete() end
+			end
+		else
+			if sections.block[26] then sections.block[26]:delete() end
+			if sections.block[27] then sections.block[27]:delete() end
+		end
+			
+		----------------------------------------------------------- Store TP stuff ----------------------------------------------
+		if settings.player.show_STP == true then
+			if not sections.block[28] then sections.block[28] = ImageBlock.New(29,'block','orange', 'STP', 00) end
+			windower.text.set_text(sections.block[28].text[2].name, Gear_info['Store TP'] + Buffs_inform['Store TP'])
+		else
+			if sections.block[28] then sections.block[28]:delete() end
+		end		
 
 		-------------------------------------------------------------- update GS ---------------------------------------------------------------
-		if not sections.block[23] then sections.block[23] = ImageBlock.New(24,'block','grey', 'UGS', '') end
+		if not sections.block[29] then sections.block[29] = ImageBlock.New(30,'block','grey', 'UGS', '') end
 		if settings.player.update_gs == true then
-			windower.text.set_text(sections.block[23].text[2].name, tostring(settings.player.update_gs))
-			windower.text.set_color(sections.block[23].text[2].name, 255, 255, 255, 255)
+			windower.text.set_text(sections.block[29].text[2].name, tostring(settings.player.update_gs))
+			windower.text.set_color(sections.block[29].text[2].name, 255, 255, 255, 255)
 		else
-			windower.text.set_text(sections.block[23].text[2].name, tostring(settings.player.update_gs))
-			windower.text.set_color(sections.block[23].text[2].name, 255, 255, 0, 0)
+			windower.text.set_text(sections.block[29].text[2].name, tostring(settings.player.update_gs))
+			windower.text.set_color(sections.block[29].text[2].name, 255, 255, 0, 0)
 		end
 			
 		-- if old_inform ~= inform then

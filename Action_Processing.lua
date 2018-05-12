@@ -38,7 +38,7 @@ function on_action(action)
 											"Mage's Ballad", "Mage's Ballad II", "Mage's Ballad III",
 											'Valor Minuet', 'Valor Minuet I', 'Valor Minuet II', 'Valor Minuet IV', 'Valor Minuet V',
 											'Sword Madrigal', 'Blade Madrigal',
-											"Army's Paeon", "Army's Paeon II", "Army's Paeon III", "Army's Paeon IV", "Army's Paeon V",
+											"Army's Paeon", "Army's Paeon II", "Army's Paeon III", "Army's Paeon IV", "Army's Paeon V", "Army's Paeon VI",
 											"Knight's Minne", "Knight's Minne II", "Knight's Minne III", "Knight's Minne IV", "Knight's Minne V",
 											"Hunter's Prelude", "Archer's Prelude",
 											'Sheepfoe Mambo', 'Dragonfoe Mambo',

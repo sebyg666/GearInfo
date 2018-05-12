@@ -181,6 +181,9 @@ function desypher_description(discription_string, item_t)
 	elseif discription_string:contains('Avatar:') then
 		str_table = discription_string:psplit("Avatar:")
 		discription_string = str_table[1]
+	elseif discription_string:contains('Luopan:') then
+		str_table = discription_string:psplit("Luopan:")
+		discription_string = str_table[1]
 	elseif discription_string:contains('Latent effect:') then
 		str_table = discription_string:psplit("Latent effect:")
 		discription_string = str_table[1]
@@ -195,6 +198,7 @@ function desypher_description(discription_string, item_t)
 								'Magic_accuracy', 'Magic Atk. Bonus',
 								'Haste','\"Slow\"','\"Store TP\"','\"Dual Wield\"','\"Fast Cast\"','\"Martial Arts\"',
 								'DMG','PDT','MDT','BDT','D_T','MDT_2','PDT_2',
+								'Evasion',
 								'Critical hit damage' ,'Critical hit rate', 
 								"Hand%-to%-Hand skill", "Dagger skill", "Sword skill", "Great sword skill", "Axe skill", "Great axe skill",  "Scythe skill", "Polearm skill", 
 								"Katana skill", "Great katana skill", "Club skill",  "Staff skill", "Archery skill", "Marksmanship skill" , "Throwing skill","Guarding skill","Evasion skill","Shield skill","Parrying skill",
@@ -252,14 +256,18 @@ end
 
 function get_equip_stats(equipment_table)
 
-	local stat_table = { ['Haste'] = 0, ['Slow'] = 0, ['Dual Wield'] = 0, ['Store TP'] = 0, ['Accuracy'] = 0, ['Ranged Accuracy'] = 0,
+	local stat_table = { ['Haste'] = 0, ['Slow'] = 0, ['Dual Wield'] = 0, ['Store TP'] = 0, ['Accuracy'] = 0, ['Attack'] = 0, ['Ranged Accuracy'] = 0, ['Ranged Attack'] = 0,
+									['Evasion'] = 0,
 
 									['DT'] = 0, ['PDT'] = 0, ['PDT2'] = 0, ['MDT'] = 0, ['MDT2'] = 0, ['BDT'] = 0,
+									['DEF'] = 0,
 							 
 									["MND"]=0, ["AGI"]=0, ["DEX"]=0, ["VIT"]=0, ["STR"]=0, ["INT"]=0,  ["CHR"]=0, 
 							 
 									["Hand-to-Hand skill"]=0, ["Dagger skill"]=0, ["Sword skill"]=0, ["Great Sword skill"]=0, ["Axe skill"]=0, ["Great Axe skill"]=0, ["Scythe skill"]=0, ["Polearm skill"]=0, 
 									["Katana skill"]=0, ["Great Katana skill"]=0,["Club skill"]=0,["Staff skill"]=0,["Archery skill"]=0,["Marksmanship skill"]=0,["Throwing skill"]=0,['Combat skills']=0,
+									
+									['Evasion skill'] = 0,
 									
 									['main'] = {['skill'] = '', value = 0}, ['sub'] = {['skill'] = '', value = 0}, ['range'] = {['skill'] = '', value = 0}, ['ammo'] = {['skill'] = '', value = 0},
 								}
@@ -416,6 +424,75 @@ function get_player_acc(stat_table)
 	return Total_acc
 end
 
+function get_player_att(stat_table)
+	
+	local stat_table = stat_table
+	
+	local two_handers =L{ ["Great Sword"]=0, ["Great Axe"]=0, ["Scythe"]=0, ["Polearm"]=0, ["Great Katana"]=0,["Staff"]=0}
+								
+	--stat_table = get_blue_mage_stats_from_equipped_spells(stat_table)
+	
+	local Total_att = {main = 0, sub = 0, range = 0, ammo = 0, str = 0}
+	
+	-- Attack (2H) 
+	if two_handers:contains(stat_table['main']['skill']) then
+		Total_att.main = 8 + stat_table['main'].value + math.floor(3 * stat_table['STR'] / 4) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+	-- Attack (H2H)
+	elseif stat_table['main']['skill'] == 'Hand-to-Hand' then
+		Total_att.main = 8 + stat_table['main'].value + math.floor(5 * stat_table['STR'] / 8) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+	-- Attack (1H main)
+	else
+		 Total_att.main = 8 + stat_table['main'].value + math.floor(3 * stat_table['STR'] / 4) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+	end
+	
+	-- Attack (1H sub)
+	if player.equipment.sub.id ~= 0 and player.equipment.sub.category == 'Weapon' and player.equipment.sub.damage then
+		Total_att.sub = 8 + stat_table['sub'].value + math.floor(stat_table['STR'] / 2) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+	end
+	-- Ranged Attack
+	if player.equipment.range.id ~= 0 and player.equipment.range.category == 'Weapon' and player.equipment.range['damage'] then
+		Total_att.range = 8 + stat_table['range'].value + math.floor(3 * stat_table['STR'] / 4) + stat_table['Ranged Attack'] + get_player_att_from_job() + Buffs_inform['Ranged Attack']
+	end
+	
+	return Total_att
+end
+
+function get_player_evasion(stat_table)
+	
+	local stat_table = stat_table
+	
+	if player_base_skills['evasion'] then 
+		--notice('in')
+		stat_table['Evasion skill'] = stat_table['Evasion skill'] + player_base_skills['evasion']
+		--notice(stat_table['Evasion skill']..' '..player_base_skills['evasion'])
+	end
+	
+	--stat_table = get_blue_mage_stats_from_equipped_spells(stat_table)
+	
+	--notice(stat_table['AGI'] .. ' | ' .. stat_table['Evasion skill'] .. ' | ' .. eva_from_skill(stat_table['Evasion skill'] ) .. ' | ' .. get_player_eva_from_job().. ' | ' .. stat_table['Evasion'])
+	local evasion = math.floor( stat_table['AGI']/2 ) + ( eva_from_skill(stat_table['Evasion skill'] ) ) + ( get_player_eva_from_job() + stat_table['Evasion'])
+	return evasion
+end
+
+function get_player_defence(stat_table)
+	
+	local stat_table = stat_table
+	local defence = 0
+	--notice(stat_table['AGI'] .. ' | ' .. stat_table['Evasion skill'] .. ' | ' .. eva_from_skill(stat_table['Evasion skill'] ) .. ' | ' .. get_player_eva_from_job().. ' | ' .. stat_table['Evasion'])
+	if player.main_job_level < 51 then
+		defence = math.floor(3*stat_table['VIT']/2) + player.main_job_level + 8
+	elseif player.main_job_level > 50 and player.main_job_level < 61 then
+		defence = math.floor(3*stat_table['VIT']/2) + (2 * player.main_job_level ) - 48
+	elseif player.main_job_level > 60 and player.main_job_level < 90 then
+		defence = math.floor(3*stat_table['VIT']/2) + ( player.main_job_level ) + 18
+	else
+		defence = math.floor(3*stat_table['VIT']/2) + ( player.main_job_level ) + 18 + math.floor( (player.main_job_level - 89) / 2 )
+	end
+	defence = defence + stat_table['DEF'] + get_player_def_from_job()
+
+	return defence
+end
+
 function get_blue_mage_stats_from_equipped_spells(stat_table)
 
 	local spells_set = T(windower.ffxi.get_mjob_data().spells):filter(function(id) return id ~= 512 end):map(function(id) return id end)
@@ -528,6 +605,15 @@ function racc_from_skill(skill)
 
 end
 
+function eva_from_skill(skill)
+	
+	if skill < 200 then return skill end
+	if skill < 400 and skill > 199 then return (math.floor((skill -200) * 0.9) + 200) end
+	if skill < 600 and skill > 399 then return (math.floor((skill -400) * 0.8) + 380) end
+	if skill > 599 then return (math.floor((skill -600) * 0.9) + 540) end
+
+end
+
 function get_player_acc_from_job()
 	
 	local sub_job_acc = 0
@@ -583,7 +669,7 @@ function get_player_acc_from_job()
 			end
 		end
 		
-		if spell_value > 0 then
+		if math.floor(spell_value / 8) > 0 then
 			spell_value  = math.floor(spell_value / 8) + jp_boost
 		else
 			spell_value = 0
@@ -629,16 +715,315 @@ function get_player_acc_from_job()
 		elseif player.main_job_level > 89  then main_job_acc = 35
 		end
 	end
-
-	main_job_acc = main_job_acc + jp_acc
 	
 	if sub_job_acc > main_job_acc then
-		return sub_job_acc
+		return sub_job_acc + jp_acc
 	else
-		return main_job_acc
+		return main_job_acc + jp_acc
 	end
 end
 
+function get_player_eva_from_job()
+	
+	local sub_job_acc = 0
+	local main_job_acc = 0
+	local player_has_sj = false
+	
+	if player.sub_job then
+		if player.sub_job:upper() == 'THF' then
+			if player.sub_job_level < 10  then sub_job_acc = 0
+			elseif player.sub_job_level < 30 and  player.sub_job_level > 9 then sub_job_acc = 10
+			elseif player.sub_job_level > 29 then sub_job_acc = 22
+			end
+		elseif player.sub_job:upper() == 'DNC' then
+			if player.sub_job_level < 15  then sub_job_acc = 0
+			elseif player.sub_job_level < 45 and  player.sub_job_level > 14 then sub_job_acc = 10
+			elseif player.sub_job_level > 44 then sub_job_acc = 22
+			end
+		elseif player.sub_job:upper() == 'PUP' then
+			if player.sub_job_level < 20  then sub_job_acc = 0
+			elseif player.sub_job_level < 40 and  player.sub_job_level > 19 then sub_job_acc = 10
+			elseif player.sub_job_level >39  then sub_job_acc = 22
+			end
+		end
+	end
+
+	local jp = player.job_points[player.main_job:lower()]['jp_spent']
+		
+	local jp_eva = 0
+	for k, v in pairs(Gifts[player.main_job]['Gifts']) do
+		if k <= jp then
+			for i, j in pairs(v) do
+				if i == 'Physical Evasion Bonus' then
+					jp_eva = jp_eva + j
+				end
+			end
+		end
+	end
+	
+	if player.main_job == 'BLU' then
+		-- here we look up job points spent on blue for the DW bonus
+		local jp_boost = 0
+		if jp < 100 then
+			jp_boost = 0
+		elseif jp >= 100 and jp < 1200 then
+			jp_boost = 1
+		elseif jp >= 1200 then
+			jp_boost = 2
+		end
+		
+		local spells_set = T(windower.ffxi.get_mjob_data().spells):filter(function(id) return id ~= 512 end):map(function(id) return id end)
+		local spell_value = 0
+		for key, spell_id in pairs(spells_set) do
+			if Blu_spells[spell_id].trait == 'Evasion' then
+				spell_value = spell_value + Blu_spells[spell_id]['points']
+			end
+		end
+		
+		if math.floor(spell_value / 8) > 0 then
+			spell_value  = math.floor(spell_value / 8) + jp_boost
+		else
+			spell_value = 0
+		end
+
+		if spell_value == 0 then main_job_acc = 0
+		elseif spell_value == 1 then main_job_acc = 10
+		elseif spell_value == 2 then main_job_acc = 22
+		elseif spell_value == 3 then main_job_acc = 35
+		elseif spell_value == 4 then main_job_acc = 48
+		elseif spell_value == 5 then main_job_acc = 60
+		end
+		
+	elseif player.main_job == 'THF' then
+		if player.main_job_level < 10  then main_job_acc = 0
+		elseif player.main_job_level < 30 and  player.main_job_level > 9 then main_job_acc = 10
+		elseif player.main_job_level < 50 and  player.main_job_level > 29 then main_job_acc = 22
+		elseif player.main_job_level < 70 and  player.main_job_level > 49 then main_job_acc = 35
+		elseif player.main_job_level < 76 and  player.main_job_level > 69 then main_job_acc = 48
+		elseif player.main_job_level < 88 and  player.main_job_level > 75 then main_job_acc = 60
+		elseif player.main_job_level > 87  then main_job_acc = 72
+		end
+	
+	elseif player.main_job == 'DNC' then
+		if player.main_job_level < 15  then main_job_acc = 0
+		elseif player.main_job_level < 45 and  player.main_job_level > 14 then main_job_acc = 10
+		elseif player.main_job_level < 75 and  player.main_job_level > 44 then main_job_acc = 22
+		elseif player.main_job_level < 86 and  player.main_job_level > 74 then main_job_acc = 35
+		elseif player.main_job_level > 85  then main_job_acc = 48
+		end
+		
+	elseif player.main_job == 'PUP' then
+		if player.main_job_level < 20  then main_job_acc = 0
+		elseif player.main_job_level < 40 and  player.main_job_level > 19 then main_job_acc = 10
+		elseif player.main_job_level < 60 and  player.main_job_level > 39 then main_job_acc = 22
+		elseif player.main_job_level > 76  then main_job_acc = 35
+		end
+	end
+	
+	if sub_job_acc > main_job_acc then
+		return sub_job_acc + jp_eva
+	else
+		return main_job_acc + jp_eva
+	end
+end
+
+function get_player_att_from_job()
+	
+	local sub_job_acc = 0
+	local main_job_acc = 0
+	local player_has_sj = false
+	
+	if player.sub_job then
+		if player.sub_job:upper() == 'DRK' then
+			if player.sub_job_level < 10  then sub_job_acc = 0
+			elseif player.sub_job_level < 30 and  player.sub_job_level > 9 then sub_job_acc = 10
+			elseif player.sub_job_level > 29 then sub_job_acc = 22
+			end
+		elseif player.sub_job:upper() == 'DRG' then
+			
+			if player.sub_job_level > 9 then sub_job_acc = 10
+			end
+		elseif player.sub_job:upper() == 'WAR' then
+			if player.sub_job_level < 30  then sub_job_acc = 0
+			elseif player.sub_job_level < 65 and  player.sub_job_level > 29 then sub_job_acc = 10
+			elseif player.sub_job_level > 29  then sub_job_acc = 22
+			end
+		end
+	end
+
+	local jp = player.job_points[player.main_job:lower()]['jp_spent']
+		
+	local jp_eva = 0
+	for k, v in pairs(Gifts[player.main_job]['Gifts']) do
+		if k <= jp then
+			for i, j in pairs(v) do
+				if i == 'Physical Attack Bonus' then
+					jp_eva = jp_eva + j
+				end
+			end
+		end
+	end
+	
+	if player.main_job == 'BLU' then
+		-- here we look up job points spent on blue for the DW bonus
+		local jp_boost = 0
+		if jp < 100 then
+			jp_boost = 0
+		elseif jp >= 100 and jp < 1200 then
+			jp_boost = 1
+		elseif jp >= 1200 then
+			jp_boost = 2
+		end
+		
+		local spells_set = T(windower.ffxi.get_mjob_data().spells):filter(function(id) return id ~= 512 end):map(function(id) return id end)
+		local spell_value = 0
+		for key, spell_id in pairs(spells_set) do
+			if Blu_spells[spell_id].trait == 'Attack' then
+				spell_value = spell_value + Blu_spells[spell_id]['points']
+			end
+		end
+		
+		if math.floor(spell_value / 8) > 0 then
+			spell_value  = math.floor(spell_value / 8) + jp_boost
+		else
+			spell_value = 0
+		end
+
+		if spell_value == 0 then main_job_acc = 0
+		elseif spell_value == 1 then main_job_acc = 10
+		elseif spell_value == 2 then main_job_acc = 22
+		elseif spell_value == 3 then main_job_acc = 35
+		elseif spell_value == 4 then main_job_acc = 48
+		elseif spell_value == 5 then main_job_acc = 60
+		elseif spell_value == 6 then main_job_acc = 72
+		end
+		
+	elseif player.main_job == 'DRK' then
+		if player.main_job_level < 10  then main_job_acc = 0
+		elseif player.main_job_level < 30 and  player.main_job_level > 9 then main_job_acc = 10
+		elseif player.main_job_level < 50 and  player.main_job_level > 29 then main_job_acc = 22
+		elseif player.main_job_level < 70 and  player.main_job_level > 49 then main_job_acc = 35
+		elseif player.main_job_level < 76 and  player.main_job_level > 69 then main_job_acc = 48
+		elseif player.main_job_level < 83 and  player.main_job_level > 75 then main_job_acc = 60
+		elseif player.main_job_level < 91 and  player.main_job_level > 82 then main_job_acc = 72
+		elseif player.main_job_level < 99 and  player.main_job_level > 90 then main_job_acc = 84
+		elseif player.main_job_level > 98  then main_job_acc = 96
+		end
+	
+	elseif player.main_job == 'DRG' then
+		if player.main_job_level < 10  then main_job_acc = 0
+		elseif player.main_job_level < 91 and  player.main_job_level > 9 then main_job_acc = 10
+		elseif player.main_job_level > 90  then main_job_acc = 22
+		end
+		
+	elseif player.main_job == 'WAR' then
+		if player.main_job_level < 30  then main_job_acc = 0
+		elseif player.main_job_level < 65 and  player.main_job_level > 29 then main_job_acc = 10
+		elseif player.main_job_level < 90 and  player.main_job_level > 64 then main_job_acc = 22
+		elseif player.main_job_level > 89  then main_job_acc = 35
+		end
+	end
+	
+	if sub_job_acc > main_job_acc then
+		return sub_job_acc + jp_eva
+	else
+		return main_job_acc + jp_eva
+	end
+end
+
+function get_player_def_from_job()
+	
+	local sub_job_acc = 0
+	local main_job_acc = 0
+	local player_has_sj = false
+	
+	if player.sub_job then
+		if player.sub_job:upper() == 'PLD' then
+			if player.sub_job_level < 10  then sub_job_acc = 0
+			elseif player.sub_job_level < 30 and  player.sub_job_level > 9 then sub_job_acc = 10
+			elseif player.sub_job_level > 29 then sub_job_acc = 22
+			end
+		elseif player.sub_job:upper() == 'WAR' then
+			if player.sub_job_level < 10  then sub_job_acc = 0
+			elseif player.sub_job_level < 45 and  player.sub_job_level > 9 then sub_job_acc = 10
+			elseif player.sub_job_level > 44  then sub_job_acc = 22
+			end
+		end
+	end
+
+	local jp = player.job_points[player.main_job:lower()]['jp_spent']
+		
+	local jp_eva = 0
+	for k, v in pairs(Gifts[player.main_job]['Gifts']) do
+		if k <= jp then
+			for i, j in pairs(v) do
+				if i == 'Physical Defense Bonus' then
+					jp_eva = jp_eva + j
+				end
+			end
+		end
+	end
+	
+	if player.main_job == 'BLU' then
+		-- here we look up job points spent on blue for the DW bonus
+		local jp_boost = 0
+		if jp < 100 then
+			jp_boost = 0
+		elseif jp >= 100 and jp < 1200 then
+			jp_boost = 1
+		elseif jp >= 1200 then
+			jp_boost = 2
+		end
+		
+		local spells_set = T(windower.ffxi.get_mjob_data().spells):filter(function(id) return id ~= 512 end):map(function(id) return id end)
+		local spell_value = 0
+		for key, spell_id in pairs(spells_set) do
+			if Blu_spells[spell_id].trait == 'Defense Bonus' then
+				spell_value = spell_value + Blu_spells[spell_id]['points']
+			end
+		end
+		
+		if math.floor(spell_value / 8) > 0 then
+			spell_value  = math.floor(spell_value / 8) + jp_boost
+		else
+			spell_value = 0
+		end
+
+		if spell_value == 0 then main_job_acc = 0
+		elseif spell_value == 1 then main_job_acc = 10
+		elseif spell_value == 2 then main_job_acc = 22
+		elseif spell_value == 3 then main_job_acc = 35
+		elseif spell_value == 4 then main_job_acc = 48
+		elseif spell_value == 5 then main_job_acc = 60
+		elseif spell_value == 6 then main_job_acc = 72
+		end
+		
+	elseif player.main_job == 'PLD' then
+		if player.main_job_level < 10  then main_job_acc = 0
+		elseif player.main_job_level < 30 and  player.main_job_level > 9 then main_job_acc = 10
+		elseif player.main_job_level < 50 and  player.main_job_level > 29 then main_job_acc = 22
+		elseif player.main_job_level < 70 and  player.main_job_level > 49 then main_job_acc = 35
+		elseif player.main_job_level < 76 and  player.main_job_level > 69 then main_job_acc = 48
+		elseif player.main_job_level < 91 and  player.main_job_level > 75 then main_job_acc = 60
+		elseif player.main_job_level > 90  then main_job_acc = 72
+		end
+		
+	elseif player.main_job == 'WAR' then
+		if player.main_job_level < 10  then main_job_acc = 0
+		elseif player.main_job_level < 45 and  player.main_job_level > 9 then main_job_acc = 10
+		elseif player.main_job_level < 86 and  player.main_job_level > 44 then main_job_acc = 22
+		elseif player.main_job_level > 85  then main_job_acc = 35
+		end
+	end
+
+	main_job_acc = main_job_acc
+	
+	if sub_job_acc > main_job_acc then
+		return sub_job_acc + jp_eva
+	else
+		return main_job_acc + jp_eva
+	end
+end
 
 
 	

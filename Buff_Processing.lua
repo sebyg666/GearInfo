@@ -30,6 +30,7 @@ function check_buffs()
 	local song_found2 = false
 	
 	for index, buff in pairs(_ExtraData.player.buff_details) do
+		--print(buff.name, buff['full_name'] or '')
 		local this_buff = _ExtraData.player.buff_details[index]
 		if buff.id == 1 then -- weakness
 			this_buff['ma_haste'] = -1024
@@ -225,8 +226,17 @@ function check_buffs()
 					local bonus = 0
 					local effects = ''
 					local msg = ''
+					local Minne = 0
+					local	Minuet = 0
+					local	Madrigal = 0
+					local Empy_bonus = 0
+					
 					if table.containskey(settings.Bards, buff.Caster) then
-						All_songs = settings.Bards[buff.Caster]
+						All_songs = settings.Bards[buff.Caster]['song_bonus']['all_songs']
+						Minne = settings.Bards[buff.Caster]['merits']['minne']
+						Minuet = settings.Bards[buff.Caster]['merits']['minuet']
+						Madrigal = settings.Bards[buff.Caster]['merits']['madrigal']
+						Empy_bonus = settings.Bards[buff.Caster]['emperean_armor_bonus']
 					else
 						All_songs = manual_bard_duration_bonus
 					end
@@ -239,8 +249,14 @@ function check_buffs()
 						potency = 1
 						msg = msg .. ' SV'
 					end
-					if buff.full_name == "Honor March" then 
-						All_songs = All_songs - 4
+					if buff.full_name == "Honor March" then
+						local int = 0
+						 if settings.Bards[buff.Caster]['gjallarhorn'] then 
+							int =  4 
+						else 
+							int =  0 
+						end 
+						All_songs = (settings.Bards[buff.Caster]['song_bonus']['all_songs'] or manual_bard_duration_bonus or 0 ) + (settings.Bards[buff.Caster]['song_bonus'][buff.name:lower()] or 0 ) - int
 						bonus = {}
 						for i = 1, 5 do
 							if Song_table.effect[i] and Song_table["Bard Bonus"][All_songs][i] then
@@ -252,54 +268,32 @@ function check_buffs()
 						potency = potency + (All_songs / 10)+ 1
 						temp['potency'] = potency
 						temp['All_songs'] = All_songs
-					elseif buff.name == 'Madrigal' then
-						All_songs = All_songs +1
-						temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + 5
-						potency = potency + (All_songs / 10)+ 1
-						temp['potency'] = potency
-						temp['All_songs'] = All_songs
-						bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + 5)
-						effects = Song_table.effect[1]
-					elseif buff.name == 'Minuet' then
-						temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + 5
-						potency = potency + (All_songs / 10)+ 1
-						temp['potency'] = potency
-						temp['All_songs'] = All_songs
-						bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + 5)
-						effects = Song_table.effect[1]
-					elseif buff.name == 'Prelude' then
-						All_songs = All_songs +1
-						temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs]
-						potency = potency + (All_songs / 10)+ 1
-						temp['potency'] = potency
-						temp['All_songs'] = All_songs
-						bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs])
-						effects = Song_table.effect[1]
 					else
-						temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs]
+						All_songs = (settings.Bards[buff.Caster]['song_bonus']['all_songs'] or manual_bard_duration_bonus or 0 ) + (settings.Bards[buff.Caster]['song_bonus'][buff.name:lower()] or 0 )
+						temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + (settings.Bards[buff.Caster]['merits'][buff.name:lower()] or 0)
 						potency = potency + (All_songs / 10)+ 1
 						temp['potency'] = potency
 						temp['All_songs'] = All_songs
-						bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs])
+						bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + (settings.Bards[buff.Caster]['merits'][buff.name:lower()] or 0))
 						effects = Song_table.effect[1]
 					end
 					if Song_table.element == 7 then
 						for i = 1, 7 do
 							if temp[ele_to_stat[Song_table.element].en[i]] then
-								temp[ele_to_stat[Song_table.element].en[i]] = temp[ele_to_stat[Song_table.element].en[i]] + 2
+								temp[ele_to_stat[Song_table.element].en[i]] = temp[ele_to_stat[Song_table.element].en[i]] + (settings.Bards[buff.Caster]['emperean_armor_bonus'] -1 or 0)
 							else
 								temp[ele_to_stat[Song_table.element].en[i]] = 2
 							end
 						end
 					else
 						if temp[ele_to_stat[Song_table.element].en] then
-							temp[ele_to_stat[Song_table.element].en] = temp[ele_to_stat[Song_table.element].en] + 2
+							temp[ele_to_stat[Song_table.element].en] = temp[ele_to_stat[Song_table.element].en] + (settings.Bards[buff.Caster]['emperean_armor_bonus'] -1 or 0)
 						else
-							temp[ele_to_stat[Song_table.element].en] = 2
+							temp[ele_to_stat[Song_table.element].en] = (settings.Bards[buff.Caster]['emperean_armor_bonus'] -1 or 0)
 						end
 					end
 					if not this_buff['reported'] then
-						notice('① ' .. buff.Caster:ucfirst() .. ' → "'..buff.full_name ..'": '.. effects .. ' '..bonus..' + bonus '..ele_to_stat[Song_table.element].en..'+2, Potency = ' .. potency .. ', All Songs +' .. temp['All_songs']  .. msg)
+						notice('① ' .. buff.Caster:ucfirst() .. ' → "'..buff.full_name ..'": '.. effects .. ' '..bonus..', '..ele_to_stat[Song_table.element].en..'+'..temp[ele_to_stat[Song_table.element].en]..', Potency = ' .. potency .. ', Song bonus +' .. temp['All_songs']  .. msg)
 						this_buff['reported'] = true
 					end
 				break
