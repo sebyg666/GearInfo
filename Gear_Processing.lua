@@ -451,7 +451,7 @@ function get_player_att(stat_table)
 	end
 	-- Ranged Attack
 	if player.equipment.range.id ~= 0 and player.equipment.range.category == 'Weapon' and player.equipment.range['damage'] then
-		Total_att.range = 8 + stat_table['range'].value + math.floor(3 * stat_table['STR'] / 4) + stat_table['Ranged Attack'] + get_player_att_from_job() + Buffs_inform['Ranged Attack']
+		Total_att.range = 8 + stat_table['range'].value + math.floor(3 * stat_table['STR'] / 4) + stat_table['Ranged Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
 	end
 	
 	return Total_att

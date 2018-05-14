@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.7.2.3'
+_addon.version = '1.7.2.4'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -363,7 +363,7 @@ windower.register_event('addon command', function(command, ...)
 			-- print(Gear_info['Evasion skill'])
 			--check_equipped()
 			--settings.Cors['ewellina'] = nil
-			-- table.vprint(_ExtraData.player.buff_details)
+			table.vprint(_ExtraData.player.buff_details)
 			--table.vprint(windower.ffxi.get_mob_by_target('t'))
 			--table.vprint(member_table)
 			--table.vprint(player_base_skills)
