@@ -302,7 +302,11 @@ function check_buffs()
 						if temp[ele_to_stat[Song_table.element].en] and settings.Bards[buff.Caster] then
 							temp[ele_to_stat[Song_table.element].en] = temp[ele_to_stat[Song_table.element].en] + settings.Bards[buff.Caster]['emperean_armor_bonus'] -1
 						else
-							temp[ele_to_stat[Song_table.element].en] = 0
+							if settings.Bards[buff.Caster] then
+								temp[ele_to_stat[Song_table.element].en] = settings.Bards[buff.Caster]['emperean_armor_bonus'] -1
+							else
+								temp[ele_to_stat[Song_table.element].en] = 0
+							end
 						end
 					end
 					if not this_buff['reported'] then
