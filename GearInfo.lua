@@ -219,7 +219,7 @@ windower.register_event('addon command', function(command, ...)
 				log('Set Brd song+ bonus to ' .. tostring(manual_bard_duration_bonus) .. '.')
 			elseif args[1]:lower() == 'add' and type(tostring(args[2])) == 'string' and type(tonumber(args[3])) == 'number' then
 				settings.Bards[args[2]:lower()] = default_bard_settings
-				settings.Bards[args[2]:lower()]['Song_Bonus']['All_Songs'] = tonumber(args[3])
+				settings.Bards[args[2]:lower()]['song_bonus']['all_songs'] = tonumber(args[3])
 				settings:save('all')
 				log('Added ' .. tostring(args[2]:lower()) .. ' as a known bard with +'.. tonumber(args[3]) .. ' to all songs.')
 				notice('For advanced users: You may go into the settings file for your character and edit the bards in a more detailed manner.')

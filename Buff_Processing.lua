@@ -267,11 +267,19 @@ function check_buffs()
 					else
 						if settings.Bards[buff.Caster] then
 							All_songs = settings.Bards[buff.Caster]['song_bonus']['all_songs']  + settings.Bards[buff.Caster]['song_bonus'][buff.name:lower()]
-							temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()]
+							if settings.Bards[buff.Caster]['merits'][buff.name:lower()] then
+								temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()]
+							else
+								temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs]
+							end
 							potency = potency + (All_songs / 10)+ 1
 							temp['potency'] = potency
 							temp['All_songs'] = All_songs
-							bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()])
+							if settings.Bards[buff.Caster]['merits'][buff.name:lower()] then
+								bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()])
+							else
+								bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs])
+							end
 							effects = Song_table.effect[1]
 						else
 							temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs]
