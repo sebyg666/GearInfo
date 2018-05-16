@@ -412,7 +412,7 @@ function dual_wield_needed()
 	if total_haste > 819 then total_haste = 819 end
 		
 	if player.equipment.main.delay > 0 and Weapon_Delay.sub then	
-		DW_needed = math.floor((((total_delay * 0.2) / total_delay / ((1024 - (total_haste)) / 1024 ) -1) * -1 * 100) - determine_DW())
+		DW_needed = math.floor(  (1- (0.2 / (  (1024 - total_haste)  / 1024) ) )* 100 - determine_DW() )
 	end
 	
 	return DW_needed
