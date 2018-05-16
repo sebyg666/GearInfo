@@ -323,10 +323,20 @@ function get_equip_stats(equipment_table)
 					stat_table['main']['skill'] = 'Hand-to-Hand'
 				end
 				if key == "Set Bonus" then
-					if  set_bonus[value["set id"]]  then
-						set_bonus[value["set id"]] = set_bonus[value["set id"]] + 1
+					if type(value["set id"]) == 'table' then
+						for i, j  in pairs(value["set id"]) do
+							if set_bonus[j]  then
+								set_bonus[j] = set_bonus[j] + 1
+							else
+								set_bonus[j]  = 1
+							end
+						end
 					else
-						set_bonus[value["set id"]]  = 1
+						if set_bonus[value["set id"]] then
+							set_bonus[value["set id"]] = set_bonus[value["set id"]] + 1
+						else
+							set_bonus[value["set id"]]  = 1
+						end
 					end
 				end
 			end
@@ -440,6 +450,7 @@ function get_player_att(stat_table)
 	-- Attack (H2H)
 	elseif stat_table['main']['skill'] == 'Hand-to-Hand' then
 		Total_att.main = 8 + stat_table['main'].value + math.floor(5 * stat_table['STR'] / 8) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+		--print(stat_table['main'].value, math.floor(5 * stat_table['STR'] / 8), get_player_att_from_job() )
 	-- Attack (1H main)
 	else
 		 Total_att.main = 8 + stat_table['main'].value + math.floor(3 * stat_table['STR'] / 4) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
@@ -835,18 +846,14 @@ function get_player_att_from_job()
 	
 	if player.sub_job then
 		if player.sub_job:upper() == 'DRK' then
-			if player.sub_job_level < 10  then sub_job_acc = 0
-			elseif player.sub_job_level < 30 and  player.sub_job_level > 9 then sub_job_acc = 10
+			if player.sub_job_level < 30 and  player.sub_job_level > 9 then sub_job_acc = 10
 			elseif player.sub_job_level > 29 then sub_job_acc = 22
 			end
 		elseif player.sub_job:upper() == 'DRG' then
-			
 			if player.sub_job_level > 9 then sub_job_acc = 10
 			end
 		elseif player.sub_job:upper() == 'WAR' then
-			if player.sub_job_level < 30  then sub_job_acc = 0
-			elseif player.sub_job_level < 65 and  player.sub_job_level > 29 then sub_job_acc = 10
-			elseif player.sub_job_level > 29  then sub_job_acc = 22
+			if player.sub_job_level > 29 then sub_job_acc = 10
 			end
 		end
 	end

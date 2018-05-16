@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.7.2.4'
+_addon.version = '1.7.2.5'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -842,6 +842,7 @@ function update()
 					sections.block[12] = ImageBlock.New(13,'block','yellow', 'Acc.', 00)
 				end
 				windower.text.set_text(sections.block[12].text[2].name, Total_acc.main)
+				if sections.block[13] then sections.block[13]:delete() end
 			end
 			if Total_acc.range > 0 then
 				if not sections.block[19] then
@@ -875,6 +876,7 @@ function update()
 					sections.block[14] = ImageBlock.New(15,'block','yellow', 'Att.', 00)
 				end
 				windower.text.set_text(sections.block[14].text[2].name, Total_att.main)
+				if sections.block[15] then sections.block[15]:delete() end
 			end
 			if Total_att.range > 0 then
 				if not sections.block[21] then
