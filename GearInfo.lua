@@ -1053,8 +1053,8 @@ windower.register_event('incoming text', function(old, new, color)
 		end
 
 		return new, color
-	else
-		return old, color
+	-- else
+		-- return old, color
 	end
 end)
 
