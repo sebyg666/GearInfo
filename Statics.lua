@@ -83,6 +83,7 @@ show_acc_Stuff = true
 old_DW_needed = 0
 DW = false
 dancer_main = false
+Crooked_cards = {name = '', bool = false}
 __raw = {lower = string.lower, upper = string.upper,}
 
 function to_windower_api(str)
@@ -113,6 +114,7 @@ defaults.player.show_Defence = false
 defaults.player.show_STP = false
 defaults.player.show_DW_Stuff = false
 defaults.player.show_MA_Stuff = false
+defaults.player.show_COR_messages = true
 defaults.player.update_gs = true
 defaults.player.rank = 1
 defaults.Bards = {}

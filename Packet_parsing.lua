@@ -381,6 +381,14 @@ parse.i[0x063] = function (data)
 								member_table[Character_name].Last_Spell = ''
 								member_table[Character_name].effect = ''
 								member_table[Character_name].value = 0
+							elseif newbuffs[n].name == 'Bust' then
+								newbuffs[n].full_name = Character_table.Last_Spell
+								newbuffs[n].Caster = Character_name:lower()
+								newbuffs[n].effect = Character_table.effect
+								newbuffs[n].value = Character_table.value
+								member_table[Character_name].Last_Spell = ''
+								member_table[Character_name].effect = ''
+								member_table[Character_name].value = 0
 							end
 						end
 					end
@@ -480,7 +488,7 @@ function update_party()
     for k = 1, 6 do
         local member = party[key_indices[k]]
         if member and member.mob then
-			new[member.mob.name] = {id = member.mob.id , name = member.mob.name, Last_Spell = '' , effect ='', value = 0, mob = member.mob, ['Main job']=0,['Sub job']=0,buffs={}, indi={}, geo={}, pet={incoming = false,}}
+			new[member.mob.name] = {id = member.mob.id , name = member.mob.name, Last_Spell = '' , effect ='', value = 0, mob = member.mob, ['Main job']=0,['Sub job']=0,buffs={}, indi={}, geo={}, pet={incoming = false,},}
         end
 	end
 	
@@ -488,7 +496,7 @@ function update_party()
 		for old_name, old_member in pairs(old) do
 			if old_name == new_name then
 				new[old_name] = {id = old_member.id , name = old_member.name, Last_Spell = old_member.Last_Spell , effect = old_member.effect, value = old_member.value, 
-												mob = new_member.mob, ['Main job'] = old_member['Main job'], ['Sub job'] = old_member['Sub job'], buffs=old_member.buffs, indi=old_member.indi, geo=old_member.geo, pet=old_member.pet}
+												mob = new_member.mob, ['Main job'] = old_member['Main job'], ['Sub job'] = old_member['Sub job'], buffs=old_member.buffs, indi=old_member.indi, geo=old_member.geo, pet=old_member.pet, }
 				if old[old_name].Marcato then new[old_name].Marcato = true end
 				if old[old_name].SV then new[old_name].SV = true end
 				if old[old_name].BoG then new[old_name].BoG = true end	

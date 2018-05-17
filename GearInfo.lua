@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.7.2.5'
+_addon.version = '1.7.2.6'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -335,7 +335,13 @@ windower.register_event('addon command', function(command, ...)
 				end
 				-- log('Currently dissabled, in testing.')
 				log('Show Defence = '..tostring(settings.player.show_dt_Stuff))
-				
+			elseif args[1]:lower() == 'cor' then
+				if settings.player.show_COR_messages == false then
+					settings.player.show_COR_messages = true
+				elseif settings.player.show_COR_messages then
+					settings.player.show_COR_messages = false
+				end
+				log('Cor Chat log messages set to '..tostring(settings.player.show_COR_messages))
 			elseif args[1]:lower() == 'all' then
 				settings.player.show_total_haste = true
 				settings.player.show_tp_Stuff = true
@@ -443,6 +449,7 @@ windower.register_event('addon command', function(command, ...)
 			windower.add_to_chat(6, chat_l_blue..	'              \'ma\'' .. chat_white .. '  --  Toggle hide MA Calculations.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'dt\'' .. chat_white .. '  --  Toggle hide DT Calculations.')
 			windower.add_to_chat(6, chat_l_blue..	'              \'all\'' .. chat_white .. '  --  Toggle all display options on.')
+			windower.add_to_chat(6, chat_l_blue..	'              \'cor\'' .. chat_white .. '  --  Toggle rollTracker chat display.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi help\'' .. chat_white .. '  --  This command or any mistakes will show this menu.')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi updategs'.. chat_white ..' or ' .. chat_l_blue .. 'ugs\'' .. chat_white .. '  --  toggle Send info to GearSwap for use, Can add true / false')
 			windower.add_to_chat(6, chat_l_blue..	'\'\/\/gi update\'' .. chat_white .. '  --  forces 1 update to gearswap')
@@ -1030,21 +1037,25 @@ windower.register_event('outgoing chunk',outgoing_chunk)
 
 windower.register_event('incoming text', function(old, new, color)
     --Hides Battlemod
-    if old:match("Roll.* The total.*") or old:match('.*Roll.*' .. string.char(0x81, 0xA8)) or old:match('.*uses Double.*The total') and color ~= 123 then
-        return true
-    end
+	if settings.player.show_COR_messages then
+		if old:match("Roll.* The total.*") or old:match('.*Roll.*' .. string.char(0x81, 0xA8)) or old:match('.*uses Double.*The total') and color ~= 123 then
+			return true
+		end
 
-    --Hides normal
-    if old:match('.* receives the effect of .* Roll.') ~= nil then
-        return true
-    end
+		--Hides normal
+		if old:match('.* receives the effect of .* Roll.') ~= nil then
+			return true
+		end
 
-    --Hides Older Battlemod versions --Antiquated
-    if old:match('%('..'%w+'..'%).* Roll ') then
-        new = old
-    end
+		--Hides Older Battlemod versions --Antiquated
+		if old:match('%('..'%w+'..'%).* Roll ') then
+			new = old
+		end
 
-    return new, color
+		return new, color
+	else
+		return old, color
+	end
 end)
 
 function update_gs(DW, Total_DW_needed, haste)

@@ -87,20 +87,36 @@ function on_action(action)
 							else
 								Roll_bonus = manual_COR_bonus
 							end
+							
+							if Crooked_cards.name == Cor_Rolls[rollID].en or Crooked_cards.name == '' then
+								Crooked_cards = {name = Cor_Rolls[rollID].en, bool = false}
+							else
+								Crooked_cards = {name = '', bool = false}
+							end
+							
+							local cc_bonus = 1
+								
+							if Crooked_cards.name == Cor_Rolls[rollID].en then
+								cc_bonus = 1.2
+							end
 							if rollNum == 12 and Cor_Rolls[rollID].bust  ~= "?" then
-								buff_potency[1] = Cor_Rolls[rollID].bust 
+								buff_potency[1] = Cor_Rolls[rollID].bust * cc_bonus
 							elseif Cor_Rolls[rollID].roll[rollNum] ~= "?" then
 								if rollID == 304 then
-									local hpval = Cor_Rolls[rollID].roll[rollNum][1] + (Cor_Rolls[rollID]["roll+1"][1] * Roll_bonus)
-									local tpval = Cor_Rolls[rollID].roll[rollNum][2] + (Cor_Rolls[rollID]["roll+1"][2] * Roll_bonus)
+									local hpval = (Cor_Rolls[rollID].roll[rollNum][1] + (Cor_Rolls[rollID]["roll+1"][1] * Roll_bonus)) * cc_bonus
+									local tpval = (Cor_Rolls[rollID].roll[rollNum][2] + (Cor_Rolls[rollID]["roll+1"][2] * Roll_bonus)) * cc_bonus
 									buff_potency = {hpval, tpval,}
 								else
-									buff_potency = {Cor_Rolls[rollID].roll[rollNum] + (Cor_Rolls[rollID]["roll+1"] * Roll_bonus),}
+									buff_potency = {(Cor_Rolls[rollID].roll[rollNum] + (Cor_Rolls[rollID]["roll+1"] * Roll_bonus)) * cc_bonus,}
 								end
+							else
+								buff_potency = {'?'}
 							end
-							for k, v in pairs(member_table) do
+
+							for k, v in pairs(member_table) do																
 								if Cor_Rolls[rollID]['bonus']['Main job'] == v['Main job'] and v['Main job'] ~= 'NON'  then
 									buff_potency[1] = buff_potency[1] + Cor_Rolls[rollID]['bonus'].effect
+									print('entred 2')
 									break
 								elseif Cor_Rolls[rollID]['bonus']['Main job'] == 'NON' then
 									-- if action.actor_id == player.id then
@@ -114,19 +130,24 @@ function on_action(action)
 											-- end
 										-- end
 									-- else
-										-- assume others use emperean equipment for boosting said rolls
+										-- assume others use emperean equipment for boosting said rolls							
 										if rollID == 304 then
 											buff_potency[1] = buff_potency[1] + Cor_Rolls[rollID]['bonus'].effect
 											buff_potency[2] = buff_potency[2] + Cor_Rolls[rollID]['bonus'].effect
 										else
-											buff_potency[1] = buff_potency[1] + Cor_Rolls[rollID]['bonus'].effect
+											print('entred 1')
+											if buff_potency[1] ~= '?' then
+												buff_potency[1] = buff_potency[1] + Cor_Rolls[rollID]['bonus'].effect
+											end
 										end
 										break
 									--end
 								end
 							end
+							
 							member_table[index] = {id = member_table[index].id, name = member_table[index].name, mob = member_table[index].mob,  Last_Spell = Cor_Rolls[rollID].en, 
-																	effect = Cor_Rolls[rollID].effect, value = buff_potency}
+																	effect = Cor_Rolls[rollID].effect, value = buff_potency, ['Main job']=member_table[index]['Main job'], ['Sub job']=member_table[index]['Sub job'], 
+																	buffs=member_table[index].buffs, indi=member_table[index].indi, geo=member_table[index].geo, pet=member_table[index].pet}
 																	
 							for i, buff in pairs(_ExtraData.player.buff_details) do
 								-- need to update buff list if its a double up and force a check_buffs() as the buff table does not change with a double up neither does the buff duration
@@ -168,13 +189,35 @@ function on_action(action)
 							end
 							
 							if rollNum == 12 and #rollMembers > 0 then
-								windower.add_to_chat(1, string.char(31,167)..amountHit..'Bust! '..chat.controls.reset..chars.implies..' '..membersHit..' '..chars.implies..' (\"'..Cor_Rolls[rollID].effect..'\" '..string.format("%+d", Cor_Rolls[rollID].bust)..')')
+								for k, v in pairs(buff_potency) do
+									if type (buff_potency[k]) == 'number' then
+										buff_potency[k] = string.format("%+d", buff_potency[k])
+									end
+								end
+								
+								buff_potency = table.concat(buff_potency, ", ")
+								
+								if Crooked_cards.name == Cor_Rolls[rollID].en then
+									buff_potency = buff_potency .. ' \"Crooked Cards\"'
+								end
+								if settings.player.show_COR_messages then
+									windower.add_to_chat(1, string.char(31,167)..amountHit..'Bust! '..chat.controls.reset..chars.implies..' '..membersHit..' '..chars.implies..' (\"'..Cor_Rolls[rollID].effect..'\" '.. buff_potency..')')
+								end
 							else
 								for k, v in pairs(buff_potency) do
-									buff_potency[k] = string.format("%+d", buff_potency[k])
+									if type (buff_potency[k]) == 'number' then
+										buff_potency[k] = string.format("%+d", buff_potency[k])
+									end
 								end
+								
 								buff_potency = table.concat(buff_potency, ", ")
-								windower.add_to_chat(1, string.char(31,167)..amountHit..chat.controls.reset..membersHit..chat.controls.reset..' '..chars.implies..' '..Cor_Rolls[rollID].en..' '..chars['circle' .. rollNum]..luckChat..string.char(31,13)..' (\"'..Cor_Rolls[rollID].effect..'\" '..buff_potency..')')
+								
+								if Crooked_cards.name == Cor_Rolls[rollID].en then
+									buff_potency = buff_potency .. ' \"Crooked Cards\"'
+								end
+								if settings.player.show_COR_messages then
+									windower.add_to_chat(1, string.char(31,167)..amountHit..chat.controls.reset..membersHit..chat.controls.reset..' '..chars.implies..' '..Cor_Rolls[rollID].en..' '..chars['circle' .. rollNum]..luckChat..string.char(31,13)..' (\"'..Cor_Rolls[rollID].effect..'\" '..buff_potency..')')
+								end
 							end
 						break
 						end
@@ -186,7 +229,9 @@ function on_action(action)
 		--notice('Step 1: ' .. action.param .. ' ' .. res.job_abilities:with('id', action.param).en)
 		for index, target in pairs(action.targets) do
 			if type(target) == "table" then
-	
+				if action.param == 392 then
+					Crooked_cards = {name = '', bool = true}
+				end
 				if action.param == 347 then -- ecliptic atrition
 					for index, m_table in pairs(member_table) do
 						if m_table.mob.pet_index and windower.ffxi.get_mob_by_index(m_table.mob.pet_index).name == 'Luopan' and m_table.id == action.actor_id then
