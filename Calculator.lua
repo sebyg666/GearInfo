@@ -431,18 +431,8 @@ function martial_arts_needed()
 	if total_haste > 819 then total_haste = 819 end
 		
 	if player.equipment.main.skill == "Hand-to-Hand" or player.equipment.main.en == '' then
-		local minimum_delay = (480 + Weapon_Delay ) * 0.2
-		--(480 (Base Delay) +xx (+Weapon Delay) -xx(MA Delay Reduction))×(1024 - xx Equipment Haste - xx Magic Haste - xx Job Ability Haste)÷1024 =xx
-		local delay = ((480 + Weapon_Delay - total_MA) * (1024 - 256)) / 1024
-		--print(delay, minimum_delay)
-		
-		-- (Bd + Wd - Ma) x (1024 - total_haste ) = 96
-		-- (Bd + Wd - Ma) = (96 / (1024 - total_haste )) 
-		-- Ma = ((96 / (1024 - total_haste )) - bd - Wd) * (-1) - total_MA
-		-- (480 Base Delay + 86 Weapon Delay - 200 Martial Arts Delay)×(1024 - 256 Equipment Haste - 448 Magic Haste)=114.3 
-		MA_needed = math.floor((((minimum_delay * 1024) / (1024 - total_haste )) - 480 - Weapon_Delay) * (-1) - job_MA)
-		local lowest_delay = ((480 + Weapon_Delay - MA_needed) * (1024 - 256)) / 1024
-		--print(delay, minimum_delay, lowest_delay)
+		local Delay = 480 + Weapon_Delay
+		MA_needed = math.ceil(Delay - ((Delay * 20) / ( (  (1024 - total_haste)  / 1024 * 100)      ))) - total_MA
 	end
 	
 	return total_gear_MA, MA_needed
