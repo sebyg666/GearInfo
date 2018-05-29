@@ -205,7 +205,7 @@ function check_buffs()
 							this_buff["Accuracy"] = tonumber(this_buff.value[i])
 							this_buff["Ranged Accuracy"] = tonumber(this_buff.value[i])
 						elseif Roll_info.en == "Chaos Roll" and i == 1 then
-							this_buff["Attack"] = tonumber(this_buff.value[i])
+							this_buff["Attack perc"] = tonumber(this_buff.value[i])
 						else
 							this_buff[this_buff.effect] = tonumber(this_buff.value[i])
 						end
@@ -268,7 +268,11 @@ function check_buffs()
 						if settings.Bards[buff.Caster] then
 							All_songs = settings.Bards[buff.Caster]['song_bonus']['all_songs']  + settings.Bards[buff.Caster]['song_bonus'][buff.name:lower()]
 							if settings.Bards[buff.Caster]['merits'][buff.name:lower()] then
-								temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()]
+								if settings.Bards[buff.Caster]['jp'][buff.name:lower()] then
+									temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()] + settings.Bards[buff.Caster]['jp'][buff.name:lower()]
+								else
+									temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()]
+								end
 							else
 								temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs]
 							end
@@ -276,7 +280,11 @@ function check_buffs()
 							temp['potency'] = potency
 							temp['All_songs'] = All_songs
 							if settings.Bards[buff.Caster]['merits'][buff.name:lower()] then
-								bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()])
+								if settings.Bards[buff.Caster]['jp'][buff.name:lower()] then
+									bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()] + settings.Bards[buff.Caster]['jp'][buff.name:lower()])
+								else
+									bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()])
+								end
 							else
 								bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs])
 							end
@@ -300,10 +308,18 @@ function check_buffs()
 						end
 					else
 						if temp[ele_to_stat[Song_table.element].en] and settings.Bards[buff.Caster] then
-							temp[ele_to_stat[Song_table.element].en] = temp[ele_to_stat[Song_table.element].en] + settings.Bards[buff.Caster]['emperean_armor_bonus'] -1
+							if settings.Bards[buff.Caster]['emperean_armor_bonus'] > 2 then
+								temp[ele_to_stat[Song_table.element].en] = temp[ele_to_stat[Song_table.element].en] + settings.Bards[buff.Caster]['emperean_armor_bonus'] -1
+							else 
+								temp[ele_to_stat[Song_table.element].en] = temp[ele_to_stat[Song_table.element].en] 
+							end
 						else
 							if settings.Bards[buff.Caster] then
-								temp[ele_to_stat[Song_table.element].en] = settings.Bards[buff.Caster]['emperean_armor_bonus'] -1
+								if settings.Bards[buff.Caster]['emperean_armor_bonus'] > 2 then
+									temp[ele_to_stat[Song_table.element].en] = settings.Bards[buff.Caster]['emperean_armor_bonus'] -1
+								else
+									temp[ele_to_stat[Song_table.element].en] = 0
+								end
 							else
 								temp[ele_to_stat[Song_table.element].en] = 0
 							end
@@ -330,7 +346,7 @@ end
 
 function calculate_total_haste()
 	Buffs_inform = {['delay'] = 0,['DEF'] = 0,['HP'] = 0,['MP'] = 0,['STR'] = 0,['DEX'] = 0,['VIT'] = 0,['AGI'] = 0,['INT'] = 0,['MND'] = 0,['CHR'] = 0,
-								['Accuracy'] = 0,['Attack'] = 0,
+								['Accuracy'] = 0,['Attack'] = 0, ['Attack perc'] = 0,
 								['Ranged Accuracy'] = 0, 
 								['Evasion'] = 0,
 								['Magic Accuracy'] = 0, ['Magic Atk. Bonus'] = 0,

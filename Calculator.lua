@@ -173,7 +173,7 @@ function determine_stp()
 end
 
 function determine_Weapon_Delay()
-	local Weapon_Delay = T{melee_delay = 480, sub = false, ranged_delay = 0, range = false, ammo = false}
+	local Weapon_Delay = T{melee_delay = 480, gear_MA = 0, sub = false, ranged_delay = 0, range = false, ammo = false}
 	
 	local Base_Delay = 480
 	

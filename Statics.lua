@@ -133,6 +133,10 @@ defaults.Bards["joachim"] = {
 		['minuet'] = 0,
 		['madrigal'] = 0,
 	},
+	['jp'] = {
+		['minne'] = 0,
+		['minuet'] = 0,
+	},
 	['emperean_armor_bonus'] = 0,
 	['song_bonus'] = {
 		['all_songs'] = 0,
@@ -155,6 +159,10 @@ defaults.Bards["ulmia"] = {
 		['minne'] = 0,
 		['minuet'] = 0,
 		['madrigal'] = 0,
+	},
+	['jp'] = {
+		['minne'] = 0,
+		['minuet'] = 0,
 	},
 	['emperean_armor_bonus'] = 0,
 	['song_bonus'] = {
@@ -179,6 +187,10 @@ default_bard_settings = {
 		['minne'] = 0,
 		['minuet'] = 5,
 		['madrigal'] = 5,
+	},
+	['jp'] = {
+		['minne'] = 20,
+		['minuet'] = 20,
 	},
 	['emperean_armor_bonus'] = 3,
 	['song_bonus'] = {

@@ -88,7 +88,7 @@ function on_action(action)
 								Roll_bonus = manual_COR_bonus
 							end
 							
-							if Crooked_cards.name == Cor_Rolls[rollID].en or Crooked_cards.name == '' then
+							if Crooked_cards.name == Cor_Rolls[rollID].en or Crooked_cards.name == '' and Crooked_cards.bool then
 								Crooked_cards = {name = Cor_Rolls[rollID].en, bool = false}
 							else
 								Crooked_cards = {name = '', bool = false}
@@ -116,7 +116,7 @@ function on_action(action)
 							for k, v in pairs(member_table) do																
 								if Cor_Rolls[rollID]['bonus']['Main job'] == v['Main job'] and v['Main job'] ~= 'NON'  then
 									buff_potency[1] = buff_potency[1] + Cor_Rolls[rollID]['bonus'].effect
-									print('entred 2')
+									--print('entred 2')
 									break
 								elseif Cor_Rolls[rollID]['bonus']['Main job'] == 'NON' then
 									-- if action.actor_id == player.id then

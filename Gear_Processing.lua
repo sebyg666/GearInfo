@@ -438,34 +438,112 @@ function get_player_att(stat_table)
 	
 	local stat_table = stat_table
 	
-	local two_handers =L{ ["Great Sword"]=0, ["Great Axe"]=0, ["Scythe"]=0, ["Polearm"]=0, ["Great Katana"]=0,["Staff"]=0}
+	local two_handers ={ ["Great Sword"]=0, ["Great Axe"]=0, ["Scythe"]=0, ["Polearm"]=0, ["Great Katana"]=0,["Staff"]=0}
 								
 	--stat_table = get_blue_mage_stats_from_equipped_spells(stat_table)
 	
 	local Total_att = {main = 0, sub = 0, range = 0, ammo = 0, str = 0}
 	
+	
 	-- Attack (2H) 
-	if two_handers:contains(stat_table['main']['skill']) then
-		Total_att.main = 8 + stat_table['main'].value + math.floor(3 * stat_table['STR'] / 4) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+	if table.containskey(two_handers, stat_table['main']['skill']) then
+		local base_attack = 8 + stat_table['main'].value + math.floor(3 * (stat_table['STR'] + Buffs_inform['STR']) / 4) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+		local multi = Buffs_inform['Attack perc'] / 1024
+		local BA_multi = math.floor(base_attack * (1 + get_smite() + multi))
+		Total_att.main = BA_multi
+		--print(base_attack, get_smite(), multi, Buffs_inform['Attack perc'])
 	-- Attack (H2H)
 	elseif stat_table['main']['skill'] == 'Hand-to-Hand' then
-		Total_att.main = 8 + stat_table['main'].value + math.floor(5 * stat_table['STR'] / 8) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
-		--print(stat_table['main'].value, math.floor(5 * stat_table['STR'] / 8), get_player_att_from_job() )
+		local base_attack = 8 + stat_table['main'].value + math.floor(5 * (stat_table['STR'] + Buffs_inform['STR']) / 8) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+		local multi = Buffs_inform['Attack perc'] / 1024
+		local BA_multi = math.floor(base_attack * (1 + get_smite() + multi))
+		Total_att.main = BA_multi + Buffs_inform['Attack']
 	-- Attack (1H main)
 	else
-		 Total_att.main = 8 + stat_table['main'].value + math.floor(3 * stat_table['STR'] / 4) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+		local base_attack = 8 + stat_table['main'].value + math.floor(3 * (stat_table['STR'] + Buffs_inform['STR']) / 4) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+		local multi = Buffs_inform['Attack perc'] / 1024
+		local BA_multi = math.floor(base_attack * (1 + multi))
+		Total_att.main = BA_multi
 	end
 	
 	-- Attack (1H sub)
 	if player.equipment.sub.id ~= 0 and player.equipment.sub.category == 'Weapon' and player.equipment.sub.damage then
-		Total_att.sub = 8 + stat_table['sub'].value + math.floor(stat_table['STR'] / 2) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+		local base_attack = 8 + stat_table['sub'].value + math.floor( (stat_table['STR'] + Buffs_inform['STR']) / 2) + stat_table['Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+		local multi = Buffs_inform['Attack perc'] / 1024
+		local BA_multi = math.floor(base_attack * (1 + multi))
+		Total_att.sub = BA_multi
 	end
 	-- Ranged Attack
 	if player.equipment.range.id ~= 0 and player.equipment.range.category == 'Weapon' and player.equipment.range['damage'] then
-		Total_att.range = 8 + stat_table['range'].value + math.floor(3 * stat_table['STR'] / 4) + stat_table['Ranged Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+		local base_attack = 8 + stat_table['range'].value + math.floor(3 * stat_table['STR'] / 4) + stat_table['Ranged Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+		local multi = Buffs_inform['Attack perc'] / 1024
+		local BA_multi = math.floor(base_attack * (1 + multi))
+		Total_att.range = BA_multi
+	end
+	
+	if player.equipment.range.id == 0 and player.equipment.ammo.id ~= 0 and player.equipment.ammo.category == 'Weapon' and player.equipment.ammo['damage'] then
+		local base_attack = 8 + stat_table['ammo'].value + math.floor(3 * stat_table['STR'] / 4) + stat_table['Ranged Attack'] + get_player_att_from_job() + Buffs_inform['Attack']
+		local multi = Buffs_inform['Attack perc'] / 1024
+		local BA_multi = math.floor(base_attack * (1 + multi))
+		Total_att.ammo = BA_multi
 	end
 	
 	return Total_att
+end
+
+function get_smite()
+	
+	local main_job_smite = 0
+	local sub_job_smite = 0
+	
+	if player.sub_job then
+		if player.sub_job:upper() == 'DRK' then
+			if player.sub_job_level < 35 and  player.sub_job_level > 14 then sub_job_smite = 0.097
+			elseif player.sub_job_level > 34 then sub_job_smite = 0.15
+			end
+		elseif player.sub_job:upper() == 'WAR' then
+			if player.sub_job_level > 34 then sub_job_smite = 0.097
+			end
+		elseif player.sub_job:upper() == 'MNK' then
+			if player.sub_job_level > 39 then sub_job_smite = 0.097
+			end
+		elseif player.sub_job:upper() == 'DRG' then
+			if player.sub_job_level > 39 then sub_job_smite = 0.097
+			end
+		end
+	end
+	
+	if player.main_job:upper() == 'DRK' then
+		if player.main_job_level < 35 and  player.main_job_level > 14 then main_job_smite = 0.097
+		elseif player.main_job_level < 55 and  player.main_job_level > 34 then main_job_smite = 0.15
+		elseif player.main_job_level < 75 and  player.main_job_level > 54 then main_job_smite = 0.199
+		elseif player.main_job_level < 95 and  player.main_job_level > 74 then main_job_smite = 0.25
+		elseif player.main_job_level > 94 then main_job_smite = 0.296
+		end
+	elseif player.main_job:upper() == 'WAR' then
+		if player.main_job_level < 65 and  player.main_job_level > 34 then main_job_smite = 0.097
+		elseif player.main_job_level < 95 and  player.main_job_level > 64 then main_job_smite = 0.15
+		elseif player.main_job_level > 94 then main_job_smite = 0.199
+		end
+	elseif player.main_job:upper() == 'MNK' then
+		if player.main_job_level < 80 and  player.main_job_level > 39 then main_job_smite = 0.097
+		elseif player.main_job_level > 79 then main_job_smite = 0.15
+		end
+	elseif player.main_job:upper() == 'DRG' then
+		if player.main_job_level < 80 and  player.main_job_level > 39 then main_job_smite = 0.097
+		elseif player.main_job_level > 79 then main_job_smite = 0.15
+		end
+	elseif player.main_job:upper() == 'PUP' then
+		if player.main_job_level > 59 then main_job_smite = 0.097
+		end
+	end
+	
+	if sub_job_smite > main_job_smite then
+		return sub_job_smite
+	else
+		return main_job_smite
+	end
+
 end
 
 function get_player_evasion(stat_table)

@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.7.2.6'
+_addon.version = '1.7.2.7'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -611,12 +611,12 @@ end
 
 --options_load()
 			
-windower.register_event('job change',function()
-	player = windower.ffxi.get_player()
-	-- get_player_skill_in_gear(check_equipped())
-	-- player.stats = get_packet_data_base_stats()
-    --initialize(text_box,settings)
-end)
+-- windower.register_event('job change',function()
+	-- player = windower.ffxi.get_player()
+	-- -- get_player_skill_in_gear(check_equipped())
+	-- -- player.stats = get_packet_data_base_stats()
+    -- --initialize(text_box,settings)
+-- end)
 
 function incoming_chunk(id,data,modified,injected,blocked)
         
@@ -856,6 +856,11 @@ function update()
 					sections.block[19] = ImageBlock.New(20,'block','green', 'R.Acc.', 00)
 				end
 				windower.text.set_text(sections.block[19].text[2].name, Total_acc.range)
+			elseif Total_acc.range == 0 and Total_acc.ammo > 0 then
+				if not sections.block[19] then
+					sections.block[19] = ImageBlock.New(20,'block','green', 'R.Acc.', 00)
+				end
+				windower.text.set_text(sections.block[19].text[2].name, Total_acc.ammo)
 			else
 				if sections.block[19] then sections.block[19]:delete() end
 			end
@@ -890,6 +895,11 @@ function update()
 					sections.block[21] = ImageBlock.New(22,'block','green', 'R.Att.', 00)
 				end
 				windower.text.set_text(sections.block[21].text[2].name, Total_att.range)
+			elseif Total_att.range == 0 and Total_att.ammo > 0 then
+				if not sections.block[21] then
+					sections.block[21] = ImageBlock.New(22,'block','green', 'R.Att.', 00)
+				end
+				windower.text.set_text(sections.block[21].text[2].name, Total_att.ammo)
 			else
 				if sections.block[21] then sections.block[21]:delete() end
 			end
