@@ -357,7 +357,7 @@ windower.register_event('addon command', function(command, ...)
 			end
 			settings:save('all')
 		elseif command:lower() == 'test' then
-		
+			table.vprint(player['merits']['aggressive_aim'])
 			-- for skill_name, value in pairs(player_base_skills) do
 				-- if skill_name:contains('eva') then
 					-- print(skill_name, value)
@@ -369,7 +369,7 @@ windower.register_event('addon command', function(command, ...)
 			-- print(Gear_info['Evasion skill'])
 			--check_equipped()
 			--settings.Cors['ewellina'] = nil
-			table.vprint(_ExtraData.player.buff_details)
+			-- table.vprint(_ExtraData.player.buff_details)
 			--table.vprint(windower.ffxi.get_mob_by_target('t'))
 			--table.vprint(member_table)
 			--table.vprint(player_base_skills)
@@ -1007,10 +1007,14 @@ function update()
 		--log(DW_needed)
 		if settings.player.update_gs == true then
 			local new_dw = DW_needed + manual_dw_needed
-			--if new_dw ~= old_DW_needed then  -- old_DW_needed ~= DW_needed and
-				update_gs(DW, new_dw, Total_haste)
-				old_DW_needed = new_dw
-			--end
+			local total_ma , MA_needed = martial_arts_needed()
+			local MA = false
+			
+			if player.equipment.main.skill == "Hand-to-Hand" or player.equipment.main.en == '' then
+				MA = true
+			end
+			update_gs(DW, new_dw, Total_haste, MA, MA_needed)
+			old_DW_needed = new_dw
 		end
 	end
 	--print('updating')
@@ -1068,11 +1072,15 @@ windower.register_event('incoming text', function(old, new, color)
 	end
 end)
 
-function update_gs(DW, Total_DW_needed, haste)
+function update_gs(DW, Total_DW_needed, haste, MA, MA_needed)
 	if DW == true then
-		windower.send_command('gs c gearinfo '..Total_DW_needed .. ' ' .. haste ..' '.. tostring(player.is_moving))
+		windower.send_command('gs c gearinfo '..Total_DW_needed .. ' ' .. haste ..' '.. tostring(player.is_moving)..' '..tostring(MA))
 	elseif DW == false then
-		windower.send_command('gs c gearinfo '.. tostring(DW).. ' ' .. haste ..' '.. tostring(player.is_moving))
+		if MA then
+			windower.send_command('gs c gearinfo '.. tostring(DW).. ' ' .. haste ..' '.. tostring(player.is_moving)..' '..MA_needed)
+		else
+			windower.send_command('gs c gearinfo '..Total_DW_needed .. ' ' .. haste ..' '.. tostring(player.is_moving)..' '..tostring(MA))
+		end
 	end
 end
 
