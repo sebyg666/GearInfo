@@ -44,6 +44,22 @@ function check_buffs()
 		if buff.id == 194 then -- elegy
 			this_buff['ma_haste'] = -512
 		end
+		if buff.id == 58 then -- Aggressor
+			this_buff['Accuracy'] = 25
+			this_buff['Evasion'] = -25
+			if player.main_job:lower() == 'war' then
+				this_buff['Ranged Accuracy'] = player['merits']['aggressive_aim'] * 4
+				if player.equipment['body'].id:contains(10670,26800,26801,23130) then
+					if player.equipment['body']["augments"][3] == "Enhances \"Aggressive Aim\" effect" then
+						this_buff['AGI'] = player['merits']['aggressive_aim'] * 3
+						this_buff['Evasion'] = -15
+					end
+				end
+			end
+		end
+		if buff.id == 419 then -- composure
+			this_buff['Accuracy'] = math.floor(player.main_job_level / 5 ) + player.job_points['rdm']['composure_effect']
+		end
 		if buff.id == 512 and Ionis_zones:contains(windower.ffxi.get_info().zone) then -- ionis
 			this_buff['g_haste'] = 30
 			this_buff['Accuracy'] = 20
