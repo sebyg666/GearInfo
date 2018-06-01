@@ -15,4 +15,12 @@ return {
 	[19629] = {id=19629,en="Kenkonken", delay=45},
 	[19727] = {id=19727,en="Kenkonken", delay=45},
 	[19836] = {id=19836,en="Kenkonken", delay=50},
+	[26080] = {id=26080,en="Mache Earring", delay=10},
+	[26081] = {id=26081,en="Mache Earring +1", delay=13},
+	[20526] = {id=20526,en="Blurred Claws +1",delay=20},
+	[25663] = {id=25663,en="Hizamaru Somen", delay=7},
+	[25664] = {id=25664,en="Hizamaru Somen +1", delay=10},
+	[25576] = {id=25576,en="Hiza. Somen　+2", delay=13},
+	[20519] = {id=20519,en="Hammerfists", delay=5},
+	[20517] = {id=20517,en="Fleshcarvers",, delay=3},
 }
