@@ -22,5 +22,5 @@ return {
 	[25664] = {id=25664,en="Hizamaru Somen +1", delay=10},
 	[25576] = {id=25576,en="Hiza. Somen　+2", delay=13},
 	[20519] = {id=20519,en="Hammerfists", delay=5},
-	[20517] = {id=20517,en="Fleshcarvers",, delay=3},
+	[20517] = {id=20517,en="Fleshcarvers", delay=3},
 }
