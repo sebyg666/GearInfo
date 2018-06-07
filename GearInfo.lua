@@ -947,6 +947,9 @@ function update()
 					else
 						windower.text.set_color(sections.block[25].text[2].name, 255, 255, 255, 255)
 					end
+				else
+					if sections.block[24] then sections.block[24]:delete() end
+					if sections.block[25] then sections.block[25]:delete() end
 				end
 			else
 				if sections.block[24] then sections.block[24]:delete() end

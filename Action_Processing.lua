@@ -135,7 +135,7 @@ function on_action(action)
 											buff_potency[1] = buff_potency[1] + Cor_Rolls[rollID]['bonus'].effect
 											buff_potency[2] = buff_potency[2] + Cor_Rolls[rollID]['bonus'].effect
 										else
-											print('entred 1')
+											--print('entred 1')
 											if buff_potency[1] ~= '?' then
 												buff_potency[1] = buff_potency[1] + Cor_Rolls[rollID]['bonus'].effect
 											end
