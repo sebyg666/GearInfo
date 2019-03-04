@@ -104,6 +104,7 @@ stat_names = L{'delay','DEF','HP','MP','STR','DEX','VIT','AGI','INT','MND','CHR'
 							
 defaults = {}
 defaults.player = {}
+defaults.player.show_logo = true
 defaults.player.show_total_haste = true
 defaults.player.show_tp_Stuff = true
 defaults.player.show_acc_Stuff = false
@@ -126,6 +127,8 @@ defaults.display = {}
 defaults.display.pos = {}
 defaults.display.pos.x = 0
 defaults.display.pos.y = 0
+defaults.image_folder_name = "default"
+
 defaults.Bards["joachim"] = {
 	['gjallarhorn'] = false,
 	['merits'] = {
