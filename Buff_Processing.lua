@@ -47,18 +47,20 @@ function check_buffs()
 		if buff.id == 58 then -- Aggressor
 			this_buff['Accuracy'] = 25
 			this_buff['Evasion'] = -25
-			if player.main_job:lower() == 'war' then
-				this_buff['Ranged Accuracy'] = player['merits']['aggressive_aim'] * 4
-				if player.equipment['body'].id:contains(10670,26800,26801,23130) then
-					if player.equipment['body']["augments"][3] == "Enhances \"Aggressive Aim\" effect" then
-						this_buff['AGI'] = player['merits']['aggressive_aim'] * 3
-						this_buff['Evasion'] = -15
-					end
-				end
-			end
+			-- needs to be on activation in the action packet
+			-- if player.main_job:lower() == 'war' then
+				-- this_buff['Ranged Accuracy'] = player['merits']['aggressive_aim'] * 4
+				-- local body_list = L{10670,26800,26801,23130,23465}
+				-- if body_list:contains (player.equipment['body'].id) then
+					-- if player.equipment['body']["augments"][3] == "Enhances \"Aggressive Aim\" effect" then
+						-- this_buff['AGI'] = player['merits']['aggressive_aim'] * 3
+						-- this_buff['Evasion'] = -15
+					-- end
+				-- end
+			-- end
 		end
 		if buff.id == 419 then -- composure
-			this_buff['Accuracy'] = math.floor(player.main_job_level / 5 ) + player.job_points['rdm']['composure_effect']
+			this_buff['Accuracy'] = math.floor(((24 * player.main_job_level) + 74) / 49 ) + player.job_points['rdm']['composure_effect']
 		end
 		if buff.id == 512 and Ionis_zones:contains(windower.ffxi.get_info().zone) then -- ionis
 			this_buff['g_haste'] = 30
@@ -77,6 +79,17 @@ function check_buffs()
 			end
 		elseif buff.id == 353 then -- Hasso
 			this_buff['ja_haste'] = 103
+			this_buff['Accuracy'] = 10
+			if player.main_job:upper() == 'SAM' then
+				local str = math.floor(player.main_job_level / 7)
+				if str > 14 then str =14 end
+				this_buff['STR'] = str
+			end
+			if player.sub_job:upper() == 'SAM' then
+				local str = math.floor(player.sub_job_level / 7)
+				if str > 14 then str =14 end
+				this_buff['STR'] = str
+			end
 			if player.equipment.hands.en:lower() == "wakido kote" then	
 				this_buff['ja_haste'] = this_buff['ja_haste'] + 10
 			elseif player.equipment.hands.en:lower() == "wakido kote +1" then	
@@ -100,7 +113,7 @@ function check_buffs()
 			elseif player.equipment.feet.en:lower() == "wakido sune. +3" then	
 				this_buff['ja_haste'] = this_buff['ja_haste'] + 20
 			end
-		elseif buff.id == 604 then -- mighty_guard
+		elseif buff.id == 604 then -- mighty guard
 			this_buff['ma_haste'] = 150
 		elseif buff.id == 228 then -- Embrava max 266 @ 500 Enhancing magic skill
 			this_buff['ma_haste'] = 260
@@ -272,8 +285,8 @@ function check_buffs()
 						bonus = {}
 						for i = 1, 4 do
 							if Song_table.effect[i] and Song_table["Bard Bonus"][All_songs][i] then
-								temp[Song_table.effect[i]] = Song_table["Bard Bonus"][All_songs][i]
-								bonus[i] = Song_table.effect[i] .. ' '.. string.format("%+d", Song_table["Bard Bonus"][All_songs][i])
+								temp[Song_table.effect[i]] = Song_table["Bard Bonus"][All_songs][i] + (Song_table["Bard Bonus"][All_songs][i] * potency )
+								bonus[i] = Song_table.effect[i] .. ' '.. string.format("%+d", Song_table["Bard Bonus"][All_songs][i] + (Song_table["Bard Bonus"][All_songs][i] * potency ) )
 							end
 						end
 						bonus = table.concat(bonus, ", ")
@@ -285,32 +298,32 @@ function check_buffs()
 							All_songs = settings.Bards[buff.Caster]['song_bonus']['all_songs']  + settings.Bards[buff.Caster]['song_bonus'][buff.name:lower()]
 							if settings.Bards[buff.Caster]['merits'][buff.name:lower()] then
 								if settings.Bards[buff.Caster]['jp'][buff.name:lower()] then
-									temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()] + settings.Bards[buff.Caster]['jp'][buff.name:lower()]
+									temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()] + settings.Bards[buff.Caster]['jp'][buff.name:lower()] + (Song_table["Bard Bonus"][All_songs] * potency )
 								else
-									temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()]
+									temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()] + (Song_table["Bard Bonus"][All_songs] * potency )
 								end
 							else
-								temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs]
+								temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + (Song_table["Bard Bonus"][All_songs] * potency )
 							end
-							potency = potency + (All_songs / 10)+ 1
-							temp['potency'] = potency
-							temp['All_songs'] = All_songs
 							if settings.Bards[buff.Caster]['merits'][buff.name:lower()] then
 								if settings.Bards[buff.Caster]['jp'][buff.name:lower()] then
-									bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()] + settings.Bards[buff.Caster]['jp'][buff.name:lower()])
+									bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()] + settings.Bards[buff.Caster]['jp'][buff.name:lower()] + (Song_table["Bard Bonus"][All_songs] * potency ))
 								else
-									bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()])
+									bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + settings.Bards[buff.Caster]['merits'][buff.name:lower()] + (Song_table["Bard Bonus"][All_songs] * potency ))
 								end
 							else
-								bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs])
+								bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + (Song_table["Bard Bonus"][All_songs] * potency ))
 							end
-							effects = Song_table.effect[1]
-						else
-							temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs]
 							potency = potency + (All_songs / 10)+ 1
 							temp['potency'] = potency
 							temp['All_songs'] = All_songs
-							bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs])
+							effects = Song_table.effect[1]
+						else
+							temp[Song_table.effect[1]] = Song_table["Bard Bonus"][All_songs] + (Song_table["Bard Bonus"][All_songs] * potency )
+							bonus = string.format("%+d", Song_table["Bard Bonus"][All_songs] + (Song_table["Bard Bonus"][All_songs] * potency ))
+							potency = potency + (All_songs / 10)+ 1
+							temp['potency'] = potency
+							temp['All_songs'] = All_songs
 							effects = Song_table.effect[1]
 						end
 					end

@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.7.2.8'
+_addon.version = '1.7.2.9'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -408,7 +408,7 @@ windower.register_event('addon command', function(command, ...)
 				error('the folder '..args[1]:lower()..' does not exist.')
 			end
 		elseif command:lower() == 'test' then
-			table.vprint(player['merits']['aggressive_aim'])
+			-- table.vprint(player['merits']['aggressive_aim'])
 			-- for skill_name, value in pairs(player_base_skills) do
 				-- if skill_name:contains('eva') then
 					-- print(skill_name, value)
@@ -416,9 +416,23 @@ windower.register_event('addon command', function(command, ...)
 			-- end
 			-- if player_base_skills['evasion'] then print(player_base_skills['evasion']) end
 			-- local current_equip = check_equipped()
+			 
+			 
+			 -- for k,v in pairs(current_equip) do
+			 -- --25613
+				-- if v.id == 25613 then
+					-- local ext = Extdata.decode(k)
+					-- print(ext.type)
+				-- end
+				-- if v.id == 25449 then
+					-- local ext = Extdata.decode(k)
+					-- print(ext.type)
+				-- end
+			 -- end
+			 
+			 
 			-- local Gear_info = get_equip_stats(current_equip)
 			-- print(Gear_info['Evasion skill'])
-			--check_equipped()
 			--settings.Cors['ewellina'] = nil
 			-- table.vprint(_ExtraData.player.buff_details)
 			--table.vprint(windower.ffxi.get_mob_by_target('t'))
@@ -612,7 +626,7 @@ function check_equipped()
 			local item_has_augment = Extdata.decode(v)
 			local no_match = true
 			local temp_item = new_gear_table[k]
-
+			
 			for x,y in pairs(full_gear_table_from_file) do
 				if v.id == y.id then
 					if type(item_has_augment.augments) == 'table' and table.length(item_has_augment.augments) > 0 then
@@ -709,6 +723,7 @@ function update()
 		----------------------------------------------------- Haste Stuff ------------------------------------------
 		local current_equip = check_equipped()
 		Gear_info = get_equip_stats(current_equip)
+		Total_haste = get_total_haste()
 		
 		if settings.player.show_logo == true then
 			if not sections.logo then sections.logo = ImageBlock.New(1,'logo','') end
@@ -742,8 +757,6 @@ function update()
 			else
 				windower.text.set_color(sections.block[3].text[2].name, 255, 255, 255, 255)
 			end
-			
-			Total_haste = get_total_haste()
 			
 			windower.text.set_text(sections.block[4].text[2].name,  Total_haste)
 			if Total_haste > 820 then
