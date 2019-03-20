@@ -572,16 +572,17 @@ function get_player_defence(stat_table)
 	local defence = 0
 	--notice(stat_table['AGI'] .. ' | ' .. stat_table['Evasion skill'] .. ' | ' .. eva_from_skill(stat_table['Evasion skill'] ) .. ' | ' .. get_player_eva_from_job().. ' | ' .. stat_table['Evasion'])
 	if player.main_job_level < 51 then
-		defence = math.floor(3*stat_table['VIT']/2) + player.main_job_level + 8
+		defence = math.floor(3*(stat_table['VIT'] + Buffs_inform['VIT']) /2) + player.main_job_level + 8
 	elseif player.main_job_level > 50 and player.main_job_level < 61 then
-		defence = math.floor(3*stat_table['VIT']/2) + (2 * player.main_job_level ) - 48
+		defence = math.floor(3*(stat_table['VIT'] + Buffs_inform['VIT'])/2) + (2 * player.main_job_level ) - 42
 	elseif player.main_job_level > 60 and player.main_job_level < 90 then
-		defence = math.floor(3*stat_table['VIT']/2) + ( player.main_job_level ) + 18
+		defence = math.floor(3*(stat_table['VIT'] + Buffs_inform['VIT'])/2) + ( player.main_job_level ) + 18
 	else
-		defence = math.floor(3*stat_table['VIT']/2) + ( player.main_job_level ) + 18 + math.floor( (player.main_job_level - 89) / 2 )
+		defence = math.floor(3*(stat_table['VIT'] + Buffs_inform['VIT'])/2) + ( player.main_job_level ) + 18 + math.floor( (player.main_job_level - 89) / 2 )
 	end
-	defence = defence + stat_table['DEF'] + get_player_def_from_job()
-
+	defence = defence + stat_table['DEF'] + get_player_def_from_job() + Buffs_inform['DEF']
+	local multi = Buffs_inform['Defence perc'] / 1024
+	defence = math.floor(defence * (1 + multi))
 	return defence
 end
 

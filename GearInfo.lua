@@ -1,6 +1,6 @@
 _addon.name = 'GearInfo'
 _addon.author = 'Sebyg666'
-_addon.version = '1.7.2.9'
+_addon.version = '1.7.2.10'
 _addon.commands = {'gi','gearinfo'}
 
 
@@ -408,6 +408,7 @@ windower.register_event('addon command', function(command, ...)
 				error('the folder '..args[1]:lower()..' does not exist.')
 			end
 		elseif command:lower() == 'test' then
+			
 			-- table.vprint(player['merits']['aggressive_aim'])
 			-- for skill_name, value in pairs(player_base_skills) do
 				-- if skill_name:contains('eva') then
