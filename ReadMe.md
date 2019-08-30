@@ -1,3 +1,7 @@
+# ** I am no longer supporting this addon **
+
+
+
 ![Gi logo](https://i.imgur.com/g0iJMJk.jpg# )
 
 This is a multi-purpose addon that tracks your currently equipped gear and buffs to display valuable information.
