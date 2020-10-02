@@ -70,7 +70,7 @@ ImageBlock = {
 			o.blue = 0
 			o.type = image_type
 			o.color = image_color
-			o.name = (_addon and _addon.name or 'image') .. '_gensym_' .. tostring(t):sub(8) .. '_%.8x':format(16^8 * math.random()):sub(3)
+			o.name = 'block_' .. order
 			o.x = settings.display.pos.x
 			o.y = settings.display.pos.y
 		elseif image_type == 'logo' then
@@ -79,7 +79,7 @@ ImageBlock = {
 			o.type = image_type
 			o.color = image_color
 			o.image_path = windower.addon_path..'textures/'..settings.image_folder_name..'/'.. image_type ..'.png'
-			o.name = (_addon and _addon.name or 'image') .. '_gensym_' .. tostring(t):sub(8) .. '_%.8x':format(16^8 * math.random()):sub(3)
+			o.name = 'block_' .. order
 			o.x = sections.background:position_x()
 			o.y = sections.background:position_y()
 			check_positions()
@@ -91,7 +91,7 @@ ImageBlock = {
 				o.type = image_type
 				o.color = image_color
 				o.image_path = windower.addon_path..'textures/'..settings.image_folder_name..'/'..image_color ..'.png'
-				o.name = (_addon and _addon.name or 'image') .. '_gensym_' .. tostring(t):sub(8) .. '_%.8x':format(16^8 * math.random()):sub(3)
+				o.name = 'block_' .. order
 				o.x, o.y = get_position(o)
 				o.text = {}
 				
