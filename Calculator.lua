@@ -109,6 +109,8 @@ function determine_stp()
 		elseif player.sub_job == 'SAM' and player.sub_job_level < 50 and  player.sub_job_level > 31 then 
 			sub_job_tp = 15
 			--log('sub_job_tp = 15')
+		elseif player.sub_job == 'SAM' and player.sub_job_level > 49 then
+			sub_job_tp = 20
 		end
 	end
 	
@@ -211,7 +213,8 @@ function determine_Weapon_Delay()
 		end
 		
 		if player.sub_job and player.sub_job == 'PUP'  then
-			if player.sub_job_level  > 24 then  SubJ_Base_Delay = 400
+			if player.sub_job_level  > 24 and player.sub_job_level < 50 then  SubJ_Base_Delay = 400
+			elseif player.sub_job_level > 49 then SubJ_Base_Delay = 380
 			end
 		end
 		
@@ -437,4 +440,3 @@ function martial_arts_needed()
 	
 	return total_gear_MA, MA_needed
 end
-
