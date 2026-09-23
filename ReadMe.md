@@ -1,6 +1,6 @@
 # ** I am no longer supporting this addon **
 
-
+> **Community maintenance:** GearInfo is now receiving compatibility maintenance by Zak with Sebyg666's permission. Sebyg666 remains the original author. The maintenance goal is to keep the original GearInfo addon working with the current game and Windower while preserving its recognizable branding, HUD, and overall look and feel.
 
 ![Gi logo](https://i.imgur.com/g0iJMJk.jpg# )
 
